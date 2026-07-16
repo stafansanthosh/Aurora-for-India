@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+Thumbs.db
+.env
+
+# Generated data + results (derived, not version-controlled)
+data/openaq/*.csv
+data/era5/*.nc
+data/processed/*.csv
+results/metrics/*
+results/plots/*
+!**/.gitkeep

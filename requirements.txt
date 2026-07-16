@@ -1,0 +1,13 @@
+microsoft-aurora
+torch>=2.0.0
+xarray
+netcdf4
+cdsapi
+requests
+python-dotenv
+pandas
+numpy
+scikit-learn
+matplotlib
+jupyter
+tqdm
