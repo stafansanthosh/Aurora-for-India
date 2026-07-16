@@ -30,6 +30,28 @@ Done:
 Key API finding: use `datetime_from`/`datetime_to`, NOT `date_from`/`date_to`
 (the latter is silently ignored). See COPILOT_CONTEXT.md section 4.1.
 
+Also done:
+- Wrote `src/data/era5_downloader.py` — dual-store cdsapi downloader (ERA5 from
+  CDS, CAMS EAC4 PM2.5 from ADS; same token works for both). Request format
+  validated: submission reaches the API's licence check, not a format error.
+
+BLOCKED on one-time licence acceptance (must be done on the websites; these are
+terms I can't accept on the user's behalf):
+  1. ERA5: accept the licence at
+     cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels
+     (Download tab -> Manage licences).
+  2. CAMS: log in at ads.atmosphere.copernicus.eu, accept the data-protection
+     policy, then accept the EAC4 licence on the cams-global-reanalysis-eac4
+     dataset page.
+Once accepted, re-run:
+  python -m src.data.era5_downloader --dataset era5 --city delhi \
+      --date-from 2018-02-01 --date-to 2018-02-01
+  python -m src.data.era5_downloader --dataset cams --city delhi \
+      --date-from 2018-02-01 --date-to 2018-02-01
+
+Also BLOCKED: git push — no remote, gh not authenticated. Run `gh auth login`
+then `gh repo create Aurora-for-India --private --source . --push`.
+
 Next:
-- CDS/CAMS + ERA5 downloader (`src/data/era5_downloader.py`).
-- Spatial alignment (`src/data/align.py`), then Phase 1 baseline metrics.
+- Spatial alignment (`src/data/align.py`): CAMS/ERA5 grid -> OpenAQ station.
+- Phase 1 baseline metrics: CAMS PM2.5 vs OpenAQ, plus persistence baseline.
