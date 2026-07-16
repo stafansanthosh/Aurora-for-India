@@ -9,6 +9,7 @@ Thumbs.db
 # Generated data + results (derived, not version-controlled)
 data/openaq/*.csv
 data/era5/*.nc
+data/cams/*.nc
 data/processed/*.csv
 results/metrics/*
 results/plots/*
