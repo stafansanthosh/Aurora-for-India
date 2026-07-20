@@ -143,6 +143,14 @@ def align_city(
     # normalise resolution so grid/obs merge keys are compatible.
     obs["timestamp_utc"] = _utc_ns(obs["timestamp_utc"]).dt.floor("h")
     obs = obs.rename(columns={"value_ugm3": "openaq_pm25"})
+    # Some sensors report more than once per hour (e.g. labelled :00 and :30),
+    # which collapse to duplicate station-hours after flooring. Average them so
+    # each (station, hour) is unique before merging with the grids.
+    obs = (
+        obs.groupby(["station_id", "timestamp_utc"], as_index=False)
+        .agg(openaq_pm25=("openaq_pm25", "mean"),
+             lat=("lat", "first"), lon=("lon", "first"))
+    )
 
     era5 = cams = None
     cams_to_ugm3 = 1.0

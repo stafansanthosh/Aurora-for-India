@@ -76,3 +76,32 @@ STILL TODO once the NetCDFs arrive:
   comparing CAMS PM2.5 to a real OpenAQ Delhi reading + persistence skill.
 - Write a small Phase 1 evaluation runner (loops stations, writes
   results/metrics/).
+
+---
+
+# July 21, 2026 — PHASE 1 SUCCESS CRITERION MET
+
+Both NetCDFs landed (ERA5 74 KB, CAMS 25 KB, Delhi 2018-02-01). Real files
+matched align.py's auto-detection exactly (coords valid_time/latitude/longitude;
+ERA5 vars u10/v10/t2m/sp/msl/tcwv; CAMS pm2p5 in 'kg m**-3').
+
+Ran the full pipeline: openaq (2018-02-01..03) -> align -> run_phase1.
+Caught + fixed one more real bug: the old DTU sensor reports twice per hour
+(:00 and :30), so flooring created duplicate station-hours -> align.py now
+averages OpenAQ per (station, hour) before merging.
+
+### Phase 1 result — CAMS PM2.5 vs OpenAQ, Delhi, 2018-02-01 (8 stations, 159 hrs)
+Sample-weighted mean MAE = **223.3 ug/m3**. Per-station MAE 115-282 ug/m3,
+correlations 0.13-0.73, skill_vs_persistence strongly NEGATIVE everywhere
+(-2.6 to -27). Interpretation: CAMS global reanalysis at 0.75 deg gives a single
+regional PM2.5 value that cannot track the wide station-to-station variation
+across Delhi, and is far worse than naive persistence. This is exactly the kind
+of failure the benchmark exists to quantify — a strong motivation for the Aurora
++ local-adaptation phases.
+Full table: results/metrics/delhi_phase1.csv (gitignored, regenerate with
+`python -m src.eval.run_phase1 --city delhi`).
+
+Next:
+- Scale Phase 1 across the 5 cities + 4 seasons (Jan/Apr/Jul/Oct).
+- Add ERA5-based columns to the analysis; plots into results/plots/.
+- Phase 2: Aurora inference (needs A100 / Azure quota).
