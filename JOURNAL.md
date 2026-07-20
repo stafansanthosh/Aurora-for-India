@@ -52,6 +52,27 @@ Once accepted, re-run:
 Also BLOCKED: git push — no remote, gh not authenticated. Run `gh auth login`
 then `gh repo create Aurora-for-India --private --source . --push`.
 
-Next:
-- Spatial alignment (`src/data/align.py`): CAMS/ERA5 grid -> OpenAQ station.
-- Phase 1 baseline metrics: CAMS PM2.5 vs OpenAQ, plus persistence baseline.
+Later same day — pushed to GitHub (stafansanthosh/Aurora-for-India) and built
+out the rest of the Phase 1 code while the downloads sit in the ECMWF queue:
+- `src/utils/geo.py` — haversine + nearest-cell (unit-tested).
+- `src/eval/metrics.py`, `src/eval/baseline.py` — MAE/RMSE/corr + skill vs
+  persistence; persistence forecast (unit-tested: perfect->1.0, persist->0.0).
+- `src/data/align.py` — ERA5/CAMS grid -> OpenAQ station alignment, coord-name
+  auto-detect, nearest-cell + distance, hourly exact merge (ERA5) and 3-hourly
+  merge_asof within 90min (CAMS), CAMS kg/m3 -> ug/m3 conversion. Validated on
+  synthetic NetCDFs; caught two bugs pre-real-data (merge_asof us-vs-ns dtype
+  mismatch under pandas 3.0; CAMS unit conversion).
+- End-to-end align->metrics verified per-station on synthetic data. NOTE:
+  metrics must be computed PER STATION (persistence shift is per-series; pooled
+  timestamps are non-unique).
+
+ERA5/CAMS jobs still queued at status=accepted (started=None) hours after
+submission — Copernicus-side backlog, not a local hang. Download processes are
+still alive; files will land when the queue clears.
+
+STILL TODO once the NetCDFs arrive:
+- Inspect real coord/var/units names; confirm align.py auto-detect matches.
+- Run full pipeline for Delhi and produce the Phase 1 success metric: one MAE
+  comparing CAMS PM2.5 to a real OpenAQ Delhi reading + persistence skill.
+- Write a small Phase 1 evaluation runner (loops stations, writes
+  results/metrics/).
