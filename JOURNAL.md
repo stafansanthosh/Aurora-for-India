@@ -124,7 +124,15 @@ GPU (T4/L4) or Colab to start — no A100 wait needed. Local torch is CPU-only
 (2.11.0+cpu); any GPU box needs a CUDA torch reinstall. A100
 (NC24ads_A100_v4) reserved for the full model later.
 
+Phase 2 direction settled + scaffolded (same day):
+- Discovery: installed aurora package has `AuroraAirPollution`
+  (aurora-0.4-air-pollution.ckpt) that predicts pm2p5 DIRECTLY. The weather
+  small model does not -> chose AuroraAirPollution (A100). Must run on CAMS
+  *analysis* (not EAC4). Wrote src/model/aurora_runner.py (Batch construction
+  validated on CPU via `--check`) + scripts/setup_a100.md.
+
 Next:
-- Phase 2: write aurora_runner.py targeting the small model + a GPU-box setup
-  script; construct a valid Batch from the ERA5 NetCDFs (two 6h timesteps).
-- Extend Phase 1 to seasons (Apr/Jul/Oct) and find a Kolkata window with data.
+- On the A100 box: extend downloader for ERA5 pressure-levels + static; add a
+  CAMS-analysis composition downloader; fill assemble_inputs()/load_static_vars()
+  and run the forward pass; evaluate predicted pm2p5 vs OpenAQ + Phase-1 CAMS.
+- Extend Phase 1 to seasons (Apr/Jul/Oct); find a Kolkata window with data.
