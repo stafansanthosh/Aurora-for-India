@@ -101,7 +101,30 @@ of failure the benchmark exists to quantify — a strong motivation for the Auro
 Full table: results/metrics/delhi_phase1.csv (gitignored, regenerate with
 `python -m src.eval.run_phase1 --city delhi`).
 
+Scale-out (same day): added `src/eval/plots.py` (scatter/timeseries/MAE bar,
+PNGs -> results/plots/, gitignored) and ran Phase 1 across 4 cities for
+2018-02-01 (Kolkata had no OpenAQ for that window; skipped).
+
+### Multi-city Phase 1 — CAMS vs OpenAQ, 2018-02-01 (weighted mean MAE)
+| City      | Stations | Hours | MAE ug/m3 |
+|-----------|----------|-------|-----------|
+| Delhi     | 8        | 159   | 223       |
+| Mumbai    | 1        | 23    | 218 (small sample) |
+| Chennai   | 2        | 44    | 65        |
+| Bangalore | 3        | 61    | 41        |
+
+Finding: CAMS absolute error scales with pollution severity — large in the
+heavily polluted cities (Delhi; Mumbai Feb), much smaller in cleaner southern
+cities (Bangalore/Chennai). Delhi plots also show a diurnal PHASE error (CAMS
+peaks evening, stations peak pre-dawn). Regenerate: run openaq -> align ->
+run_phase1/plots per city (see commands above).
+
+Compute decision (Phase 2): use AuroraSmallPretrained (~8GB) on a cheap cloud
+GPU (T4/L4) or Colab to start — no A100 wait needed. Local torch is CPU-only
+(2.11.0+cpu); any GPU box needs a CUDA torch reinstall. A100
+(NC24ads_A100_v4) reserved for the full model later.
+
 Next:
-- Scale Phase 1 across the 5 cities + 4 seasons (Jan/Apr/Jul/Oct).
-- Add ERA5-based columns to the analysis; plots into results/plots/.
-- Phase 2: Aurora inference (needs A100 / Azure quota).
+- Phase 2: write aurora_runner.py targeting the small model + a GPU-box setup
+  script; construct a valid Batch from the ERA5 NetCDFs (two 6h timesteps).
+- Extend Phase 1 to seasons (Apr/Jul/Oct) and find a Kolkata window with data.
