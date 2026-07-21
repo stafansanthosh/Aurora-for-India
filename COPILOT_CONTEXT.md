@@ -248,6 +248,22 @@ u10 = point['u10'].values  # shape: (n_timesteps,)
 
 ## 5. Aurora Model
 
+> **Phase 2 decision (July 2026): use `AuroraAirPollution`, not the weather model.**
+> The installed `aurora` package ships `AuroraAirPollution` (checkpoint
+> `aurora-0.4-air-pollution.ckpt`), which predicts **pm2p5 directly** (plus
+> pm1/pm10 and CO/NO/NO2/O3/SO2) — the direct test of the research question.
+> The weather models (`AuroraSmallPretrained`, etc.) do NOT output PM2.5, so the
+> "small model on a cheap GPU" idea only yields meteorology. Key constraints:
+> - Full size (~24 GB VRAM) → needs an **A100** (Azure NC24ads_A100_v4).
+> - Must run on **CAMS *analysis*** data (ADS atmospheric-composition analysis),
+>   NOT the EAC4 *reanalysis* used for the Phase-1 baseline.
+> - Needs 2 history timesteps; inputs = surf (2t/10u/10v/msl + pm/gas columns),
+>   static (lsm/z/slt + emission fields from a Microsoft pickle), atmos
+>   (z/u/v/t/q + co/no/no2/go3/so2 at 13 levels).
+> - Runner scaffold: `src/model/aurora_runner.py` (Batch construction validated
+>   on CPU). GPU setup: `scripts/setup_a100.md`. The Phase-1 surface-only ERA5
+>   download is NOT sufficient — pressure levels + static fields still needed.
+
 ### 5.1 Overview
 
 Aurora is a 1.3B parameter transformer trained on 1+ million hours of diverse atmospheric data. It operates on a global grid and produces 6-hourly forecasts of atmospheric variables.
