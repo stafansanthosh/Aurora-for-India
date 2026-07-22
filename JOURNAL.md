@@ -136,3 +136,38 @@ Next:
   CAMS-analysis composition downloader; fill assemble_inputs()/load_static_vars()
   and run the forward pass; evaluate predicted pm2p5 vs OpenAQ + Phase-1 CAMS.
 - Extend Phase 1 to seasons (Apr/Jul/Oct); find a Kolkata window with data.
+
+---
+
+# July 22, 2026 — Phase 2 data path resolved (PAUSED mid-implementation)
+
+Found the authoritative recipe (microsoft/aurora docs/example_cams.ipynb). Key
+simplifications vs. earlier assumptions:
+- AuroraAirPollution takes ALL inputs (met + composition) from ONE dataset:
+  `cams-global-atmospheric-composition-forecasts` (ADS), analysis =
+  `type=forecast, leadtime_hour=0`. **No separate ERA5 download needed.**
+- Static emission fields come from HF pickle `aurora-0.4-air-pollution-static.pickle`
+  (downloaded + inspected: 11 vars incl. static_ammonia/co/nox/so2, on the
+  canonical global 0.4° grid **451x900**, lat 90→-90, lon 0→359.6). The model
+  runs GLOBALLY on this grid; India is extracted from the output.
+- Request = one retrieve, format `netcdf_zip` -> data_sfc.nc + data_plev.nc;
+  12 surface vars + 10 atmos vars × 13 levels, times 00:00 & 12:00.
+- Chosen benchmark date: **2025-11-15** (peak Delhi winter pollution + dense
+  modern DPCC OpenAQ, ~46/48 hrs across 2 sensors).
+
+DONE this session:
+- `src/data/cams_composition.py` — the CAMS analysis downloader (committed, NOT
+  yet run/validated).
+
+RESUME HERE (remaining CPU-side work before any GPU spend):
+1. Run `python -m src.data.cams_composition --date 2025-11-15` (needs the
+   cams-global-atmospheric-composition-forecasts licence accepted on ADS; large
+   global download, will queue).
+2. Rewrite `src/model/aurora_runner.py` loaders to the example_cams recipe:
+   load_static_vars() = HF pickle; assemble_inputs() = read data_sfc.nc +
+   data_plev.nc, map short names (t2m/u10/v10/msl/pm1/pm2p5/pm10/tcco/tc_no/
+   tcno2/gtco3/tcso2 surface; t/u/v/q/z/co/no/no2/go3/so2 atmos), [None] batch
+   dim, lat descending, lon 0-360, time = last valid_time.
+3. Validate the full Batch on CPU (shapes/units/grid vs the 451x900 static).
+   Optionally attempt one CPU forward pass to prove end-to-end before GPU.
+Only after (3) passes: rent the GPU (see scripts/setup_a100.md).
