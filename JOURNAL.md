@@ -171,3 +171,36 @@ RESUME HERE (remaining CPU-side work before any GPU spend):
 3. Validate the full Batch on CPU (shapes/units/grid vs the 451x900 static).
    Optionally attempt one CPU forward pass to prove end-to-end before GPU.
 Only after (3) passes: rent the GPU (see scripts/setup_a100.md).
+
+---
+
+# July 22, 2026 (cont.) — PHASE 2 RESULT: Aurora ran, no GPU needed
+
+Completed the whole Phase 2 chain in one session:
+- `src/data/cams_composition.py` ran: global CAMS analysis for 2025-11-15
+  (228 MB, <2 min). Real files matched the recipe + canonical 451x900 grid.
+- `aurora_runner.assemble_inputs` built the full Batch from the real files;
+  validated on CPU (shapes/grid/time all correct).
+- Loaded the real checkpoint on CPU: 1273M params.
+- **Ran the forward pass on CPU** (32 GB RAM, ~12 min) -> global PM2.5 forecast
+  (450x900) at +12h = 2025-11-16 00:00 UTC. Saved to results/ (gitignored).
+- `src/eval/run_phase2.py` + `plots_phase2.py`: sampled predicted pm2p5 at
+  Delhi OpenAQ stations.
+
+RESULT (Delhi, valid 2025-11-16 00 UTC, 6 stations):
+  Aurora ~86 ug/m3 vs OpenAQ 187-370 ug/m3; MAE ~202 ug/m3.
+Sanity check (key): CAMS analysis INPUT at Delhi was already 85-98 ug/m3, and
+Aurora faithfully evolved it to 86. So the global INPUT under-represents Delhi's
+extreme pollution 2-4x; Aurora inherits it. Not a model bug — same failure as
+Phase 1's reanalysis, now confirmed for the operational model. Negatives are
+1.6% of the global field (clean cells), India min -0.8 ~ 0; forward pass sound.
+
+Implication: GPU is NOT required for single-timestep inference (ran on CPU).
+A GPU only helps for throughput (many dates/rollouts). scripts/setup_a100.md
+still valid for scale.
+
+Next:
+- Scale Phase 2 across dates/seasons + all 5 cities (loop the CPU runner, or a
+  GPU for speed); build the Aurora-vs-CAMS-vs-OpenAQ three-way comparison.
+- Phase 4: local bias-correction/calibration on Aurora output (the 2-4x gap is
+  the target).

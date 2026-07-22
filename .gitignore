@@ -16,3 +16,4 @@ results/plots/*
 data/cams_analysis/*.nc
 data/cams_analysis/*.zip
 !**/.gitkeep
+results/*.nc

@@ -50,6 +50,31 @@ huge in the most polluted cities (Delhi), modest in cleaner southern cities
 (Bangalore). This quantifies exactly the gap a fine-tuned or higher-resolution
 model must close, and motivates Phase 2.
 
+## Results so far (Phase 2 — Aurora Air Pollution, run directly)
+
+We then ran Aurora itself — specifically **`AuroraAirPollution`** (the 1.3B-param
+`aurora-0.4-air-pollution` checkpoint), which predicts PM2.5 *directly* — on
+global CAMS analysis data, and forecast +12 h from 2025-11-15 12:00 UTC (peak
+Delhi winter-pollution season). Aurora reproduces India's Indo-Gangetic
+pollution belt, but at Delhi its predicted PM2.5 sits far below the ground
+stations:
+
+![Aurora PM2.5 over India vs OpenAQ](docs/figures/delhi_phase2_india_map.png)
+
+The dark dots (OpenAQ stations, 187–370 µg/m³) sit on a pale model field
+(~86 µg/m³) — Aurora predicts **~86 µg/m³** for the Delhi cell while stations
+read **187–370 µg/m³** (mean absolute error ≈ **202 µg/m³**).
+
+Crucially, this is *not* an Aurora bug: the CAMS analysis it was given already
+reads only 85–98 µg/m³ at the Delhi cell, and Aurora faithfully evolves that
+field (86 µg/m³ at +12 h). **The global input under-represents Delhi's extreme
+local pollution by 2–4×, and Aurora inherits it** — the same failure Phase 1
+found in the reanalysis, now confirmed for the operational model. This is the
+concrete, quantified case for local adaptation (Phase 4).
+
+> Notably, the full 1.3B-param model ran end-to-end on a **32 GB CPU** (~12 min
+> per global forecast) — no GPU was required for single-timestep inference.
+
 ## How it works
 
 ```
@@ -96,12 +121,11 @@ Credentials (never committed):
 - [x] **Phase 1 — data pipeline + global-model baseline.** OpenAQ / ERA5 / CAMS
       clients, spatial alignment, metrics, plots; 4-city CAMS-vs-OpenAQ
       benchmark (above).
-- [ ] **Phase 2 — Aurora inference** *(in progress)*. Run
-      `AuroraAirPollution` (`aurora-0.4-air-pollution.ckpt`), which predicts
-      PM2.5 **directly**, on CAMS analysis data; compare against both OpenAQ
-      ground truth and the Phase-1 CAMS baseline. Runner scaffold with
-      shape-validated `Batch` construction: `src/model/aurora_runner.py`;
-      GPU setup: `scripts/setup_a100.md`.
+- [x] **Phase 2 — Aurora inference.** `AuroraAirPollution`
+      (`aurora-0.4-air-pollution.ckpt`) run end-to-end on global CAMS analysis
+      data; predicted PM2.5 sampled at OpenAQ stations (`src/model/aurora_runner.py`,
+      `src/eval/run_phase2.py`). First result above (Delhi, 2025-11-15).
+      GPU setup for scaling: `scripts/setup_a100.md`.
 - [ ] **Phase 3 — evaluation at scale.** All 5 cities × 4 seasons
       (winter / pre-monsoon / monsoon / post-monsoon); failure-mode analysis
       by city and season.
