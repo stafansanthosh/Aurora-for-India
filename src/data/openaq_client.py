@@ -53,6 +53,12 @@ CITIES: dict[str, tuple[float, float]] = {
     "bangalore": (12.9716, 77.5946),
     "chennai": (13.0827, 80.2707),
     "kolkata": (22.5726, 88.3639),
+    # IGP non-metros (IndiaAQBench: Lucknow/Patna train pool; Kanpur/Varanasi
+    # are held-out cities — see docs/BENCHMARK_SPEC.md §3).
+    "lucknow": (26.8467, 80.9462),
+    "patna": (25.5941, 85.1376),
+    "kanpur": (26.4499, 80.3319),
+    "varanasi": (25.3176, 82.9739),
 }
 
 # Default search radius around a city centre, in metres (OpenAQ max is 25 km).

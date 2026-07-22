@@ -238,3 +238,49 @@ STRATEGY (aim-high, defensible):
 4. Capstone: "State of AI for Indian Air Quality" + cost ledger + coverage map.
 Explicit non-goal: beating AQEWS in Delhi (include it; show it winning in
 Delhi and us winning everywhere it doesn't exist).
+
+---
+
+# July 22, 2026 (cont.) — Deep-research corrections + IndiaAQBench build started
+
+User ran external deep research; verdict: project is sound IF centered on the
+benchmark + validation protocol, not a coverage-hero narrative. Corrections
+adopted (all now in docs/BENCHMARK_SPEC.md v0.1):
+- Patna/Varanasi/etc DO have forecasts (IMD national SILAM-based layer, ~140
+  cities); grid spacing 3km-vs-5km inconsistent in public docs; AOD
+  assimilation unverified for national SILAM. My earlier "no forecast" claim
+  retracted.
+- Only Delhi confirmed 400m WRF-Chem; other 7 AQEWS cities = varying maturity
+  (Mumbai AIRWISE announced 2km; Jaipur 400m).
+- Network numbers updated: 1,601 stations (566 continuous) / 583 cities (2026
+  parliamentary answer).
+- OpenAQ India "not fully open" -> reproducibility = archived raw pulls +
+  versioned station registry + extraction scripts, not "use the API".
+- Claim discipline: "no widely adopted open standard benchmark" (NOT "first").
+- Validation: TWO spatial holdout levels — L1 held-out stations in seen
+  cities, L2 held-out cities (Kanpur, Varanasi, Kolkata). Plus strict temporal
+  cutoff 2025-07-01 (provisional).
+- Headline metrics: AQI category hit rate, Very Poor+ POD/FAR/miss/CSI,
+  Brier; MAE/RMSE secondary; extremes subset mandatory.
+- Deployment framing: transparent research second-opinion w/ rolling
+  scorecard; never an official warning system (Aurora responsible-use).
+
+BUILT this session:
+- docs/BENCHMARK_SPEC.md v0.1 (supersedes May scaffold).
+- src/eval/aqi.py — CPCB PM2.5 bands + category/event metrics + Brier
+  (unit-tested, incl. the Phase-2 missed-Severe failure case).
+- CITIES + lucknow/patna/kanpur/varanasi; OpenAQ pulled for pilot window:
+  kolkata 9, patna 4, lucknow 3, kanpur 3, varanasi 2 stations — held-out
+  cities have live ground truth.
+- src/data/build_station_registry.py -> data/stations.csv (33 stations,
+  9 cities, committed).
+- aurora_runner.run_rollout (aurora.rollout, +12h..+96h, CPU-safe generator).
+- src/pipeline/orchestrate.py — resumable multi-date pipeline: download ->
+  batch -> rollout -> station samples (7 surf feature vars, pairs parquet)
+  + India-region pm2p5 NetCDF per date + manifest.jsonl; --cleanup deletes
+  456MB/day globals. Lead 0 row = raw CAMS input (baseline #3).
+- PILOT RUNNING (background): 2025-11-15 + 2025-11-20, 8 steps, CPU (~3.5h).
+
+Next: pilot verification -> full archival OpenAQ pull (9 cities, Oct 2024..
+Jul 2026) -> coverage audit -> freeze ~60 dates -> scale orchestrator (GPU
+decision) -> calibrator.

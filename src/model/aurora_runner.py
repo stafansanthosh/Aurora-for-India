@@ -137,6 +137,22 @@ def run(batch, device: str = "cuda"):
     return pred
 
 
+def run_rollout(batch, steps: int = 8, device: str = "cuda", model=None):
+    """Yield (step, pred_batch) for +12h..+steps*12h using aurora.rollout.
+
+    Each yielded pred is moved to CPU immediately; the caller should extract
+    what it needs (India region / station cells) and drop the reference, so
+    memory stays bounded on long rollouts.
+    """
+    import torch
+    from aurora import rollout
+
+    model = model if model is not None else load_model(device)
+    with torch.inference_mode():
+        for i, pred in enumerate(rollout(model, batch.to(device), steps=steps), start=1):
+            yield i, pred.to("cpu")
+
+
 # --------------------------------------------------------------------------- #
 # Real-data loaders (CAMS analysis + HuggingFace static pickle)
 # --------------------------------------------------------------------------- #
