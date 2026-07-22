@@ -204,3 +204,37 @@ Next:
   GPU for speed); build the Aurora-vs-CAMS-vs-OpenAQ three-way comparison.
 - Phase 4: local bias-correction/calibration on Aurora output (the 2-4x gap is
   the target).
+
+---
+
+# July 22, 2026 (cont.) — Landscape research + strategy reset ("aim high")
+
+Researched who forecasts AQ in India and how well (key source: Yadav 2025 JGR,
+7-model eval vs 39 CPCB Delhi stations):
+- Best: MoES AQEWS WRF-Chem 400m w/ assimilation, Delhi — Performance Index 87.
+  Delhi-only, HPC, government.
+- SAFAR: 4 megacities only. Global models (our raw peer group): IFS PI=60,
+  GEOS-FP 52, GEFS 47, SILAM 58 — all miss high-pollution events (matches our
+  2-4x finding). Academic ML (Bi-LSTM MAE 8-19): short-lead, per-station,
+  non-operational, incomparable protocols.
+- COVERAGE HOLE = the story: 1,296 stations / 473 cities monitored, but
+  operational forecasts exist for ~4-10 metros. Patna/Lucknow/Kanpur/Varanasi
+  (IGP, world-worst pollution) have stations but NO forecast.
+- No standardized public eval benchmark for Indian AQ forecasting exists.
+- Actionability bar = AQI *category* hit-rate (GRAP triggers on categories,
+  bands are wide: Very Poor 121-250, Severe 250+), not MAE.
+
+STRATEGY (aim-high, defensible):
+1. IndiaAQBench — first open reproducible AQ-forecast benchmark for India:
+   ~60 dates x 4 seasons, leads 12-96h, 9 cities (add Patna, Lucknow, Kanpur,
+   Varanasi), baselines: persistence/climatology/raw CAMS/raw Aurora. Position
+   against Yadav PI scores.
+2. Calibrated Aurora (LightGBM/MLP on Aurora fields + time + station embed) —
+   target: beat persistence + beat global-model tier at 24-96h; report category
+   hit-rate/false-alarm. Claim if met: first warning-grade multi-day forecast
+   for cities that have none, on a laptop.
+3. Compute-equity experiment: $50 station-supervised LoRA fine-tune vs $0.50
+   calibrator — either outcome is a finding re: where fine-tuning pays.
+4. Capstone: "State of AI for Indian Air Quality" + cost ledger + coverage map.
+Explicit non-goal: beating AQEWS in Delhi (include it; show it winning in
+Delhi and us winning everywhere it doesn't exist).
