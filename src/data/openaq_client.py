@@ -93,18 +93,35 @@ class OpenAQClient:
     # -- low-level -------------------------------------------------------- #
 
     def _get(self, path: str, params: dict | None = None) -> dict:
-        """GET with simple exponential-backoff retry on transient errors."""
+        """GET with exponential-backoff retry on transient HTTP + network errors.
+
+        Long archival pulls hit connection-level failures (ChunkedEncoding /
+        IncompleteRead / RemoteDisconnected) that are just as transient as a
+        429; retry both so one dropped connection doesn't kill a whole city.
+        """
         url = f"{API_BASE}{path}"
+        last_exc: Exception | None = None
         for attempt in range(MAX_RETRIES):
-            resp = self.session.get(url, params=params, timeout=REQUEST_TIMEOUT)
-            if resp.status_code in RETRY_STATUS:
+            try:
+                resp = self.session.get(url, params=params, timeout=REQUEST_TIMEOUT)
+                if resp.status_code in RETRY_STATUS:
+                    wait = 2 ** attempt
+                    print(f"  HTTP {resp.status_code} on {path}; retry in {wait}s")
+                    time.sleep(wait)
+                    continue
+                resp.raise_for_status()
+                return resp.json()
+            except (requests.exceptions.ChunkedEncodingError,
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.Timeout) as exc:
+                last_exc = exc
                 wait = 2 ** attempt
-                print(f"  HTTP {resp.status_code} on {path}; retry in {wait}s")
+                print(f"  network error on {path} ({type(exc).__name__}); retry in {wait}s")
                 time.sleep(wait)
                 continue
-            resp.raise_for_status()
-            return resp.json()
-        resp.raise_for_status()  # exhausted retries — surface the last error
+        if last_exc is not None:  # exhausted retries on a network error
+            raise last_exc
+        resp.raise_for_status()  # exhausted retries on a retryable status
         return {}  # unreachable, keeps type checkers happy
 
     # -- station discovery ------------------------------------------------ #

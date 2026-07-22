@@ -17,13 +17,15 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import time
 import traceback
 from datetime import datetime
 from pathlib import Path
 
+import pandas as pd
 from dotenv import load_dotenv
 
-from .openaq_client import CITIES, OUTPUT_DIR, fetch_city, save_city
+from .openaq_client import CITIES, OUTPUT_DIR, clean, fetch_city, save_city
 
 load_dotenv()  # OPENAQ_API_KEY from .env (openaq_client only loads it in its own main)
 
@@ -41,8 +43,29 @@ def _log(rec: dict) -> None:
         f.write(json.dumps(rec) + "\n")
 
 
+def _quarters(date_from: str, date_to: str) -> list[tuple[str, str]]:
+    """Split [from, to) into ~3-month windows (smaller, connection-safe pulls)."""
+    edges = pd.date_range(date_from, date_to, freq="QS").tolist()
+    bounds = [pd.Timestamp(date_from)] + edges + [pd.Timestamp(date_to)]
+    bounds = sorted(set(b.normalize() for b in bounds))
+    return [(a.strftime("%Y-%m-%d"), b.strftime("%Y-%m-%d"))
+            for a, b in zip(bounds[:-1], bounds[1:]) if a < b]
+
+
 def pull_city(city: str, date_from: str, date_to: str) -> dict:
-    df = fetch_city(city, date_from, date_to)
+    # Pull quarter-by-quarter and concatenate; one flaky window can't lose the
+    # whole city, and each response stays small enough to download intact.
+    frames = []
+    for a, b in _quarters(date_from, date_to):
+        try:
+            part = fetch_city(city, a, b)
+            if not part.empty:
+                frames.append(part)
+            print(f"    {city} {a}..{b}: {len(part)} rows")
+        except Exception as e:
+            print(f"    {city} {a}..{b}: FAILED ({type(e).__name__}) - skipping window")
+        time.sleep(1.0)  # pace between windows
+    df = clean(pd.concat(frames, ignore_index=True)) if frames else pd.DataFrame()
     n_rows = len(df)
     n_stations = int(df["station_id"].nunique()) if n_rows else 0
     if n_rows:
