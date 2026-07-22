@@ -284,3 +284,20 @@ BUILT this session:
 Next: pilot verification -> full archival OpenAQ pull (9 cities, Oct 2024..
 Jul 2026) -> coverage audit -> freeze ~60 dates -> scale orchestrator (GPU
 decision) -> calibrator.
+
+PILOT VALIDATED (2 dates, 2025-11-15 + 2025-11-20, CPU ~1h/date each):
+- pairs parquet schema correct: 297 rows/date = 33 stations x 9 leads
+  (0,12,..,96h), 7 surf feature vars, valid_time, cell_dist_km. Lead 0 =
+  raw CAMS input baseline.
+- Rollout carries real multi-day episode dynamics (a Delhi station climbs
+  95->218 ug/m3 over +0..+84h) — calibrator will have cross-lead signal.
+- Self-cleaning works: cams_analysis/ left with only .gitkeep (456MB/day
+  globals deleted). Disk stays flat at scale.
+- Held-out cities produce sensible values (Varanasi 193, Kanpur 204,
+  Kolkata 107 ug/m3 @ +12h) — L2 transfer test viable.
+- India-region pm2p5 NetCDF ~200KB/date (kept).
+Scale cost: ~1h CPU/date x8 steps -> 60 dates ~= 60 CPU-h OR ~2-4 A100-h.
+This is the GPU decision point once dates are frozen.
+
+ARCHIVAL PULL running (bg): bangalore done = 85,921 rows/13 stations over
+22 months (dense). ~40 min/city -> ~6h for 9 cities. Then coverage audit.
