@@ -13,4 +13,6 @@ data/cams/*.nc
 data/processed/*.csv
 results/metrics/*
 results/plots/*
+data/cams_analysis/*.nc
+data/cams_analysis/*.zip
 !**/.gitkeep

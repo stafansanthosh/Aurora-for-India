@@ -138,33 +138,65 @@ def run(batch, device: str = "cuda"):
 
 
 # --------------------------------------------------------------------------- #
-# TODO (complete on the GPU box against real CAMS *analysis* data)
+# Real-data loaders (CAMS analysis + HuggingFace static pickle)
 # --------------------------------------------------------------------------- #
 
-def load_static_vars(pickle_path):
-    """Load the Microsoft-provided static emission fields (pickle).
+STATIC_PICKLE_REPO = "microsoft/aurora"
+STATIC_PICKLE_NAME = "aurora-0.4-air-pollution-static.pickle"
 
-    The static_* emission fields are not in CAMS/ERA5; Microsoft distributes
-    them as a pickle. Download per the Aurora docs and load here, regridded to
-    the target lat/lon.
+# Aurora surface-var name -> CAMS NetCDF short name. Most match; only the
+# ECMWF-style met names differ.
+SURF_NC_NAME = {"2t": "t2m", "10u": "u10", "10v": "v10"}
+# Atmos vars use identical short names in the CAMS pressure-level file.
+
+
+def load_static_vars(pickle_path: str | None = None) -> dict[str, np.ndarray]:
+    """Load the air-pollution static emission fields from the HF pickle.
+
+    Returns a dict {var: (H, W) float32 array} on the canonical 451x900 grid.
+    Downloads from HuggingFace if no local path is given.
     """
-    raise NotImplementedError(
-        "Download the Aurora static-variables pickle on the GPU box and wire it "
-        "in here (regrid to target lat/lon)."
-    )
+    import pickle
+
+    if pickle_path is None:
+        from huggingface_hub import hf_hub_download
+        pickle_path = hf_hub_download(repo_id=STATIC_PICKLE_REPO, filename=STATIC_PICKLE_NAME)
+    with open(pickle_path, "rb") as f:
+        static = pickle.load(f)
+    return {k: np.asarray(v, dtype=np.float32) for k, v in static.items()}
 
 
-def assemble_inputs(cams_analysis_path, era5_path, static_pickle, lat, lon, time):
-    """Map CAMS analysis + ERA5 fields into the surf/static/atmos dicts.
+def assemble_inputs(sfc_path, plev_path, static: dict | None = None):
+    """Build a validated Batch from CAMS analysis NetCDFs + static pickle.
 
-    CAMS analysis (ADS: atmospheric-composition analysis) supplies pm*/gases and
-    the atmospheric composition levels; ERA5 supplies 2t/10u/10v/msl/z and the
-    met atmos vars (t,u,v,q,z). Fill this in against the real files, then call
-    build_batch().
+    ``sfc_path`` / ``plev_path`` are the data_sfc.nc / data_plev.nc unpacked by
+    src.data.cams_composition. Follows the official example_cams.ipynb: select
+    the zero-hour forecast (analysis), use both timesteps (UTC 00 and 12), build
+    the batch at the later time. Returns an ``aurora.Batch``.
     """
-    raise NotImplementedError(
-        "Wire CAMS-analysis + ERA5 variables into surf/static/atmos dicts here."
-    )
+    import xarray as xr
+
+    static = static if static is not None else load_static_vars()
+
+    sfc = xr.open_dataset(sfc_path, engine="netcdf4", decode_timedelta=True)
+    plev = xr.open_dataset(plev_path, engine="netcdf4", decode_timedelta=True)
+    # Zero-hour forecast = analysis product.
+    if "forecast_period" in sfc.dims:
+        sfc = sfc.isel(forecast_period=0)
+        plev = plev.isel(forecast_period=0)
+
+    # surf[v]: (T=2, H, W); atmos[v]: (T=2, L, H, W) -- shapes build_batch expects.
+    surf = {v: sfc[SURF_NC_NAME.get(v, v)].values for v in SURF_VARS}
+    atmos = {v: plev[v].values for v in ATMOS_VARS}
+
+    lat = plev.latitude.values
+    lon = plev.longitude.values
+    # Build the batch at the LAST available time (UTC 12).
+    time = plev.valid_time.values.astype("datetime64[s]").tolist()
+    time = time[-1] if isinstance(time, list) else time
+    levels = tuple(int(x) for x in plev.pressure_level.values)
+
+    return build_batch(surf, static, atmos, lat, lon, time, levels=levels)
 
 
 def _dummy_batch():
@@ -178,20 +210,56 @@ def _dummy_batch():
     return build_batch(surf, static, atmos, lat, lon, datetime(2018, 2, 1, 6))
 
 
+def _describe(b) -> None:
+    print("  surf 2t:", tuple(b.surf_vars["2t"].shape), "(1, T, H, W)")
+    print("  surf pm2p5:", tuple(b.surf_vars["pm2p5"].shape))
+    print("  atmos t:", tuple(b.atmos_vars["t"].shape), "(1, T, L, H, W)")
+    print("  static lsm:", tuple(b.static_vars["lsm"].shape), "(H, W)")
+    print("  lat:", float(b.metadata.lat[0]), "->", float(b.metadata.lat[-1]),
+          "| lon:", float(b.metadata.lon[0]), "->", float(b.metadata.lon[-1]))
+    print("  time:", b.metadata.time, "| levels:", b.metadata.atmos_levels)
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description="Aurora Air Pollution runner.")
     p.add_argument("--check", action="store_true",
                    help="Construct a dummy Batch and report shapes (no GPU).")
+    p.add_argument("--validate", action="store_true",
+                   help="Assemble the Batch from real CAMS files and report (no GPU).")
+    p.add_argument("--run", action="store_true",
+                   help="Assemble + run a forward pass (needs GPU) and save output.")
+    p.add_argument("--sfc", type=str, help="Path to data_sfc.nc")
+    p.add_argument("--plev", type=str, help="Path to data_plev.nc")
+    p.add_argument("--device", default="cuda", help="Torch device for --run.")
+    p.add_argument("--out", type=str, default="results/aurora_pred.nc",
+                   help="Where to save the predicted Batch (--run).")
     args = p.parse_args()
+
     if args.check:
         b = _dummy_batch()
         print("Dummy Batch constructed OK.")
-        print("  surf 2t:", tuple(b.surf_vars["2t"].shape), "(1, T, H, W)")
-        print("  atmos t:", tuple(b.atmos_vars["t"].shape), "(1, T, L, H, W)")
-        print("  static lsm:", tuple(b.static_vars["lsm"].shape), "(H, W)")
-        print("  levels:", b.metadata.atmos_levels)
+        _describe(b)
         return
-    raise SystemExit("Nothing to do. Use --check, or wire assemble_inputs() on the GPU box.")
+
+    if args.validate or args.run:
+        if not (args.sfc and args.plev):
+            raise SystemExit("--validate/--run need --sfc and --plev.")
+        print("Assembling Batch from CAMS analysis files...")
+        b = assemble_inputs(args.sfc, args.plev)
+        print("Batch assembled OK.")
+        _describe(b)
+        if args.validate:
+            return
+        print(f"Running forward pass on {args.device}...")
+        pred = run(b, device=args.device)
+        from pathlib import Path
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+        pred.to_netcdf(args.out)
+        print(f"Saved prediction -> {args.out}")
+        print("  predicted pm2p5:", tuple(pred.surf_vars["pm2p5"].shape))
+        return
+
+    raise SystemExit("Use --check, --validate --sfc ... --plev ..., or --run ...")
 
 
 if __name__ == "__main__":
