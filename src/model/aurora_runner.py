@@ -9,10 +9,10 @@ IMPORTANT constraints (from the official Aurora docs):
   * Run it ONLY on CAMS *analysis* data for optimal skill -- NOT the EAC4
     reanalysis used in Phase 1. Other inputs give "sensible but not optimal"
     output.
-  * Full-size model (~24 GB VRAM) -> needs an A100. Local CPU-only torch here
-    cannot run the forward pass; this module is validated only for Batch
-    construction (shape/convention correctness). Run the forward pass on the
-    GPU box (see scripts/setup_a100.md).
+  * Inference at 0.4 deg fits well under Aurora's stated 40 GB-at-0.25 deg
+    memory figure -- a ~48 GB spot GPU (A6000) is comfortable; no A100 needed.
+    It also runs on a 32 GB CPU (~12 min/step), which is how the pilot dates
+    were produced. Full 56-date pass + runbook: scripts/setup_gpu.md.
   * Needs TWO history timesteps (t-dim = 2), 12h apart for this checkpoint.
   * Static emission fields (static_ammonia, static_nox, ...) come from a
     Microsoft-provided pickle, not from CAMS/ERA5 -- see load_static_vars().
@@ -26,9 +26,10 @@ This file provides:
 The CAMS-analysis -> arrays loading (fetch_cams_analysis / assemble_inputs) is
 left as a documented stub to complete on the GPU box against real data.
 
-Usage (on the A100 box):
-    python -m src.model.aurora_runner --check      # construct a dummy Batch
-    # full run wired once CAMS-analysis loaders are filled in.
+Usage (on the GPU box):
+    python -m src.model.aurora_runner --check      # construct a dummy Batch (no GPU)
+    # the full CAMS-analysis loaders (assemble_inputs) are wired and in use by
+    # src.pipeline.orchestrate; --validate / --run exercise them directly.
 """
 from __future__ import annotations
 
