@@ -130,6 +130,14 @@ METHODS = {
 }
 
 
+def active_methods(frame: pd.DataFrame) -> dict[str, str]:
+    """METHODS plus 'calibrated' when a calibrator column is present."""
+    m = dict(METHODS)
+    if "cal_pm25" in frame.columns:
+        m["calibrated"] = "cal_pm25"
+    return m
+
+
 def _regression(obs: np.ndarray, pred: np.ndarray) -> dict:
     m = np.isfinite(obs) & np.isfinite(pred)
     o, p = obs[m], pred[m]
@@ -153,10 +161,11 @@ def score(frame: pd.DataFrame, split: str = "all", extremes: bool = False) -> pd
         df = df[df["is_test"]]
     df = df[df["lead_h"] > 0]  # lead 0 is the analysis, not a forecast
 
+    methods = active_methods(df)
     rows = []
     for (lead, city), g in df.groupby(["lead_h", "city"]):
         obs = g["obs_pm25"].to_numpy()
-        for method, col in METHODS.items():
+        for method, col in methods.items():
             pred = g[col].to_numpy()
             mask = np.isfinite(obs)
             if extremes:
@@ -174,11 +183,12 @@ def summary(frame: pd.DataFrame, split: str = "test") -> pd.DataFrame:
     """Pooled-over-cities headline per (lead, method) for a quick read."""
     df = frame[frame["lead_h"] > 0]
     df = df[df["is_test"]] if split == "test" else (df[~df["is_test"]] if split == "train" else df)
+    methods = active_methods(df)
     rows = []
     for lead in sorted(df["lead_h"].unique()):
         g = df[df["lead_h"] == lead]
         obs = g["obs_pm25"].to_numpy()
-        for method, col in METHODS.items():
+        for method, col in methods.items():
             pred = g[col].to_numpy()
             rec = {"lead_h": int(lead), "method": method}
             rec.update(_regression(obs, pred))
@@ -193,9 +203,16 @@ def main() -> None:
     p = argparse.ArgumentParser(description="IndiaAQBench evaluation harness.")
     p.add_argument("--out", type=Path, default=METRICS_DIR / "indiaaqbench.csv")
     p.add_argument("--split", default="all", choices=["all", "train", "test"])
+    p.add_argument("--calibrator", type=Path, default=None,
+                   help="Path to a saved PooledCalibrator; adds it as method #5.")
     args = p.parse_args()
 
     frame = add_climatology(build_frame())
+    if args.calibrator is not None:
+        from ..model.calibrator import PooledCalibrator
+        cal = PooledCalibrator.load(args.calibrator)
+        frame["cal_pm25"] = cal.predict(frame)
+        print(f"Applied calibrator {args.calibrator} -> 'calibrated' method added.")
     matched = int(frame[frame["lead_h"] > 0]["obs_pm25"].notna().sum())
     print(f"Loaded {len(frame):,} pred rows; "
           f"{matched:,} forecast rows matched to obs "
