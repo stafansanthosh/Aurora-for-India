@@ -233,7 +233,7 @@ Credentials (never committed):
       (`aurora-0.4-air-pollution.ckpt`) run end-to-end on global CAMS analysis
       data; predicted PM2.5 sampled at OpenAQ stations (`src/model/aurora_runner.py`,
       `src/eval/run_phase2.py`). First result above (Delhi, 2025-11-15).
-      GPU setup for scaling: `scripts/setup_a100.md`.
+      GPU setup for scaling: [scripts/setup_gpu.md](scripts/setup_gpu.md).
 - [x] **Phase 3 — IndiaAQBench scaffold.** Spec frozen (v0.1), 9-city
       ground-truth archive complete (~942K station-hours, 127 stations),
       multi-date orchestrator (+12h→+96h rollout), AQI category metrics module,
@@ -242,8 +242,11 @@ Credentials (never committed):
       train/test/held-out splits (`src/eval/coverage_audit.py`), then scale
       the orchestrator run to the full date set.
 - [ ] **Phase 4 — adaptation.** Pooled calibrator (frozen Aurora → station
-      PM2.5) first; scoped Aurora fine-tune experiment on A100 if the
-      calibrator alone doesn't close enough of the gap.
+      PM2.5) first — CPU/cheap-GPU, no backprop; then a scoped fine-tune
+      experiment (the one case that wants a 40–80 GB card, since it backprops
+      through the rollout) if the calibrator alone doesn't close the gap.
+      The 56-date inference pass runs on a ~$0.5/hr 48 GB spot GPU — no A100
+      needed: [scripts/setup_gpu.md](scripts/setup_gpu.md).
 - [ ] **Phase 5 — transparent research dashboard.** Public, per-city,
       per-lead-time scorecards — the point being that anyone can see exactly
       where the adapted model is (and isn't) trustworthy, city by city.
