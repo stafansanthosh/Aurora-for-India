@@ -91,18 +91,30 @@ subset (the regime where global models fail).
    baseline this benchmark exists to measure.
 5. (Adaptation ladder, evaluated identically: pooled calibrator; fine-tune.)
 
-## 6. Benchmark period, dates, splits (provisional)
+## 6. Benchmark period, dates, splits (FROZEN — coverage audit 2026-07-23)
 
-- Target: **~60 init dates** spanning 2024-10 .. 2026-07, stratified across
-  post-monsoon, winter, pre-monsoon, monsoon.
+- **56 init dates** spanning 2025-02 .. 2026-06, frozen by the coverage audit
+  (`src/eval/coverage_audit.py`) over the complete 9-city archive (941,803
+  obs rows) and committed as `docs/benchmark_dates.csv`. Balanced 8 per
+  (season × split) stratum; every chosen date has ≥5,000 train-pool
+  station-hours in its +12..+96h validation window.
 - Split rule (frozen before any adaptation training): temporal cutoff at
-  **2025-07-01** — train/val strictly before, test strictly after. Test then
+  **2025-07-01** — train/val strictly before, test strictly after. Test
   contains the full 2025-26 winter (incl. the already-validated 2025-11-15).
-- Contingency (disclosed if used): if winter 2024-25 OpenAQ density is
-  insufficient for training, fall back to a within-winter split with the
-  cutoff inside Nov 2025, documented in the results.
-- The exact date list is frozen by the **coverage audit** (archived-pull
-  density per city per season) and committed as `docs/benchmark_dates.csv`.
+- **Documented coverage gap (post-monsoon is test-only).** OpenAQ Indian
+  station density in Oct–Nov **2024** is below the usability threshold
+  (≥2 stations, ≥40 station-hours in-window) for *every* city, so there are
+  **zero post-monsoon train dates**; post-monsoon appears only in the 2025
+  test split. This is consequential: post-monsoon (Diwali + stubble burning)
+  is north India's peak-pollution season and the primary regime for the
+  Very-Poor+ event thesis. We keep it test-only rather than backfill 2023
+  (thin OpenAQ depth, larger pull): the adaptation methods must therefore
+  **generalize into post-monsoon from other seasons**, making it a genuine
+  out-of-distribution seasonal test rather than an interpolation. Reported as
+  a headline caveat wherever post-monsoon numbers appear.
+- Held-out-city validation is feasible: Kanpur/Varanasi/Kolkata each have
+  340–380 usable test dates and 135–167 usable train-period dates (audited for
+  feasibility only — they never drive date selection, per §3).
 
 ## 7. Data and reproducibility requirements
 
