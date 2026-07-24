@@ -208,6 +208,12 @@ def main() -> None:
     print("Split rows -- " + ", ".join(f"{k}: {len(v):,}" for k, v in parts.items()))
 
     cal = PooledCalibrator().fit(parts["train"])
+    # Running as `python -m src.model.calibrator` makes this class __main__.PooledCalibrator,
+    # which can't be unpickled from another entry point (e.g. benchmark.py). Rebind to the
+    # qualified module so the saved model loads anywhere.
+    if cal.__class__.__module__ == "__main__":
+        import importlib
+        cal.__class__ = importlib.import_module("src.model.calibrator").PooledCalibrator
     path = cal.save(args.out)
     print(f"Fit on {len(parts['train']):,} train rows -> {path}")
 
