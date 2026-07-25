@@ -127,8 +127,17 @@ def pull_city(city: str, date_from: str, date_to: str, freq: str = DEFAULT_FREQ,
             counts[pull_window(city, a, b)] += 1
             time.sleep(0.5)  # pace between windows
 
-    res = assemble_city(city, date_from, date_to)
-    # Only claim "ok" when nothing is outstanding -- otherwise say so loudly.
+    # NEVER let an incomplete pass overwrite a good existing CSV. A flaky
+    # connection made 15 of Kolkata's 22 windows fail, and assembling from the
+    # surviving 7 replaced a complete 93k-row file with 55k rows. Parts are
+    # already safe on disk, so we simply defer assembly until the pull is whole
+    # (or the caller explicitly asks via --assemble-only).
+    if counts["failed"] and not assemble_only:
+        res = {"rows": 0, "stations": 0, "archive": None}
+        print(f"    {city}: {counts['failed']} window(s) failed - keeping the "
+              f"existing CSV untouched; re-run to fill gaps.")
+    else:
+        res = assemble_city(city, date_from, date_to)
     status = "ok" if counts["failed"] == 0 else "partial"
     rec = {"city": city, "date_from": date_from, "date_to": date_to,
            "rows": res["rows"], "stations": res["stations"],
