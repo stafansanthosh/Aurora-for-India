@@ -155,15 +155,18 @@ class OpenAQClient:
                 break
             for loc in results:
                 coords = loc.get("coordinates") or {}
-                pm25_sensor = next(
-                    (
-                        s
-                        for s in loc.get("sensors", [])
-                        if s.get("parameter", {}).get("id") == PM25_PARAMETER_ID
-                    ),
-                    None,
-                )
-                if pm25_sensor is None:
+                # A station often exposes SEVERAL PM2.5 sensors (a retired unit
+                # plus its replacement). Taking only the first silently dropped
+                # whole stations whenever the first-listed one was dormant --
+                # verified against the live API: 2 of 5 Varanasi and 3 of 7 Patna
+                # stations were being lost this way. Keep them all and let the
+                # caller merge; per-(station, hour) averaging dedups any overlap.
+                sensor_ids = [
+                    s.get("id")
+                    for s in loc.get("sensors", [])
+                    if s.get("parameter", {}).get("id") == PM25_PARAMETER_ID
+                ]
+                if not sensor_ids:
                     continue
                 stations.append(
                     {
@@ -171,7 +174,9 @@ class OpenAQClient:
                         "station_name": loc.get("name"),
                         "lat": coords.get("latitude"),
                         "lon": coords.get("longitude"),
-                        "sensor_id": pm25_sensor.get("id"),
+                        "sensor_ids": sensor_ids,
+                        # Back-compat for callers expecting a single sensor.
+                        "sensor_id": sensor_ids[0],
                     }
                 )
             if len(results) < 100:
@@ -302,16 +307,25 @@ def fetch_city(
 
     frames: list[pd.DataFrame] = []
     for st in stations:
-        print(
-            f"  sensor {st['sensor_id']} ({st['station_name']}) "
-            f"{date_from} -> {date_to} ...",
-            end="",
-            flush=True,
-        )
-        raw = client.fetch_hourly(st["sensor_id"], date_from, date_to)
-        df = _parse_records(raw, st, city)
-        print(f" {len(df)} rows")
-        if not df.empty:
+        # Merge every PM2.5 sensor at this station; a dormant sensor just
+        # returns nothing, so this only ever adds coverage.
+        sensor_ids = st.get("sensor_ids") or [st["sensor_id"]]
+        st_frames: list[pd.DataFrame] = []
+        for sid in sensor_ids:
+            raw = client.fetch_hourly(sid, date_from, date_to)
+            part = _parse_records(raw, st, city)
+            if not part.empty:
+                st_frames.append(part)
+        n = sum(len(f) for f in st_frames)
+        print(f"  station {st['station_id']} ({st['station_name']}) "
+              f"sensors={sensor_ids} {date_from} -> {date_to} ... {n} rows", flush=True)
+        if st_frames:
+            df = pd.concat(st_frames, ignore_index=True)
+            # Two sensors can overlap in time; average duplicate station-hours.
+            df = (df.groupby(["station_id", "timestamp_utc"], as_index=False)
+                    .agg({"value_ugm3": "mean", "timestamp_local": "first",
+                          "lat": "first", "lon": "first",
+                          "station_name": "first", "city": "first"}))
             frames.append(df)
 
     if not frames:
