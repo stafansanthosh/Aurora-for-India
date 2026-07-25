@@ -79,15 +79,25 @@ def _sample(pred_batch, cells: pd.DataFrame) -> pd.DataFrame:
 
 
 def _india_subset(pred_batch) -> xr.Dataset:
+    """India-region grid for EVERY feature var, not just pm2p5.
+
+    This is what makes the expensive Aurora rollout a one-time cost: with all
+    calibrator features stored on the grid, a changed station registry (or a new
+    feature set, or a different city list) can be re-derived offline instead of
+    re-running the model. ~1.3 MB/date, so keeping everything is nearly free.
+    """
     lats = np.asarray(pred_batch.metadata.lat)
     lons = np.asarray(pred_batch.metadata.lon)
     la = (lats >= INDIA["lat"][0]) & (lats <= INDIA["lat"][1])
     lo = (lons >= INDIA["lon"][0]) & (lons <= INDIA["lon"][1])
-    pm = np.asarray(pred_batch.surf_vars["pm2p5"][0, -1])[np.ix_(la, lo)] * KG_TO_UG
-    return xr.Dataset(
-        {"pm2p5_ugm3": (("latitude", "longitude"), pm.astype(np.float32))},
-        coords={"latitude": lats[la], "longitude": lons[lo]},
-    )
+    data = {}
+    for v in FEATURE_VARS:
+        arr = np.asarray(pred_batch.surf_vars[v][0, -1])[np.ix_(la, lo)]
+        if v in ("pm2p5", "pm1", "pm10"):
+            arr = arr * KG_TO_UG
+        name = f"{v}_ugm3" if v in ("pm2p5", "pm1", "pm10") else v
+        data[name] = (("latitude", "longitude"), arr.astype(np.float32))
+    return xr.Dataset(data, coords={"latitude": lats[la], "longitude": lons[lo]})
 
 
 def _manifest_done() -> set[str]:
