@@ -20,11 +20,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from ..splits import HELDOUT_CITIES, SPLIT_CUTOFF
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OPENAQ_DIR = PROJECT_ROOT / "data" / "openaq"
-
-HELDOUT_CITIES = {"kanpur", "varanasi", "kolkata"}
-SPLIT_CUTOFF = pd.Timestamp("2025-07-01", tz="UTC")
 
 # Validation window relative to init (12:00 UTC): +12h .. +96h.
 LEAD_LO_H, LEAD_HI_H = 12, 96

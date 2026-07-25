@@ -91,7 +91,37 @@ subset (the regime where global models fail).
    baseline this benchmark exists to measure.
 5. (Adaptation ladder, evaluated identically: pooled calibrator; fine-tune.)
 
-## 6. Benchmark period, dates, splits (FROZEN — coverage audit 2026-07-23)
+## 6. Benchmark period, dates, splits
+
+> **SPLIT REVISION — 2026-07-24, disclosed.** The temporal cutoff moved
+> **2025-07-01 → 2025-12-01**, exercising the contingency pre-registered below.
+> This happened **once, before any adaptation model was trained on the new
+> split**, and must be reported wherever results appear.
+>
+> *Trigger (pre-registered condition met):* OpenAQ serves essentially no Indian
+> station data before ~Feb 2025 — 0–2 stations per city reporting in
+> Oct 2024–Jan 2025, verified at sensor level (`src/data/archive_probe.py`;
+> location metadata claiming coverage since 2016 is **not** served by the hours
+> endpoint for any sensor, old or new). The original cutoff therefore left TRAIN
+> as Feb–Jun 2025 only: the calm half of the year, p95 ≈ 142 µg/m³, containing
+> **no severe season at all**.
+>
+> *Observed consequence:* a calibrator fit on that split collapsed the severe
+> tail completely — Very Poor+ POD **0.00** at every lead vs raw Aurora's 0.64,
+> catching 0 of 99 test events — because it had never seen an extreme value.
+>
+> *Effect of the revision:* post-monsoon 2025 (Diwali + stubble burning) moves
+> into TRAIN; winter 2025-26 stays in TEST, so **both sides contain the severe
+> regime**.
+>
+> | | train obs | train events ≥121 | train p95 | test events ≥121 |
+> |---|---|---|---|---|
+> | Original (07-01) | 245K | 13,844 | ~142 | 78,569 |
+> | **Revised (12-01)** | **507K** | **40,538** | **~360** | **51,875** |
+>
+> The single source of truth for all split constants is `src/splits.py`.
+
+### 6.1 Frozen dates (coverage audit 2026-07-23; re-run pending post-revision)
 
 - **56 init dates** spanning 2025-02 .. 2026-06, frozen by the coverage audit
   (`src/eval/coverage_audit.py`) over the complete 9-city archive (941,803

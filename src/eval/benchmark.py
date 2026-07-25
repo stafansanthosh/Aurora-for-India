@@ -29,6 +29,7 @@ import numpy as np
 import pandas as pd
 
 from . import aqi
+from ..splits import SPLIT_CUTOFF
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PAIRS_DIR = PROJECT_ROOT / "results" / "pairs"
@@ -36,7 +37,6 @@ OPENAQ_DIR = PROJECT_ROOT / "data" / "openaq"
 METRICS_DIR = PROJECT_ROOT / "results" / "metrics"
 
 MATCH_TOL = pd.Timedelta("90min")   # obs-to-valid-time match tolerance
-SPLIT_CUTOFF = pd.Timestamp("2025-07-01", tz="UTC")  # train < cutoff <= test
 EXTREME = aqi.VERY_POOR_THRESHOLD
 
 

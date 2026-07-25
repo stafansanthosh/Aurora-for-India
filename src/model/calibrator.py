@@ -36,14 +36,11 @@ from sklearn.ensemble import HistGradientBoostingRegressor
 
 # Reuse the eval harness's join + split so predictions are scored identically.
 from ..eval import benchmark as bench
+from ..splits import HELDOUT_CITIES, l1_is_holdout
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MODEL_DIR = PROJECT_ROOT / "results" / "models"
 DEFAULT_MODEL = MODEL_DIR / "pooled_calibrator.joblib"
-
-HELDOUT_CITIES = {"kanpur", "varanasi", "kolkata"}  # spec §3 (L2)
-L1_HOLDOUT_FRAC = 0.20                               # spec §3 (held-out stations)
-L1_HASH_SALT = "indiaaqbench-L1-v1"                  # frozen station holdout
 
 # Raw model/met inputs the calibrator is allowed to see (all present in pairs).
 RAW_FEATURES = ["aurora_pm2p5", "aurora_pm1", "aurora_pm10",
@@ -123,13 +120,6 @@ class PooledCalibrator:
 # --------------------------------------------------------------------------- #
 # Split construction (spec §3)
 # --------------------------------------------------------------------------- #
-
-def l1_is_holdout(station_id) -> bool:
-    """Frozen ~20% station holdout by stable hash (independent of run order)."""
-    import hashlib
-    h = hashlib.sha1(f"{L1_HASH_SALT}:{station_id}".encode()).hexdigest()
-    return (int(h[:8], 16) / 0xFFFFFFFF) < L1_HOLDOUT_FRAC
-
 
 def split_frame(frame: pd.DataFrame) -> dict[str, pd.DataFrame]:
     """Partition into the train fit-set and the L1/L2 evaluation sets.
