@@ -301,3 +301,152 @@ This is the GPU decision point once dates are frozen.
 
 ARCHIVAL PULL running (bg): bangalore done = 85,921 rows/13 stations over
 22 months (dense). ~40 min/city -> ~6h for 9 cities. Then coverage audit.
+
+---
+
+# July 25, 2026 — 3-date train completion, first real calibrator result, and redesign decision
+
+Status update and outcomes from the first real calibration pass:
+
+- Orchestrator status:
+  - 2025-02-19 and 2025-06-03 completed first.
+  - 2025-03-03 initially failed due to a corrupted cached CAMS zip (wrong
+    file size).
+  - Cleared bad cache and reran the single date; rerun completed cleanly.
+  - Train split is now complete for 3 dates (winter, pre-monsoon, monsoon),
+    with 2 post-monsoon test dates already available.
+
+- Calibrator implementation/compatibility fix:
+  - Hit a pickle module-resolution issue when loading a model fit via module
+    execution as __main__.
+  - Fixed model save behavior in [src/model/calibrator.py](src/model/calibrator.py) so saved objects resolve to
+    the proper qualified module path and can be loaded from different entry
+    points (including benchmark runner).
+
+- First real calibrator result (pooled learned regressor):
+  - Training rows: 1,818 (initial fit window before 2025-03-03 completion).
+  - L2 held-out-city MAE improved in quick look (about 46.3 -> 35.4 ug/m3).
+  - Full benchmark exposed catastrophic event regression:
+    - Very-Poor+ POD dropped to 0.00 at all evaluated leads.
+    - On 99 severe events in test, raw Aurora detected 66; calibrated detected 0.
+  - Key behavior: calibrated predictions were compressed and did not reproduce
+    extreme concentrations, indicating tail collapse.
+
+- Post-mortem conclusion:
+  - MAE-only improvement was misleading; event metrics are the operational
+    priority for warning use.
+  - Root causes:
+    1. Structural objective mismatch (predicting observations directly instead
+       of correcting Aurora signal).
+    2. Tree regressor non-extrapolation under seasonal distribution shift.
+    3. Train/test regime mismatch (no post-monsoon training dates by split
+       design constraints).
+    4. Process gap: fit-time summary emphasized MAE and lacked event-safety
+       gate at decision time.
+
+- Redesign direction agreed for next implementation phase:
+  - Component A first: online per-station multiplicative anchoring based on
+    trailing obs/Aurora ratios, with shrinkage toward 1.0 and ratio clipping.
+  - Mandatory no-harm guardrail: calibrated event POD must not underperform raw
+    Aurora POD.
+  - Keep a constrained learned residual as optional Component B only after
+    Component A is benchmarked and passes guardrails.
+
+- Current metric artifact location:
+  - Latest benchmark outputs written to
+    [results/metrics/indiaaqbench.csv](results/metrics/indiaaqbench.csv).
+
+# July 25, 2026 (cont.) — Data forensics, split revision, and an integrity audit
+
+Triggered by the calibrator post-mortem: before building the redesign, we went
+looking for *better data* and for mistakes we might already have made.
+
+### Archive probe — two findings, one bad, one very good
+
+Ran a new metadata probe ([src/data/archive_probe.py](src/data/archive_probe.py))
+to test whether OpenAQ history could be backfilled to give the calibrator
+severe-season training data.
+
+- **Backfill is impossible.** OpenAQ location metadata advertises coverage since
+  2016, but the `/sensors/{id}/hours` endpoint returns **zero rows before
+  ~Feb 2025 for every sensor tested — retired and active alike**, across all
+  target cities. The post-monsoon training gap is real, not a pull bug. Recorded
+  so nobody re-investigates it.
+- **We were silently losing ~40% of our stations.** `find_pm25_stations` took
+  only the *first* PM2.5 sensor per location via `next(...)`. Most Indian CPCB
+  stations expose **two** (a retired unit plus its replacement); whenever the
+  first-listed one was dormant it returned 0 rows and the entire station
+  vanished from the dataset. Fixed by merging all sensors per station.
+  Recoverable: patna 4→7, varanasi 2→4, kanpur 2→3, lucknow 4→6, kolkata 9→15 —
+  concentrated in exactly the thin-coverage cities the benchmark depends on.
+  Verified live: varanasi 21,628 rows / 2 stations → 43,329 / 4.
+
+### Temporal cutoff revised 2025-07-01 → 2025-12-01 (disclosed)
+
+Monthly severe-event density showed the original split gave training only
+Feb–Jun 2025 — the calm half of the year, p95 ≈ 142 µg/m³, **no severe season at
+all**. That is precisely why the v1 calibrator never learned values above 107.
+
+Exercised the contingency pre-registered in spec §6, once, before any adaptation
+was trained on the new split:
+
+| | train obs | train events ≥121 | train p95 | test events |
+|---|---|---|---|---|
+| Original | 245K | 13,844 | ~142 | 78,569 |
+| **Revised** | **507K** | **40,538** | **~360** | **51,875** |
+
+Post-monsoon 2025 (Diwali + stubble burning) moves into train; winter 2025-26
+stays in test — both sides now contain the severe regime. The frozen date list
+survives the change (32 train / 24 test, test still spanning winter/pre-monsoon/
+monsoon), though it must be re-run once the registry settles.
+
+Split constants had been **duplicated across three modules** — the setup where
+definitions drift until one module trains on rows another calls "test".
+Consolidated into [src/splits.py](src/splits.py) as the single source of truth.
+
+### Pull hardening (learned the hard way, mid-run)
+
+The re-pull immediately hit the flaky home connection: **Lucknow 22/22 windows
+failed, Kolkata 15/22**. Two fixes:
+
+- Monthly windows, each written to its own part file atomically the moment it
+  lands; re-running skips completed windows; `.empty` markers; per-window
+  accounting so an incomplete city logs `partial`, never a silent `ok`.
+- **A partial pass must not overwrite good data.** Assembling Kolkata from its
+  surviving 7 windows replaced a complete 93k-row CSV with 55k. Assembly is now
+  deferred until a pull is whole (or `--assemble-only` is passed explicitly);
+  Kolkata was restored from `data/openaq/_backup_pre_sensorfix/`.
+
+### Integrity audit — 32/33 checks pass
+
+New [src/eval/audit.py](src/eval/audit.py) independently re-derives the
+quantities everything else depends on, rather than trusting them:
+
+- **Grid matching brute-forced** against the full 451×900 Aurora grid — 0
+  mismatches, worst cell distance 22.9 km (max possible 32.0).
+- Registry coordinates match observation coordinates to 1e-6 km.
+- `valid_time == init(12:00 UTC) + lead_h` exactly; leads exactly 0…96 step 12.
+- Unit conversion sound: pm2p5 median 49 µg/m³ (a missing 1e9 would read ~1e-8);
+  temperature in Kelvin; pressure in Pa; pm1 ≤ pm2p5 ≤ pm10 everywhere.
+- POD/FAR recomputed by hand against the module — exact match. CPCB band edges
+  (30/60/90/120/250) correct.
+- No split leakage: no held-out city and no test-period row in train.
+
+**The one real finding: registry-version skew.** The two Nov-2025 pilot dates
+were sampled at 33 stations (some Phase-1 era, since retired) while the three
+train dates used 127 — so pooled metrics mixed two station populations. This
+does not overturn the v1 post-mortem (the tail collapse was about the *value*
+distribution: training p95 98 vs test max 548), but the exact POD figures rest
+on inconsistent footing and those dates must be regenerated. Orchestrator now
+stamps a `registry_version` fingerprint into the manifest so skew is detectable
+instead of silent.
+
+### Session infrastructure
+
+Added `CLAUDE.md` (auto-loaded, so any session knows the project, ground rules
+and settled decisions without being told), [docs/HANDOFF.md](docs/HANDOFF.md),
+[docs/WORKSTREAMS.md](docs/WORKSTREAMS.md) (six workstreams with exclusive file
+ownership so parallel agents cannot collide), and
+[docs/SESSION_STARTERS.md](docs/SESSION_STARTERS.md) (copy-paste prompts).
+Honest note recorded there: the critical path is serial — parallelism helps
+*beside* it, not *on* it.

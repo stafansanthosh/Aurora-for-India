@@ -55,6 +55,21 @@ def _load_registry() -> pd.DataFrame:
     return reg
 
 
+def _registry_version(reg: pd.DataFrame) -> str:
+    """Short fingerprint of the exact station set used for a run.
+
+    Pairs produced against different registry versions are NOT comparable: the
+    Nov-2025 pilot dates were sampled at 33 stations (some Phase-1 era, since
+    retired) while later dates used 127, so a pooled metrics table would mix two
+    different station populations. Stamping the version makes that detectable
+    instead of silent -- audit compares these across dates.
+    """
+    import hashlib
+
+    ids = ",".join(str(s) for s in sorted(reg["station_id"]))
+    return f"{len(reg)}:{hashlib.sha1(ids.encode()).hexdigest()[:8]}"
+
+
 def _station_cells(reg: pd.DataFrame, lats: np.ndarray, lons: np.ndarray) -> pd.DataFrame:
     rows = []
     for _, r in reg.iterrows():
@@ -168,6 +183,7 @@ def process_date(date: str, model, reg: pd.DataFrame, steps: int, device: str,
 
     _log({"date": date, "status": "done", "rows": len(pairs),
           "stations": int(cells["station_id"].nunique()), "steps": steps,
+          "registry_version": _registry_version(reg),
           "seconds": round(time.time() - t0), "pairs_file": out_parquet.name,
           "india_file": india_path.name, "written_at": datetime.utcnow().isoformat()})
     return len(pairs)
