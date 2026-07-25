@@ -1,7 +1,20 @@
-# Aurora India AQI — Project Context for GitHub Copilot
+# Aurora India AQI — Project Context (Phase 1 — PARTIALLY SUPERSEDED)
 
-> Feed this document to GitHub Copilot at the start of every session.
-> It contains the full project objective, data contracts, model I/O specs, pipeline architecture, and coding conventions.
+> ## ⚠️ Read `docs/AGENT_BRIEF.md` for the current project brief.
+>
+> **Still valid here:** the data contracts (§4.1 QC rules and CSV schema), the
+> geo-matching convention (§6), and the coding conventions.
+>
+> **Superseded here:** the objective and research question. This document frames
+> the project as "can Aurora work out of the box, evaluated against persistence,
+> using ERA5". The project has since become **IndiaAQBench**: a reproducible
+> benchmark testing whether *cheap adaptation* lifts Aurora into a usable tier
+> for the ~465 Indian cities with no forecast system, scored on **AQI category
+> and Very Poor+ event skill (POD/FAR/CSI), not MAE**. It also uses CAMS
+> *analysis*, not ERA5, as the model input.
+>
+> Do not take the objective statements below as current. See
+> `docs/AGENT_BRIEF.md`, `docs/BENCHMARK_SPEC.md`, and `docs/HANDOFF.md`.
 
 ---
 

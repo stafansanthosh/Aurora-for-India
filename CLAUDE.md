@@ -1,82 +1,35 @@
-# IndiaAQBench — read this first
+# CLAUDE.md — IndiaAQBench
 
-Auto-loaded every session. **If you read nothing else, read this file, then
-`docs/HANDOFF.md`.** Everything needed to continue lives in this repo; no
-knowledge is stranded in a chat session.
+**Read `docs/AGENT_BRIEF.md` first. It is the canonical brief** (project goal,
+repo map, ground rules, settled decisions, rejected approaches).
+Then `docs/HANDOFF.md` for current state and the exact next command.
 
-## What this project is
+Kept thin on purpose: the brief lives in one place so `CLAUDE.md`, `AGENTS.md`
+and `.github/copilot-instructions.md` cannot drift apart — the same
+duplication-drift failure `src/splits.py` exists to prevent.
 
-An open, reproducible benchmark testing whether cheap adaptation can lift
-**Microsoft Aurora** (1.3B atmospheric foundation model) into a *practically
-useful* multi-day PM2.5 forecaster for Indian cities.
+## Non-negotiables (apply even if you read nothing else)
 
-- **Target is NOT Delhi.** Delhi already has AQEWS (WRF-Chem 400 m, PI 87) and we
-  cannot and should not try to beat it. The target is the **~465 Indian cities
-  with no public forecast system** — Patna, Varanasi, Kanpur, Lucknow and peers.
-- **Success is event skill, not MAE.** Very Poor+ (≥121 µg/m³) **POD / FAR / CSI**
-  per lead time, because GRAP emergency actions trigger on forecast *category*.
-  A model with great MAE that misses every episode is worthless here. We have
-  already been burned by exactly this (see Rejected below).
-
-## Where to look
-
-| You need | File |
-|---|---|
-| Current state + next command | **`docs/HANDOFF.md`** |
-| Who owns which files (parallel work) | `docs/WORKSTREAMS.md` |
-| 2-day schedule, risks | `docs/EXECUTION_PLAN.md` |
-| The benchmark definition (metrics, splits, cities) | `docs/BENCHMARK_SPEC.md` |
-| Split constants — **the only source of truth** | `src/splits.py` |
-| Session-by-session history and reasoning | `JOURNAL.md` |
-| GPU runbook | `scripts/setup_gpu.md` |
-
-## Ground rules
-
-1. **Verify, don't assume.** Run the check before asserting. This project has
-   repeatedly found that plausible-looking beliefs were wrong (see below).
-2. **Report negative results honestly.** They are the most valuable output here.
-3. **Never edit split constants outside `src/splits.py`.** They used to be
-   duplicated in three modules; drift there silently corrupts train/test.
+1. **Success is Very Poor+ (≥121 µg/m³) event skill — POD / FAR / CSI — not MAE.**
+   GRAP emergency actions trigger on forecast category. A calibrator that
+   improved MAE while catching 0 of 99 events has already been built and
+   rejected; don't rebuild it.
+2. **Delhi is not the target.** It has AQEWS (WRF-Chem 400 m, PI 87). The target
+   is the ~465 Indian cities with no public forecast system.
+3. **Split constants are defined only in `src/splits.py`.**
 4. **Run `python -m src.eval.audit` before trusting any results table.**
-5. Record decisions in the repo (spec, docstring, journal) — never only in chat.
-6. Working on something in parallel? Claim a workstream in `docs/WORKSTREAMS.md`,
-   use its branch, and stay inside its file ownership.
+5. **Verify before asserting** — run the check rather than reasoning from memory.
+   Several confident beliefs in this project turned out to be wrong.
+6. **Report negative results honestly.** They are the most valuable output here.
+7. **Stay inside your workstream's files** (`docs/WORKSTREAMS.md`), on its branch.
+8. **Before stopping:** update `docs/HANDOFF.md`, append to `JOURNAL.md`, commit.
 
-## Settled — do NOT re-litigate
+## Settled — do not re-litigate
 
-- **No A100 needed.** Aurora's docs specify ~40 GB for 0.25° *inference*; the
-  A100-80GB figure applies to 0.1° + backprop. We run 0.4° inference → a
-  ~$0.50/hr 48 GB spot GPU (A6000). Azure quota was denied and is irrelevant.
-- **OpenAQ has no data before ~Feb 2025.** Location metadata claims 2016, but the
-  hours endpoint serves nothing earlier for *any* sensor, old or new — verified
-  at sensor level (`src/data/archive_probe.py`). Backfill is impossible.
-- **Temporal cutoff is 2025-12-01**, revised once from 2025-07-01 under the
-  contingency pre-registered in spec §6, before any adaptation was trained on it.
-  **Disclose this wherever results appear.**
-- **Calibration comes before fine-tuning, but does not replace it.** Fine-tuning
-  is still planned (task #14); it needs the baseline as a bar to beat.
+- No A100 needed (0.4° inference fits a ~$0.50/hr 48 GB spot GPU).
+- OpenAQ serves no data before ~Feb 2025; backfill is impossible.
+- Temporal cutoff is 2025-12-01 (revised once, disclosed — see the brief).
+- Calibration precedes fine-tuning but does not replace it.
 
-## Rejected — do not propose again
-
-- **v1 pooled calibrator** (gradient boosting predicting `log1p(obs)` directly):
-  Very Poor+ POD **0.00** at every lead, caught **0 of 99** events, vs raw
-  Aurora's 0.64 — while MAE *improved*. Trees cannot extrapolate and predicting
-  the target caps output at the training distribution. Kept in
-  `src/model/calibrator.py` as a documented negative baseline.
-- **Serial 56-date rollout on one box** (~10 h). Dates are independent — split
-  across 4 GPUs (~2.5 h, ~$5).
-
-## Common commands
-
-```bash
-python -m src.eval.audit                     # integrity checks — run this often
-python -m src.data.archive_pull              # resumable OpenAQ pull
-python -m src.data.archive_pull --assemble-only   # rebuild CSVs offline, no network
-python -m src.data.build_station_registry    # data/stations.csv
-python -m src.eval.coverage_audit --n 56     # re-freeze benchmark dates
-python -m src.pipeline.orchestrate --dates-file docs/benchmark_dates.csv --device cuda
-python -m src.eval.benchmark                 # score all baselines
-```
-
-Environment: `.venv/Scripts/python.exe` (Windows). Credentials in `.env`
+Environment: Windows, `.venv/Scripts/python.exe`. Credentials in `.env`
 (`OPENAQ_API_KEY`) and `~/.cdsapirc` (Copernicus ADS).
