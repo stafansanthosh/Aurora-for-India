@@ -92,28 +92,19 @@ concrete, quantified case for local adaptation (Phase 4).
 
 ## Results so far (Phase 3 — IndiaAQBench ground truth + first pilot scores)
 
-**Ground-truth archive complete.** Hourly OpenAQ PM2.5 pulled and versioned for
-all 9 benchmark cities — the 6-city train/val pool (Delhi, Mumbai, Chennai,
-Bangalore, Lucknow, Patna) plus 3 cities **held out entirely from training**
-(Kanpur, Varanasi, Kolkata), to test regional transfer rather than just
-interpolation:
+**Ground truth: ~1M station-hours over 9 cities.** Hourly OpenAQ PM2.5 for a
+6-city train/val pool (Delhi, Mumbai, Chennai, Bangalore, Lucknow, Patna) plus 3
+cities **held out entirely from training** (Kanpur, Varanasi, Kolkata) — so the
+benchmark measures regional *transfer*, not just within-city interpolation.
 
-| City | Stations | Rows | Role |
-|---|---|---|---|
-| Delhi | 55 | 354,032 | train pool |
-| Mumbai | 32 | 245,469 | train pool |
-| Kolkata | 9 | 93,039 | **held out** |
-| Bangalore | 13 | 85,921 | train pool |
-| Patna | 4 | 42,160 | train pool |
-| Lucknow | 4 | 44,637 | train pool |
-| Chennai | 6 | 32,799 | train pool |
-| Kanpur | 2 | 22,118 | **held out** |
-| Varanasi | 2 | 21,628 | **held out** |
+Every response is snapshotted immutably under `data/openaq/archive/` with a full
+pull manifest (spec §7 reproducibility contract): anyone re-running this scores
+against the exact data we used, not whatever OpenAQ returns today. Pulls are
+resumable per city-month, because a home connection loses ~1 window in 3.
 
-**~942,000 station-hours across 127 stations**, snapshotted immutably under
-`data/openaq/archive/` with a full pull manifest (spec §7 reproducibility
-contract) — anyone re-running this benchmark scores against the exact data we
-used, not whatever OpenAQ happens to return today.
+> **Currently being re-pulled.** A sensor-selection bug (see Phase 4) was
+> silently dropping whole stations; the fix recovers roughly 40% more of them in
+> the thin-coverage cities that matter most. Station counts below are mid-flight.
 
 **Evaluation harness built and run on pilot data.** `src/eval/benchmark.py`
 joins Aurora's +12h→+96h rollout to these station observations and scores four
@@ -123,11 +114,23 @@ AQI category skill, with "Very Poor or above" (≥121 µg/m³) event detection a
 the headline number, since that's the threshold that triggers GRAP emergency
 actions.
 
-On the first 2 pilot init-dates (276 matched forecast rows, all 9 cities),
-**raw Aurora trails simple persistence on short-lead MAE — expected, since it
-inherits CAMS's known under-prediction of severe episodes — but its Very
-Poor+ event detection rate improves with lead time while persistence's decays,
-crossing over around +60h**:
+### What the pilot actually shows — including the part that looks bad
+
+**Pooled over all leads and cities, raw Aurora is *worse* than persistence:**
+
+| Method | POD ↑ | FAR ↓ | CSI ↑ | MAE ↓ |
+|---|---|---|---|---|
+| Persistence | 0.52 | **0.44** | **0.38** | **38.0** |
+| Raw Aurora | **0.64** | 0.67 | 0.24 | 63.4 |
+
+Aurora detects more events, but cries wolf about twice as often, and its
+combined score (CSI) is clearly behind. Reporting POD alone would flatter it;
+that would be the easiest way to mislead in this whole project, so the full row
+stays.
+
+**The interesting structure is in *where* it wins.** Persistence decays as lead
+time grows while Aurora's synoptic signal holds, and the event-detection rates
+cross over around +60 h:
 
 | Lead | Persistence POD | Raw Aurora POD |
 |---|---|---|
@@ -137,11 +140,78 @@ crossing over around +60h**:
 | +84h | 0.57 | **0.79** |
 | +96h | 0.70 | **1.00** |
 
-Two pilot dates is a hint, not a result — but it's the concrete, testable
-hypothesis the full benchmark run will confirm or kill: Aurora's synoptic
-signal may carry real skill at exactly the lead times where a naive baseline
-runs out of memory of the current state. The calibrator's job (Phase 4) is to
-fix the level/bias error while preserving that long-lead event skill.
+**Treat these as a hypothesis, not a result.** They rest on 2 init dates and 99
+event rows, mostly November Delhi-region; and the two pilot dates were sampled
+at a 33-station registry while later dates used 127, so pooled figures mix two
+station populations (found by `src/eval/audit.py`, fixed by a registry-version
+stamp, and being regenerated). The testable claim: **Aurora's value is long-lead
+event detection, and the job of adaptation is to fix its level and false-alarm
+rate without destroying that.**
+
+## Results so far (Phase 4 — a calibrator that failed, and what it taught)
+
+The obvious next step was a learned calibrator: map Aurora's output plus local
+meteorology to observed PM2.5, leaving the 1.3B model frozen. We built it
+(gradient boosting on `log1p(obs)`), and on the headline secondary metric it
+looked like a win — **MAE on held-out cities fell 46.3 → 35.4 µg/m³**.
+
+**It was a disaster, and the benchmark caught it:**
+
+| Lead | Raw Aurora POD | Calibrated POD |
+|---|---|---|
+| +60h | 0.88 | **0.00** |
+| +84h | 0.79 | **0.00** |
+| +96h | 1.00 | **0.00** |
+
+Of 99 severe events in the test set, raw Aurora caught 66. **The calibrator
+caught zero.** Its predictions never exceeded 107 µg/m³ against observations
+reaching 548 — it had regressed everything toward its training mean, and the MAE
+"improvement" came *from* discarding the extremes. For an air-quality warning
+system that is the worst possible trade.
+
+Diagnosis, from four root causes:
+
+1. **It predicted the target instead of correcting the forecast**, so its output
+   could never exceed its training distribution.
+2. **Tree ensembles cannot extrapolate** — under distribution shift they clamp
+   rather than degrade gracefully. Our synthetic test missed this because train
+   and test came from the *same* distribution.
+3. **Training data held no severe season** (95th percentile 98 µg/m³ vs test
+   values to 548).
+4. **The fit-time check printed MAE only** — the one metric that rewards tail
+   collapse.
+
+This is why the benchmark scores category events rather than error: **a
+metric-design choice caught a failure that would have shipped silently.**
+
+### What the failure forced us to fix
+
+- **Went looking for better data and found a bug instead.** `find_pm25_stations`
+  took only the *first* PM2.5 sensor per station; most Indian CPCB stations
+  expose two (a retired unit plus its replacement), so whole stations were
+  silently dropped. Recovered: Chennai 6→8 stations, Lucknow 4→6, Varanasi 2→4,
+  Kanpur 2→3, Bangalore 13→16 — concentrated in exactly the thin-coverage cities
+  the benchmark depends on.
+- **Proved a tempting fix was impossible.** OpenAQ advertises coverage since
+  2016, but its hourly endpoint serves nothing before ~Feb 2025 for *any* sensor.
+  Verified at sensor level and documented, so nobody re-investigates it.
+- **Revised the train/test cutoff once, and disclosed it.** Moving 2025-07-01 →
+  2025-12-01 (a contingency pre-registered in the spec, exercised before any
+  adaptation was trained on the new split) puts a severe season on both sides:
+  training events 13,844 → 40,538, training p95 142 → 360 µg/m³.
+- **Consolidated split constants into one module.** They had been duplicated
+  across three files — the setup where definitions drift until one module trains
+  on rows another calls "test".
+- **Wrote an integrity audit** (`python -m src.eval.audit`) that re-derives what
+  everything else assumes: nearest-grid-cell matching brute-forced against the
+  full 451×900 Aurora grid (0 mismatches), unit conversions, `valid_time ==
+  init + lead`, POD/FAR recomputed by hand, and split-leakage checks. 34 checks.
+  It is what found the registry-version skew noted above.
+
+The redesign is a per-station trailing-ratio anchor — the approach operational
+air-quality systems actually use ([Kalman/analog post-processing](https://www.sciencedirect.com/science/article/abs/pii/S1352231015001405))
+— which uses no training set and therefore cannot inherit a training-distribution
+ceiling. Fine-tuning remains planned; this establishes the bar it must clear.
 
 ## How it works
 
@@ -241,12 +311,16 @@ Credentials (never committed):
       **Next:** coverage audit to freeze the full benchmark date list and
       train/test/held-out splits (`src/eval/coverage_audit.py`), then scale
       the orchestrator run to the full date set.
-- [ ] **Phase 4 — adaptation.** Pooled calibrator (frozen Aurora → station
-      PM2.5) first — CPU/cheap-GPU, no backprop; then a scoped fine-tune
-      experiment (the one case that wants a 40–80 GB card, since it backprops
-      through the rollout) if the calibrator alone doesn't close the gap.
-      The 56-date inference pass runs on a ~$0.5/hr 48 GB spot GPU — no A100
-      needed: [scripts/setup_gpu.md](scripts/setup_gpu.md).
+- [x] **Phase 4a — first calibrator: rejected, documented.** A learned pooled
+      calibrator improved MAE while collapsing Very Poor+ event detection to
+      zero (above). Kept in-tree as a negative baseline, with the four root
+      causes and the fixes it forced.
+- [ ] **Phase 4b — adaptation, redesigned.** Per-station trailing-ratio
+      anchoring (no training set, cannot flatten the tail), gated by a
+      no-harm-on-events rule; then a scoped fine-tune experiment — the one step
+      that genuinely wants a 40–80 GB card, since it backprops through the
+      rollout. The 56-date inference pass runs on a ~$0.5/hr 48 GB spot GPU, no
+      A100 needed: [scripts/setup_gpu.md](scripts/setup_gpu.md).
 - [ ] **Phase 5 — transparent research dashboard.** Public, per-city,
       per-lead-time scorecards — the point being that anyone can see exactly
       where the adapted model is (and isn't) trustworthy, city by city.
@@ -262,14 +336,23 @@ Credentials (never committed):
 - Hourly persistence is a deliberately harsh baseline at short leads; the
   IndiaAQBench pilot result (above) is the first evidence it stops being the
   harder baseline to beat as lead time grows.
-- **The pilot's Very Poor+ POD numbers are computed on 2 dates only** — enough
-  to validate the eval harness end-to-end and motivate the hypothesis, not
-  enough to trust as a stable result. Treat them as a hint until the full
-  benchmark-date run lands.
-- The station registry is uneven across cities (2 stations in Kanpur/Varanasi
-  vs. 55 in Delhi) — a known constraint of OpenAQ's real coverage, not a
-  sampling choice, and part of why L2 (held-out city) transfer is scored
-  separately from L1 (held-out station) interpolation.
+- **The pilot's Very Poor+ POD numbers are computed on 2 dates / 99 event rows**
+  — enough to validate the harness end-to-end and motivate a hypothesis, not
+  enough to trust. They also mix two station registries (see below). Treat them
+  as a hint until the full benchmark-date run lands.
+- **Registry-version skew, found by our own audit:** the two pilot dates were
+  sampled at 33 stations, later dates at 127, so pooled metrics span two station
+  populations. This does not overturn the calibrator post-mortem (that concerned
+  the value distribution — training p95 98 vs test max 548) but those dates are
+  being regenerated before any figure is published.
+- The station registry is uneven across cities (a handful in Kanpur/Varanasi vs
+  ~55 in Delhi) — a real constraint of OpenAQ coverage, not a sampling choice,
+  and part of why held-out-city transfer is scored separately from held-out-
+  station interpolation.
+- **Post-monsoon is the season we can least afford to get wrong and have least
+  data for.** OpenAQ serves nothing before ~Feb 2025, so severe-season coverage
+  is thin by construction; the cutoff revision mitigates this but does not
+  eliminate it.
 
 ## Data sources & credits
 
