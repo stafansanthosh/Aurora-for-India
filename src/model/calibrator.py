@@ -346,6 +346,9 @@ def run_selftest() -> None:
     _print_comparison("winter_train -> monsoon_test", seasonal_result)
     if not np.isfinite(seasonal_result["calibrated"]["mae"]):
         raise AssertionError("Seasonal-transfer predictions are not scorable.")
+    if event_skill_failures({"monsoon_test": seasonal_result}):
+        raise AssertionError(
+            "Seasonal-transfer check regressed Very Poor+ event POD.")
 
     print("OK  OOD collapse was blocked; seasonal transfer is scorable.")
 

@@ -73,6 +73,7 @@ class CalibratorTests(unittest.TestCase):
         result = compare_with_raw(monsoon, cal.predict(monsoon))
         self.assertTrue(np.isfinite(result["calibrated"]["mae"]))
         self.assertEqual(result["calibrated"]["n"], len(monsoon))
+        self.assertEqual(event_skill_failures({"monsoon_test": result}), [])
 
     def test_gate_allows_equal_pod(self) -> None:
         evaluations = {
@@ -82,6 +83,19 @@ class CalibratorTests(unittest.TestCase):
             }
         }
         self.assertEqual(event_skill_failures(evaluations), [])
+
+        class SaveRecorder:
+            def __init__(self) -> None:
+                self.saved = False
+
+            def save(self, path: Path) -> Path:
+                self.saved = True
+                return path
+
+        recorder = SaveRecorder()
+        path = Path("safe-model.joblib")
+        self.assertEqual(save_if_event_safe(recorder, path, evaluations), path)
+        self.assertTrue(recorder.saved)
 
 
 if __name__ == "__main__":
