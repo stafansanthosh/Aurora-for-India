@@ -38,9 +38,11 @@ because GRAP emergency actions trigger on forecast category.
 
 ## Current state
 
-**Done and pushed** (through commit `53bc27a` + a pull-safety fix):
+**Done and pushed** (through commit `cb19d45` on `ws4-dashboard`):
 - Full pipeline: CAMS download → Aurora rollout (+12h…+96h) → station sampling →
   eval harness with 4 baselines + category/event metrics.
+- **WS-4 Dashboard & Reporting Package** (`src/report/`): `scorecard.py` and `plots.py`
+  for generating per-city/per-lead scorecards and matplotlib dashboard figures.
 - **5 dates of pairs** in `results/pairs/` (2025-02-19, 2025-03-03, 2025-06-03,
   2025-11-15, 2025-11-20), 1,143 rows each at 127 stations.
 - **56 benchmark dates frozen** in `docs/benchmark_dates.csv` — **stale, must be

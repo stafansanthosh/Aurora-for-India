@@ -450,3 +450,16 @@ ownership so parallel agents cannot collide), and
 [docs/SESSION_STARTERS.md](docs/SESSION_STARTERS.md) (copy-paste prompts).
 Honest note recorded there: the critical path is serial — parallelism helps
 *beside* it, not *on* it.
+
+---
+
+# July 27, 2026 — WS-4: Reporting & Dashboard Package Built
+
+Built `src/report/` on branch `ws4-dashboard` according to WS-4 specification (`docs/WORKSTREAMS.md`):
+
+- **Package architecture** (`src/report/`):
+  - `src/report/__init__.py`: Clean public exports.
+  - `src/report/scorecard.py`: Metrics loader, summary aggregator, Markdown report renderer (`generate_markdown_report`), and CLI with `--selftest`. Emphasizes Very Poor+ (≥121 µg/m³) event skill (POD, FAR, CSI) and AQI category hit rate as headline metrics over secondary MAE.
+  - `src/report/plots.py`: Publication-ready static matplotlib figures rendered to `docs/figures/` (Very Poor+ event skill vs lead, AQI 6-band category accuracy vs lead, per-city breakdown, executive dashboard summary).
+- **Self-test & verification**: Added `scorecard._test()` self-test that verifies metrics loading, table pivoting, markdown generation, and figure generation on synthetic benchmark data.
+
