@@ -49,7 +49,15 @@ because GRAP emergency actions trigger on forecast category.
   re-run** after the pull (it used the old cutoff and the old registry).
 - **v1 calibrator: documented NEGATIVE result.** See "Rejected paths".
 
-**Mid-flight right now — re-pull pass 1 finished, pass 2 REQUIRED:**
+**RE-PULL COMPLETE (2026-07-28): all 9 cities `ok`.** ~1.49M station-hours,
+registry rebuilt to **159 stations**, dates re-frozen with **8 post-monsoon
+TRAIN dates** (32 train / 24 test). Sanity gate passed: every city gained
+stations, none lost rows. Delhi's last 3 windows were failing on OpenAQ's
+per-minute rate limit (empty-month requests fire too fast to self-pace); fixed
+in `openaq_client.py` with Retry-After-aware backoff + 0.35 s sensor pacing.
+**Immediate next step is now WS-6: the 56-date GPU rollout** (see
+`scripts/setup_gpu.md`), which also regenerates the 2 stale pilot dates on the
+new registry. The table below is the historical pass-1 record:
 
 65 of 198 windows failed on the flaky home connection. Three cities are complete
 and show exactly the gains the sensor fix predicted; six need another pass.

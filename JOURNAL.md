@@ -463,3 +463,53 @@ Built `src/report/` on branch `ws4-dashboard` according to WS-4 specification (`
   - `src/report/plots.py`: Publication-ready static matplotlib figures rendered to `docs/figures/` (Very Poor+ event skill vs lead, AQI 6-band category accuracy vs lead, per-city breakdown, executive dashboard summary).
 - **Self-test & verification**: Added `scorecard._test()` self-test that verifies metrics loading, table pivoting, markdown generation, and figure generation on synthetic benchmark data.
 
+
+# July 28, 2026 — Re-pull COMPLETE: 1.49M station-hours, dates re-frozen with post-monsoon train
+
+### The last three windows, and a lesson about rate limits
+
+Delhi's final 3 windows (Oct/Nov/Dec 2024) failed identically on every pass with
+`HTTPError` while everything else converged. Root cause was elegant: those are
+the *empty* months, so all ~170 Delhi sensor requests return instantly — no
+download time to pace them — firing fast enough to trip OpenAQ's per-minute
+rate limit (HTTP 429). Data-rich windows self-pace; smaller cities never burst
+that hard. Our retry budget (4 tries, 15 s total) could not outlast a per-minute
+window, so the failure was deterministic. Fix in `openaq_client.py`: honor
+`Retry-After`, extend 429 backoff past the rate window (8 tries, ≤75 s), and
+pace sensor fetches at 0.35 s. Delhi completed on the next pass.
+
+### Final archive (sanity gate: every city gained stations, none lost rows)
+
+| city | rows | stations (pre-fix) |
+|---|---|---|
+| delhi | 589,759 | 64 (55) |
+| mumbai | 335,822 | 36 (32) |
+| kolkata | 155,484 | **15 (9)** |
+| bangalore | 112,258 | 16 (13) |
+| chennai | 78,154 | 8 (6) |
+| patna | 74,507 | **7 (4)** |
+| lucknow | 66,828 | 6 (4) |
+| varanasi | 43,329 | **4 (2)** |
+| kanpur | 33,393 | 3 (2) |
+
+**~1.49M station-hours, 159 registry stations** (was ~942K / 127). The held-out
+cities — the benchmark's weakest point — roughly doubled.
+
+### Dates re-frozen under cutoff 2025-12-01
+
+`coverage_audit --n 56`: 32 train / 24 test, 8 per stratum — and **post-monsoon
+now has 8 TRAIN dates** (Oct–Nov 2025), the entire point of the cutoff revision.
+Post-monsoon has no *test* dates (Oct–Nov 2026 hasn't happened); the severe test
+season is winter 2025-26, present with 8 dates. Both sides of the split now
+contain the severe regime. Held-out cities: 288–320 usable train dates, 224–226
+test — L2 validation is comfortably feasible.
+
+Audit: 34 checks, 0 failures; the 2 expected warnings (pilot dates on the old
+33-station registry) stand until those dates are regenerated in the full run.
+Also declared `pytest` in requirements (tests existed but could not run on a
+fresh clone) and untracked ~380 MB of data blobs after fixing the gitignore
+subdirectory gap (`26d6005`).
+
+**Next:** WS-6 — the 56-date rollout (`scripts/setup_gpu.md`), which regenerates
+the two stale pilot dates on the 159-station registry as a side effect. Then
+Component A + calibrator re-fit on data that finally contains a severe season.

@@ -44,7 +44,14 @@ PM25_PARAMETER_ID = 2
 PAGE_LIMIT = 1000  # OpenAQ v3 max page size
 REQUEST_TIMEOUT = 60
 RETRY_STATUS = {408, 429, 500, 502, 503, 504}
-MAX_RETRIES = 4
+# 429s need patience: OpenAQ's rate window is per-minute, and our old budget
+# (4 tries, 15 s total) could never escape it. Delhi is the one city big enough
+# to trip the limit inside a single window -- 94 stations x ~2 sensors firing
+# EMPTY-month requests back-to-back with no download time to pace them. That is
+# why precisely its 2024-10/11/12 windows failed on every pass while data-rich
+# windows (which self-pace) sailed through.
+MAX_RETRIES = 8
+SENSOR_PACE_S = 0.35  # sleep between sensor fetches; keeps bursts under the limit
 
 # City centres (lat, lon) — mirrors the target-city table in COPILOT_CONTEXT.md.
 CITIES: dict[str, tuple[float, float]] = {
@@ -106,6 +113,14 @@ class OpenAQClient:
                 resp = self.session.get(url, params=params, timeout=REQUEST_TIMEOUT)
                 if resp.status_code in RETRY_STATUS:
                     wait = 2 ** attempt
+                    if resp.status_code == 429:
+                        # Honor Retry-After when sent; otherwise back off far
+                        # enough to clear the per-minute rate window.
+                        try:
+                            retry_after = int(resp.headers.get("Retry-After") or 0)
+                        except ValueError:
+                            retry_after = 0
+                        wait = max(retry_after, min(75, wait))
                     print(f"  HTTP {resp.status_code} on {path}; retry in {wait}s")
                     time.sleep(wait)
                     continue
@@ -316,6 +331,7 @@ def fetch_city(
             part = _parse_records(raw, st, city)
             if not part.empty:
                 st_frames.append(part)
+            time.sleep(SENSOR_PACE_S)  # stay under the per-minute rate limit
         n = sum(len(f) for f in st_frames)
         print(f"  station {st['station_id']} ({st['station_name']}) "
               f"sensors={sensor_ids} {date_from} -> {date_to} ... {n} rows", flush=True)
