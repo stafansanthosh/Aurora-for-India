@@ -47,10 +47,30 @@ because GRAP emergency actions trigger on forecast category.
   re-run** after the pull (it used the old cutoff and the old registry).
 - **v1 calibrator: documented NEGATIVE result.** See "Rejected paths".
 
-**Mid-flight right now:**
-- **OpenAQ re-pull running in background** (`src/data/archive_pull.py`). First
-  pass is incomplete: Chennai ok (22/22), **Kolkata 15/22 failed, Lucknow 22/22
-  failed** — flaky home connection. **A second pass is required.**
+**Mid-flight right now — re-pull pass 1 finished, pass 2 REQUIRED:**
+
+65 of 198 windows failed on the flaky home connection. Three cities are complete
+and show exactly the gains the sensor fix predicted; six need another pass.
+
+| City | Status | Rows | Stations (was) | Failed windows |
+|---|---|---|---|---|
+| bangalore | **ok** | 112,258 | 16 (13) | 0 |
+| chennai | **ok** | 78,154 | 8 (6) | 0 |
+| varanasi | **ok** | 43,329 | 4 (2) | 0 |
+| mumbai | partial | 327,694 | 36 (32) | 2 |
+| kanpur | partial | 31,353 | 3 (2) | 1 |
+| patna | partial | — | — (4) | 12 |
+| delhi | partial | — | — (55) | 13 |
+| kolkata | partial | — | — (9) | 15 |
+| lucknow | partial | — | — (4) | **22 (all)** |
+
+**Delhi and Patna were degraded and have been restored from
+`data/openaq/_backup_pre_sensorfix/`.** The no-overwrite-on-partial guard was
+added *during* the run, so the already-loaded module never used it. It is active
+now, so this cannot recur. Kolkata was restored earlier; Lucknow wrote nothing
+(0 rows), so it is untouched. **All 121 part files are preserved** — the re-run
+only fetches the missing windows and then assembles complete + station-enriched
+data.
 
 ## Work in progress
 
@@ -97,15 +117,33 @@ patna 4→7, varanasi 2→4, kanpur 2→3, lucknow 4→6, kolkata 9→15.
 
 ## Immediate next step
 
-Re-run the archive pull command above to fill the failed windows (Lucknow 22,
-Kolkata 15, plus whatever bangalore/mumbai/delhi dropped). Confirm every city
-logs `status: "ok"` in `data/openaq/archive/pull_manifest.jsonl`, then:
+Fill the 65 failed windows. Only these six cities need it — the other three are
+done, so naming them saves hours:
 
 ```bash
-python -m src.data.build_station_registry   # 127 -> ~170 stations
-python -m src.eval.coverage_audit --n 56    # re-freeze dates under cutoff 2025-12-01
+python -m src.data.archive_pull --cities lucknow kolkata patna delhi kanpur mumbai
 ```
 
-The audit should now yield **post-monsoon training dates** for the first time —
-that is the entire point of the cutoff revision, and it is what unblocks a
-calibrator that can survive severe episodes.
+**Expect to run this more than once.** Each pass fetches only what is still
+missing, so passes get progressively shorter. Repeat until every city reports
+`"status": "ok"`. Check with:
+
+```bash
+python -c "import json;[print(r['city'],r['status'],r['windows']) for r in map(json.loads,open('data/openaq/archive/pull_manifest.jsonl')) if 'windows' in r]" | tail -9
+```
+
+Then, and only once all nine are `ok`:
+
+```bash
+python -m src.data.build_station_registry   # 127 -> ~170 stations expected
+python -m src.eval.coverage_audit --n 56    # re-freeze dates under cutoff 2025-12-01
+python -m src.eval.audit                    # must pass before trusting anything
+```
+
+**Sanity gate before moving on:** no city may end up with fewer rows than
+`data/openaq/_backup_pre_sensorfix/`. Station counts should rise (that is the
+sensor fix); row counts must not fall.
+
+The coverage audit should now yield **post-monsoon training dates** for the first
+time — that is the entire point of the cutoff revision, and what unblocks a
+calibrator able to survive severe episodes.

@@ -25,20 +25,38 @@ case a tool's auto-load is off or truncated.
 **Claude Code:**
 ```
 Read docs/AGENT_BRIEF.md and docs/HANDOFF.md, then continue WS-1 (data acquisition).
-The OpenAQ re-pull is incomplete - several cities have failed windows. Re-run
-python -m src.data.archive_pull until every city reports status "ok" in
-data/openaq/archive/pull_manifest.jsonl. Then rebuild the station registry and
-re-run the coverage audit to re-freeze benchmark dates under cutoff 2025-12-01.
-Report which cities gained stations, and run python -m src.eval.audit at the end.
+
+Pass 1 of the re-pull finished: bangalore, chennai and varanasi are complete
+("ok"); six cities still have 65 failed windows between them. Run:
+
+  python -m src.data.archive_pull --cities lucknow kolkata patna delhi kanpur mumbai
+
+Expect to run it MORE THAN ONCE - each pass only fetches what is still missing,
+so passes get shorter. Repeat until all nine cities report "status": "ok" in
+data/openaq/archive/pull_manifest.jsonl.
+
+Then, only once every city is "ok":
+  python -m src.data.build_station_registry
+  python -m src.eval.coverage_audit --n 56
+  python -m src.eval.audit
+
+Sanity gate: no city may end up with fewer rows than its copy in
+data/openaq/_backup_pre_sensorfix/. Station counts should RISE (that is the
+sensor-merge fix); row counts must NOT fall. Report the before/after station
+count per city, and whether the coverage audit now yields post-monsoon TRAIN
+dates - that is the point of the 2025-12-01 cutoff revision.
 ```
 
 **Split across 2-3 sessions** (max 3 — one connection, one API key; more just
-triggers rate limiting). Give each session a different city set:
+triggers rate limiting). Give each session a disjoint city set:
 ```
-Read docs/AGENT_BRIEF.md. Run ONLY: python -m src.data.archive_pull --cities lucknow kolkata
-Re-run until both report status "ok" in data/openaq/archive/pull_manifest.jsonl.
-Do not touch other cities or any other files.
+Read docs/AGENT_BRIEF.md. Run ONLY:
+  python -m src.data.archive_pull --cities lucknow kolkata
+Re-run until BOTH report "status": "ok" in data/openaq/archive/pull_manifest.jsonl
+(expect several passes; each only fetches missing windows). Then stop.
+Do not touch other cities, do not rebuild the registry, do not edit other files.
 ```
+Suggested disjoint split: `lucknow kolkata` / `delhi` / `patna kanpur mumbai`.
 
 ---
 
