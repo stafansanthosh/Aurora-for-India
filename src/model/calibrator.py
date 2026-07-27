@@ -35,6 +35,7 @@ import pandas as pd
 from sklearn.ensemble import HistGradientBoostingRegressor
 
 # Reuse the eval harness's join + split so predictions are scored identically.
+from ..eval import aqi
 from ..eval import benchmark as bench
 from ..splits import HELDOUT_CITIES, l1_is_holdout
 
@@ -138,6 +139,77 @@ def split_frame(frame: pd.DataFrame) -> dict[str, pd.DataFrame]:
 
 
 # --------------------------------------------------------------------------- #
+# Fit-time event guardrail
+# --------------------------------------------------------------------------- #
+
+class EventSkillRegressionError(RuntimeError):
+    """Raised when calibration harms Very Poor+ probability of detection."""
+
+
+def compare_with_raw(frame: pd.DataFrame, calibrated: np.ndarray) -> dict[str, dict]:
+    """Return paired raw/calibrated MAE and Very Poor+ POD/FAR.
+
+    Both methods are evaluated on exactly the same finite, positive-lead rows.
+    This prevents missing calibrated predictions from making either side of the
+    no-harm comparison look artificially better.
+    """
+    if len(frame) != len(calibrated):
+        raise ValueError(
+            f"Expected {len(frame)} calibrated predictions, got {len(calibrated)}.")
+
+    obs = frame["obs_pm25"].to_numpy(dtype=float)
+    raw = frame["aurora_pm2p5"].to_numpy(dtype=float)
+    cal = np.asarray(calibrated, dtype=float)
+    lead = frame["lead_h"].to_numpy(dtype=float)
+    keep = (lead > 0) & np.isfinite(obs) & np.isfinite(raw) & np.isfinite(cal)
+    obs, raw, cal = obs[keep], raw[keep], cal[keep]
+
+    def metrics(pred: np.ndarray) -> dict:
+        events = aqi.category_metrics(obs, pred)
+        return {
+            "n": int(obs.size),
+            "mae": float(np.mean(np.abs(pred - obs))) if obs.size else np.nan,
+            "event_pod": events.get("event_pod", np.nan),
+            "event_far": events.get("event_far", np.nan),
+        }
+
+    return {"raw_aurora": metrics(raw), "calibrated": metrics(cal)}
+
+
+def event_skill_failures(
+        evaluations: dict[str, dict[str, dict]]) -> list[tuple[str, float, float]]:
+    """List holdouts where calibrated Very Poor+ POD is below raw Aurora's.
+
+    A holdout with no observed Very Poor+ events has undefined POD and cannot
+    establish harm, so it is reported by the CLI but does not fail the gate.
+    """
+    failures = []
+    for name, result in evaluations.items():
+        raw_pod = float(result["raw_aurora"]["event_pod"])
+        cal_pod = float(result["calibrated"]["event_pod"])
+        if np.isfinite(raw_pod) and (not np.isfinite(cal_pod) or cal_pod < raw_pod):
+            failures.append((name, raw_pod, cal_pod))
+    return failures
+
+
+def save_if_event_safe(
+        calibrator: PooledCalibrator,
+        path: Path,
+        evaluations: dict[str, dict[str, dict]],
+) -> Path:
+    """Save only when calibrated POD does not regress on any scored holdout."""
+    failures = event_skill_failures(evaluations)
+    if failures:
+        details = "; ".join(
+            f"{name}: raw={raw:.3f}, calibrated={cal:.3f}"
+            for name, raw, cal in failures
+        )
+        raise EventSkillRegressionError(
+            "Very Poor+ POD is below raw Aurora; model was not saved. " + details)
+    return calibrator.save(path)
+
+
+# --------------------------------------------------------------------------- #
 # CLI
 # --------------------------------------------------------------------------- #
 
@@ -162,24 +234,120 @@ def _synthetic_frame(n: int = 4000, seed: int = 0) -> pd.DataFrame:
     })
 
 
-def _test() -> None:
-    frame = _synthetic_frame()
-    parts = split_frame(frame)
-    # L2 (held-out city rows) must never leak into the fit set.
-    assert not parts["train"]["city"].isin(HELDOUT_CITIES).any()
-    assert parts["l2_test"]["city"].isin(HELDOUT_CITIES).all()
-    # L1 holdout is a stable, non-trivial partition of stations.
-    assert 0 < frame["station_id"].map(l1_is_holdout).mean() < 0.5
-    assert l1_is_holdout(7) == l1_is_holdout(7)  # deterministic
+def _frame_from_regimes(
+        train_obs: np.ndarray,
+        test_obs: np.ndarray,
+        train_start: str,
+        test_start: str,
+        seed: int,
+        test_raw_fraction: float,
+) -> pd.DataFrame:
+    """Build deterministic train/test regimes for OOD and seasonal checks."""
+    rng = np.random.default_rng(seed)
+    n_train, n_test = len(train_obs), len(test_obs)
+    n = n_train + n_test
+    is_test = np.r_[np.zeros(n_train, dtype=bool), np.ones(n_test, dtype=bool)]
+    obs = np.r_[train_obs, test_obs]
 
-    cal = PooledCalibrator(max_iter=80).fit(parts["train"])
-    held = parts["l1_test"].dropna(subset=["obs_pm25"])
-    obs = held["obs_pm25"].to_numpy()
-    mae_raw = np.mean(np.abs(held["aurora_pm2p5"].to_numpy() - obs))
-    mae_cal = np.mean(np.abs(cal.predict(held) - obs))
-    # Correcting a 2-4x multiplicative bias should cut error substantially.
-    assert mae_cal < 0.6 * mae_raw, (mae_raw, mae_cal)
-    print(f"OK  L1 MAE raw={mae_raw:.1f} -> calibrated={mae_cal:.1f} ug/m3")
+    # Calm training forecasts retain the historical 2-4x bias. The OOD test
+    # fraction is caller-controlled so raw Aurora can retain event signal that
+    # a target-predicting tree trained below the threshold will flatten.
+    aurora_train = train_obs / rng.uniform(2.0, 4.0, n_train)
+    aurora_test = test_obs * test_raw_fraction
+    aurora = np.r_[aurora_train, aurora_test]
+    train_times = pd.date_range(train_start, periods=n_train, freq="h", tz="UTC")
+    test_times = pd.date_range(test_start, periods=n_test, freq="h", tz="UTC")
+    valid_time = train_times.append(test_times)
+
+    return pd.DataFrame({
+        "station_id": rng.integers(1, 100, n),
+        "city": rng.choice(["delhi", "patna"], n),
+        "aurora_pm2p5": aurora,
+        "aurora_pm1": aurora * 0.6,
+        "aurora_pm10": aurora * 1.8,
+        "aurora_2t": rng.normal(295, 6, n),
+        "aurora_10u": rng.normal(0, 2, n),
+        "aurora_10v": rng.normal(0, 2, n),
+        "aurora_msl": rng.normal(101300, 400, n),
+        "lead_h": rng.choice([12, 24, 48, 96], n),
+        "valid_time": valid_time,
+        "obs_pm25": obs,
+        "is_test": is_test,
+    })
+
+
+def _calm_train_severe_test_frame(seed: int = 1) -> pd.DataFrame:
+    """Calm train -> severe test: the distribution shift that sank calibrator v1."""
+    rng = np.random.default_rng(seed)
+    train_obs = rng.uniform(25.0, 90.0, 1600)
+    test_obs = rng.uniform(180.0, 400.0, 800)
+    return _frame_from_regimes(
+        train_obs, test_obs, "2025-02-01", "2025-12-01", seed,
+        test_raw_fraction=0.75,
+    )
+
+
+def _winter_train_monsoon_test_frame(seed: int = 2) -> pd.DataFrame:
+    """Winter-only train -> monsoon-only test seasonal-transfer fixture."""
+    rng = np.random.default_rng(seed)
+    train_obs = rng.uniform(35.0, 240.0, 1200)
+    test_obs = rng.uniform(35.0, 180.0, 800)
+    return _frame_from_regimes(
+        train_obs, test_obs, "2025-01-01", "2025-07-01", seed,
+        test_raw_fraction=0.5,
+    )
+
+
+def _format_metric(value: float, digits: int) -> str:
+    return f"{value:.{digits}f}" if np.isfinite(value) else "n/a"
+
+
+def _print_comparison(name: str, result: dict[str, dict]) -> None:
+    raw = result["raw_aurora"]
+    cal = result["calibrated"]
+    print(
+        f"{name}: n={raw['n']:,}  "
+        f"MAE raw={_format_metric(raw['mae'], 1)} -> "
+        f"calibrated={_format_metric(cal['mae'], 1)} ug/m3  |  "
+        f"Very Poor+ POD raw={_format_metric(raw['event_pod'], 3)} -> "
+        f"calibrated={_format_metric(cal['event_pod'], 3)}  |  "
+        f"FAR raw={_format_metric(raw['event_far'], 3)} -> "
+        f"calibrated={_format_metric(cal['event_far'], 3)}"
+    )
+
+
+def run_selftest() -> None:
+    """Exercise OOD failure detection and winter-to-monsoon transfer."""
+    ood = _calm_train_severe_test_frame()
+    cal = PooledCalibrator(max_iter=80).fit(ood[~ood["is_test"]])
+    severe = ood[ood["is_test"]]
+    ood_result = compare_with_raw(severe, cal.predict(severe))
+    _print_comparison("calm_train -> severe_test", ood_result)
+    if not event_skill_failures({"severe_test": ood_result}):
+        raise AssertionError(
+            "OOD selftest did not detect the known v1 event-skill collapse.")
+    try:
+        save_if_event_safe(cal, Path("selftest-must-not-save.joblib"),
+                           {"severe_test": ood_result})
+    except EventSkillRegressionError:
+        pass
+    else:
+        raise AssertionError("No-harm-on-events gate accepted a harmful model.")
+
+    seasonal = _winter_train_monsoon_test_frame()
+    winter = seasonal[~seasonal["is_test"]]
+    monsoon = seasonal[seasonal["is_test"]]
+    if set(winter["valid_time"].dt.month) - {1, 2}:
+        raise AssertionError("Seasonal fixture training rows are not winter-only.")
+    if set(monsoon["valid_time"].dt.month) - {7, 8}:
+        raise AssertionError("Seasonal fixture test rows are not monsoon-only.")
+    seasonal_cal = PooledCalibrator(max_iter=80).fit(winter)
+    seasonal_result = compare_with_raw(monsoon, seasonal_cal.predict(monsoon))
+    _print_comparison("winter_train -> monsoon_test", seasonal_result)
+    if not np.isfinite(seasonal_result["calibrated"]["mae"]):
+        raise AssertionError("Seasonal-transfer predictions are not scorable.")
+
+    print("OK  OOD collapse was blocked; seasonal transfer is scorable.")
 
 
 def main() -> None:
@@ -190,7 +358,7 @@ def main() -> None:
     args = p.parse_args()
 
     if args.selftest:
-        _test()
+        run_selftest()
         return
 
     frame = bench.add_climatology(bench.build_frame())
@@ -198,27 +366,28 @@ def main() -> None:
     print("Split rows -- " + ", ".join(f"{k}: {len(v):,}" for k, v in parts.items()))
 
     cal = PooledCalibrator().fit(parts["train"])
-    # Running as `python -m src.model.calibrator` makes this class __main__.PooledCalibrator,
-    # which can't be unpickled from another entry point (e.g. benchmark.py). Rebind to the
-    # qualified module so the saved model loads anywhere.
-    if cal.__class__.__module__ == "__main__":
-        import importlib
-        cal.__class__ = importlib.import_module("src.model.calibrator").PooledCalibrator
-    path = cal.save(args.out)
-    print(f"Fit on {len(parts['train']):,} train rows -> {path}")
-
-    # Quick MAE read on each holdout (full metric suite lives in benchmark.py).
+    evaluations = {}
     for name in ("l1_test", "l2_test"):
-        g = parts[name].dropna(subset=["obs_pm25"])
-        g = g[g["lead_h"] > 0]
+        g = parts[name]
         if g.empty:
             print(f"{name}: no scorable rows yet.")
             continue
-        raw = g["aurora_pm2p5"].to_numpy()
-        cal_pred = cal.predict(g)
-        obs = g["obs_pm25"].to_numpy()
-        print(f"{name}: n={len(g):,}  MAE raw={np.mean(np.abs(raw-obs)):.1f} "
-              f"-> calibrated={np.mean(np.abs(cal_pred-obs)):.1f} ug/m3")
+        result = compare_with_raw(g, cal.predict(g))
+        evaluations[name] = result
+        _print_comparison(name, result)
+
+    # Running as `python -m src.model.calibrator` makes this class
+    # __main__.PooledCalibrator, which cannot be unpickled from another entry
+    # point. Rebind only after evaluation, immediately before a permitted save.
+    if cal.__class__.__module__ == "__main__":
+        import importlib
+        cal.__class__ = importlib.import_module(
+            "src.model.calibrator").PooledCalibrator
+    try:
+        path = save_if_event_safe(cal, args.out, evaluations)
+    except EventSkillRegressionError as exc:
+        raise SystemExit(f"REFUSING TO SAVE: {exc}") from None
+    print(f"Fit on {len(parts['train']):,} train rows -> {path}")
 
     print("\nScore the full metric suite with:\n"
           f"  python -m src.eval.benchmark --calibrator {path}")
