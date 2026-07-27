@@ -7,7 +7,14 @@ Thumbs.db
 .env
 
 # Generated data + results (derived, not version-controlled)
-data/openaq/*.csv
+# NOTE: git's `dir/*.csv` matches only direct children, NOT subdirectories --
+# that gap let 195 data files (~380 MB) into history on 2026-07-27. The `**`
+# forms below cover the whole tree. The immutable OpenAQ snapshots are published
+# as release assets (spec §7), not tracked in git; pull_manifest.jsonl stays
+# tracked as the small provenance record.
+data/openaq/**/*.csv
+data/openaq/_backup_pre_sensorfix/
+data/openaq/archive/parts/
 data/era5/*.nc
 data/cams/*.nc
 data/processed/*.csv
