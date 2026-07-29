@@ -25,8 +25,8 @@ results table.
 | Station registry | Complete: 159 stations across 9 cities |
 | Frozen dates | Complete: 56 dates, 32 train and 24 test |
 | Integrity audit | Last recorded: 34 checks, 0 failures |
-| Calibrator guardrail tests | Original 10 last recorded passing |
-| Current test collection | 26 tests after integration review; not yet run in this integration |
+| Current test collection | 26/26 passing in GitHub Actions |
+| Web preview | Install, build, and render tests passing in GitHub Actions |
 | Current-registry pair files | **0** |
 | Valid full benchmark table | **Absent** |
 | Public live forecast | **Absent** |
@@ -48,17 +48,17 @@ year-round utility claim.
   isolates station histories, shrinks thin samples toward no correction, clips
   the multiplier, and reports fallback diagnostics.
 - `src/eval/benchmark.py --anchor` adds Component A to the common scoring path.
-- Fifteen Component A tests exist in `tests/test_anchor.py`; they have not run
-  locally because the Windows virtual environment points to a missing base
-  Python interpreter.
+- Sixteen Component A tests exist in `tests/test_anchor.py`; the full 26-test
+  suite passes in GitHub Actions. They have not run locally because the Windows
+  virtual environment points to a missing base Python interpreter.
 - The public product and live-feed contracts are documented in
   `docs/PRODUCT_SPEC.md` and `docs/LIVE_FEED_SPEC.md`.
 - An interactive product preview lives under `web/`. Every forecast value is
   illustrative and the UI states that no live forecast is being issued.
 - Additional-data work is documented in `docs/DATA_EXPANSION_PLAN.md` and
   independently checked in `docs/DATA_SOURCE_AUDIT.md`.
-- GitHub Actions is configured to run the Python tests and web build after the
-  reviewed commit is pushed.
+- GitHub Actions run `30473089540` passed the 26-test Python job and the web
+  install/build/render job on integration commit `48135cc`.
 
 Component A is **implemented, not scientifically accepted**. It cannot be
 scored until valid 159-station pairs exist. It uses trailing local
@@ -91,7 +91,6 @@ The GitHub repository is private. It must not simply be switched to public:
 - reachable Git history contains hundreds of megabytes of raw OpenAQ archive
   files even though they are no longer tracked at `HEAD`;
 - there is no repository licence;
-- the current 26-test and web-build candidate has not passed CI;
 - the integrity audit has not been rerun after this integration.
 
 The safest publication route is a new clean public mirror containing only an

@@ -22,9 +22,10 @@ current scientific state is tracked in
   `COPILOT_CONTEXT.md`, not a real token.
 - Local Claude permissions are excluded through
   `.claude/settings.local.json` in `.gitignore`.
-- Public-facing documentation and an interactive UI preview are under review.
-- A GitHub Actions workflow has been added for Python unit tests and the web
-  build, but it has not run on the uncommitted source yet.
+- Public-facing documentation and the interactive UI preview completed
+  independent integration review.
+- GitHub Actions run `30473089540` passed all 26 Python tests and the web
+  install/build/render checks on integration commit `48135cc`.
 
 ## Publication blockers
 
@@ -56,20 +57,13 @@ The owner must select the software licence. Data and third-party model
 artefacts must retain their own terms and attribution rather than being
 implicitly covered by the software licence.
 
-### 3. Checks have not run on the publication candidate
+### 3. The local data-dependent audit still needs to run
 
-The local Python environment points to a missing base interpreter, and Node.js
-is not currently installed. Consequently:
-
-- the 26 currently discovered Python test functions have not all been run in
-  this integration;
-- the newly built web preview has not completed its Node build;
-- the integrity audit has not been rerun after documentation and Component A
-  integration.
-
-The added CI workflow is intended to validate unit tests and the web build after
-the reviewed commit is pushed. The data-dependent integrity audit still needs
-the complete local archive and must be run in the repaired local environment.
+The source-only checks are green in GitHub Actions. The local Python
+environment still points to a missing base interpreter, so the integrity audit
+has not been rerun after the registry-fingerprint and exact-completeness
+changes. That audit needs the complete local archive and a repaired local
+environment.
 
 ### 4. Scientific outputs are not final
 
@@ -88,7 +82,7 @@ service until the scientific and operational gates in
 2. Reconcile `HANDOFF.md`, `WORKSTREAMS.md`, and the public status page.
 3. Commit only reviewed source and documentation; exclude local configuration.
 4. Push while the repository remains private.
-5. Require the Python and web CI jobs to pass.
+5. Require the Python and web CI jobs to pass. **Passed on `48135cc`.**
 6. Repair the local Python environment and rerun the integrity audit.
 7. Resolve the software licence.
 8. Resolve the historical raw-data choice: rights confirmation, history

@@ -96,7 +96,7 @@ As of the July 2026 status snapshot:
 | Forecast horizon | +12 to +96 hours in 12-hour steps |
 | Spatial transfer design | 20% hashed station holdout plus 3 fully held-out cities |
 | Integrity audit | 34 checks, last recorded with 0 failures |
-| Test suite | 26 tests discovered; the original 10 last passed before the current integration |
+| Test suite | 26/26 passing in GitHub Actions |
 | Valid 159-station forecast pairs | **0 of 56 dates** |
 | Final full-registry metrics | **Not available** |
 

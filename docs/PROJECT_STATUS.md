@@ -24,7 +24,8 @@ the [development journal](../JOURNAL.md) preserves the full history.
 | Valid current-registry pair files | **0** |
 | Legacy pair files rejected by the loader | 5 |
 | Integrity audit | 34 checks, last recorded with 0 failures |
-| Unit tests | 26 discovered; the original 10 last recorded passing |
+| Unit tests | 26/26 passing in GitHub Actions |
+| Web preview | Install, build, and render tests passing in GitHub Actions |
 
 The expected pair count is 56 dates × 159 stations × 9 rows per station: one
 lead-zero CAMS row plus eight Aurora forecast leads.
@@ -94,12 +95,12 @@ The temporal cutoff was revised once on 2026-07-24:
 - Implemented a 34-check integrity audit.
 - Added calibrator guardrails that report event skill beside MAE and refuse to
   save a calibration model that harms Very Poor+ detection.
-- Added regime-shift and seasonal-transfer unit tests; the last recorded run was
-  10/10 passing.
+- Added regime-shift, seasonal-transfer, anchoring, leakage, and event-count
+  tests; all 26 tests pass in GitHub Actions.
 - Implemented the reporting package under [`src/report/`](../src/report/).
 - Preserved the first failed calibrator as a documented negative baseline.
 - Implemented a public-interface preview with illustrative data and explicit
-  non-operational labeling.
+  non-operational labeling; its install, build, and render tests pass in CI.
 - Specified the public product, immutable live-feed contract, and
   additional-data experiments.
 
@@ -108,7 +109,6 @@ The temporal cutoff was revised once on 2026-07-24:
 - Preparing the four-worker GPU rollout for all 56 frozen dates.
 - Reviewing and validating the implemented chronological trailing
   local-observation anchor (“Component A”).
-- Validating all 26 tests and the web build in a clean CI environment.
 - Resolving repository licensing and historical raw-data publication before a
   public launch.
 - Preparing minimal pilots for the official OGD India live observation feed

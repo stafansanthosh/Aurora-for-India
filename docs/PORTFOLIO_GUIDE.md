@@ -134,7 +134,8 @@ reachable Git history, so it must not simply be made public as-is.
 - [ ] Set a concise repository description and relevant topics on GitHub.
 - [ ] Ensure the default branch opens on the current README and project status.
 - [ ] Run the integrity audit and tests in a clean environment.
-- [ ] Add continuous integration so visitors can see checks passing.
+- [x] Add continuous integration so visitors can see the 26-test and web-build
+  checks passing.
 - [ ] Check that every README link and image renders on GitHub.
 - [ ] Pin the repository on the owner’s GitHub profile.
 - [ ] Label legacy artifacts clearly or move them into a tagged historical

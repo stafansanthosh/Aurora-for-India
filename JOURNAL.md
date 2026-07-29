@@ -588,13 +588,20 @@ value.
 
 GitHub is still private. A history audit found hundreds of megabytes of raw
 OpenAQ files in reachable earlier commits, despite their removal from `HEAD`.
-There is also no software licence, the 26-test/web-build candidate has not yet
-run in CI, and the local Python/Node runtimes are unavailable. The repository
-must remain private until checks pass and the owner chooses a clean public
-mirror or explicitly authorizes a reviewed destructive history rewrite.
+There is also no software licence and the local Python/Node runtimes are
+unavailable. The repository must remain private until the remaining gates pass
+and the owner chooses a clean public mirror or explicitly authorizes a reviewed
+destructive history rewrite.
 
 Static integration checks completed here: no credential-pattern candidates in
 119 tracked/new files, no candidate file above 5 MB, no broken relative links
 across 23 Markdown files, all documentation JSON blocks parse, package/lock
 metadata agree, and `git diff --check` passes. Python tests, the data audit, and
-the web build remain explicitly unrun in this environment.
+the web build were not runnable in this local environment.
+
+After private push, GitHub Actions run `30473089540` passed all 26 Python tests
+and the web install/build/render tests on commit `48135cc`. The data-dependent
+integrity audit remains unrun because it needs the complete local archive plus
+a repaired Python interpreter. The workflow actions were then updated to their
+current official v7 major releases to remove the runner's Node 20 deprecation
+warning.
