@@ -111,40 +111,49 @@ subset (the regime where global models fail).
 > catching 0 of 99 test events — because it had never seen an extreme value.
 >
 > *Effect of the revision:* post-monsoon 2025 (Diwali + stubble burning) moves
-> into TRAIN; winter 2025-26 stays in TEST, so **both sides contain the severe
-> regime**.
+> into TRAIN; winter 2025-26 stays in TEST, so both sides contain many
+> Very-Poor+ observations. The completed archive changed the preliminary
+> distribution estimates used when the split was revised:
 >
-> | | train obs | train events ≥121 | train p95 | test events ≥121 |
-> |---|---|---|---|---|
-> | Original (07-01) | 245K | 13,844 | ~142 | 78,569 |
-> | **Revised (12-01)** | **507K** | **40,538** | **~360** | **51,875** |
+> | Current pre-cutoff population | Rows | Events ≥121 | p95 | p99 |
+> |---|---:|---:|---:|---:|
+> | All nine-city archive | 824,615 | 68,519 | 163 | 334 |
+> | Six-city train pool | 691,327 | 63,188 | 175 | 352 |
+> | Calibrator spatial fit pool | 578,113 | 52,024 | 171 | 343 |
+>
+> The earlier provisional statement that revised-training p95 was about
+> 360 µg/m³ was incorrect; that value is much closer to p99. The scientific
+> conclusion remains unchanged—the revised fit period contains tens of
+> thousands of severe observations—but publications must use the corrected
+> percentile label. On the 32 selected training initialization dates, the
+> exact scheduled station-time sample before tolerance matching is much
+> smaller (about 22,913 rows, 2,513 events, p95 180), which is the relevant
+> order of magnitude for fitted forecast pairs.
 >
 > The single source of truth for all split constants is `src/splits.py`.
 
-### 6.1 Frozen dates (coverage audit 2026-07-23; re-run pending post-revision)
+### 6.1 Frozen dates (coverage audit completed 2026-07-28)
 
-- **56 init dates** spanning 2025-02 .. 2026-06, frozen by the coverage audit
-  (`src/eval/coverage_audit.py`) over the complete 9-city archive (941,803
-  obs rows) and committed as `docs/benchmark_dates.csv`. Balanced 8 per
-  (season × split) stratum; every chosen date has ≥5,000 train-pool
-  station-hours in its +12..+96h validation window.
-- Split rule (frozen before any adaptation training): temporal cutoff at
-  **2025-07-01** — train/val strictly before, test strictly after. Test
-  contains the full 2025-26 winter (incl. the already-validated 2025-11-15).
-- **Documented coverage gap (post-monsoon is test-only).** OpenAQ Indian
-  station density in Oct–Nov **2024** is below the usability threshold
-  (≥2 stations, ≥40 station-hours in-window) for *every* city, so there are
-  **zero post-monsoon train dates**; post-monsoon appears only in the 2025
-  test split. This is consequential: post-monsoon (Diwali + stubble burning)
-  is north India's peak-pollution season and the primary regime for the
-  Very-Poor+ event thesis. We keep it test-only rather than backfill 2023
-  (thin OpenAQ depth, larger pull): the adaptation methods must therefore
-  **generalize into post-monsoon from other seasons**, making it a genuine
-  out-of-distribution seasonal test rather than an interpolation. Reported as
-  a headline caveat wherever post-monsoon numbers appear.
-- Held-out-city validation is feasible: Kanpur/Varanasi/Kolkata each have
-  340–380 usable test dates and 135–167 usable train-period dates (audited for
-  feasibility only — they never drive date selection, per §3).
+- **56 initialization dates** spanning 2025-02-19 through 2026-07-17 are frozen
+  in `docs/benchmark_dates.csv`: 32 before the cutoff and 24 after it.
+- The schedule contains eight dates in each available season × split stratum:
+  winter, pre-monsoon, and monsoon on both sides, plus eight post-monsoon 2025
+  dates in TRAIN.
+- Split rule: train/validation timestamps are strictly before
+  **2025-12-01**; test timestamps are on or after it. No later timestamp may
+  influence learned parameters, normalization, climatology, or model
+  selection.
+- **Documented coverage gap: no independent post-monsoon test yet.** The
+  post-cutoff archive currently ends in July 2026, before October–November
+  2026 exists. Post-monsoon 2025 is therefore represented in fitting but not
+  in independent testing. Current results can support winter, pre-monsoon,
+  and monsoon test claims; they cannot establish post-monsoon prospective
+  performance. A later untouched post-monsoon evaluation or an explicitly
+  labeled retrospective seasonal-transfer stress test is required for that
+  stronger claim.
+- Date selection is driven only by the six-city train pool. Kanpur, Kolkata,
+  and Varanasi remain fully held out from ordinary fitting and are scored
+  independently; they do not influence which initialization dates are chosen.
 
 ## 7. Data and reproducibility requirements
 

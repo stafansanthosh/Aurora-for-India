@@ -35,6 +35,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 PAIRS_DIR = PROJECT_ROOT / "results" / "pairs"
 OPENAQ_DIR = PROJECT_ROOT / "data" / "openaq"
 METRICS_DIR = PROJECT_ROOT / "results" / "metrics"
+DATES_FILE = PROJECT_ROOT / "docs" / "benchmark_dates.csv"
 
 MATCH_TOL = pd.Timedelta("90min")   # obs-to-valid-time match tolerance
 EXTREME = aqi.VERY_POOR_THRESHOLD
@@ -54,11 +55,25 @@ def _current_registry_version() -> str | None:
     return _registry_version(pd.read_csv(reg_path))
 
 
-def load_pairs(strict: bool = True) -> pd.DataFrame:
-    """Load rollout pairs, EXCLUDING any produced at a stale station registry.
+def _frozen_dates() -> set[str]:
+    """Exact initialization dates admitted to an official benchmark table."""
+    if not DATES_FILE.exists():
+        raise SystemExit(f"Frozen date manifest missing: {DATES_FILE}")
+    dates = pd.read_csv(DATES_FILE)
+    if "init_date" not in dates.columns:
+        raise SystemExit(f"{DATES_FILE} has no init_date column")
+    out = set(dates["init_date"].astype(str))
+    if len(out) != len(dates):
+        raise SystemExit(f"{DATES_FILE} contains duplicate init_date rows")
+    return out
 
-    Pairs are only comparable when sampled at the same station set. Two hazards
-    this guards against, both silent in the output:
+
+def load_pairs(strict: bool = True) -> pd.DataFrame:
+    """Load rollout pairs and enforce the official benchmark population.
+
+    Strict mode admits only the current registry and exact frozen date
+    manifest, then requires every date, station, and lead exactly once. Hazards
+    this guards against are otherwise silent in the output:
       * pilot dates rolled out at 33 or 127 stations sitting alongside 159-station
         dates, so pooled metrics span different station populations;
       * dates no longer in the frozen list lingering on disk and contaminating
@@ -74,16 +89,49 @@ def load_pairs(strict: bool = True) -> pd.DataFrame:
         current = _current_registry_version()
         stamped = df["registry_version"] if "registry_version" in df.columns else pd.Series(
             [None] * len(df), index=df.index)
-        keep = stamped.eq(current) if current else stamped.notna()
-        if not keep.all():
-            dropped = sorted(df.loc[~keep, "init_date"].unique())
+        registry_keep = stamped.eq(current) if current else stamped.notna()
+        frozen = _frozen_dates()
+        date_keep = df["init_date"].astype(str).isin(frozen)
+        if not registry_keep.all():
+            dropped = sorted(df.loc[~registry_keep, "init_date"].astype(str).unique())
             print(f"[benchmark] excluding {len(dropped)} date(s) from a stale/unstamped "
                   f"registry (current={current}): {dropped}")
-        df = df[keep]
+        current_extra = sorted(
+            df.loc[registry_keep & ~date_keep, "init_date"].astype(str).unique())
+        if current_extra:
+            print(f"[benchmark] excluding {len(current_extra)} current-registry "
+                  f"date(s) outside the frozen manifest: {current_extra}")
+        df = df[registry_keep & date_keep].copy()
         if df.empty:
             raise SystemExit(
                 f"No pairs match the current registry ({current}). Re-run the "
                 "orchestrator, or pass strict=False to score legacy pairs.")
+
+        present = set(df["init_date"].astype(str))
+        missing = sorted(frozen - present)
+        if missing:
+            raise SystemExit(
+                f"Current-registry rollout is incomplete: {len(present)}/"
+                f"{len(frozen)} frozen dates present; missing {missing}.")
+
+        registry = pd.read_csv(PROJECT_ROOT / "data" / "stations.csv")
+        expected_rows = len(registry) * 9
+        per_date_rows = df.groupby("init_date").size()
+        bad_rows = per_date_rows[per_date_rows != expected_rows]
+        if not bad_rows.empty:
+            raise SystemExit(
+                "Pair completeness failure; expected "
+                f"{expected_rows:,} rows/date: {bad_rows.to_dict()}")
+        keys = ["init_date", "station_id", "lead_h"]
+        if df.duplicated(keys).any():
+            raise SystemExit("Duplicate (init_date, station_id, lead_h) pair rows.")
+        expected_leads = set(range(0, 97, 12))
+        expected_stations = set(registry["station_id"].astype(str))
+        for date, group in df.groupby("init_date"):
+            if set(group["lead_h"]) != expected_leads:
+                raise SystemExit(f"{date}: lead set is incomplete or unexpected.")
+            if set(group["station_id"].astype(str)) != expected_stations:
+                raise SystemExit(f"{date}: station set differs from current registry.")
 
     df["valid_time"] = pd.to_datetime(df["valid_time"], utc=True)
     df["init_time"] = pd.to_datetime(df["init_date"], utc=True) + pd.Timedelta(hours=12)
@@ -172,10 +220,12 @@ METHODS = {
 
 
 def active_methods(frame: pd.DataFrame) -> dict[str, str]:
-    """METHODS plus 'calibrated' when a calibrator column is present."""
+    """METHODS plus any adaptation columns present on the frame."""
     m = dict(METHODS)
     if "cal_pm25" in frame.columns:
         m["calibrated"] = "cal_pm25"
+    if "anchored_pm25" in frame.columns:
+        m["anchored"] = "anchored_pm25"
     return m
 
 
@@ -214,8 +264,24 @@ def score(frame: pd.DataFrame, split: str = "all", extremes: bool = False) -> pd
             o, p = obs[mask], pred[mask]
             rec = {"lead_h": lead, "city": city, "method": method}
             rec.update(_regression(o, p))
-            rec.update({k: v for k, v in aqi.category_metrics(o, p).items()
-                        if k in ("cat_hit_rate", "event_pod", "event_far", "event_csi")})
+            if extremes:
+                rec["subset"] = "observed_very_poor_plus"
+                rec["event_observed"] = int(rec["n"])
+            else:
+                rec.update({
+                    k: v for k, v in aqi.category_metrics(o, p).items()
+                    if k in (
+                        "cat_hit_rate",
+                        "event_pod",
+                        "event_far",
+                        "event_csi",
+                        "event_hits",
+                        "event_misses",
+                        "event_false_alarms",
+                        "event_observed",
+                        "event_forecast",
+                    )
+                })
             rows.append(rec)
     return pd.DataFrame(rows)
 
@@ -236,6 +302,8 @@ def summary(frame: pd.DataFrame, split: str = "test") -> pd.DataFrame:
             em = aqi.category_metrics(obs[np.isfinite(obs)], pred[np.isfinite(obs)])
             rec["event_pod"] = em.get("event_pod")
             rec["event_far"] = em.get("event_far")
+            rec["event_csi"] = em.get("event_csi")
+            rec["event_observed"] = em.get("event_observed")
             rows.append(rec)
     return pd.DataFrame(rows)
 
@@ -246,9 +314,20 @@ def main() -> None:
     p.add_argument("--split", default="all", choices=["all", "train", "test"])
     p.add_argument("--calibrator", type=Path, default=None,
                    help="Path to a saved PooledCalibrator; adds it as method #5.")
+    p.add_argument("--anchor", action="store_true",
+                   help="Add Component A (per-station trailing-ratio anchoring) "
+                        "as a scored method. Online local adaptation: it uses "
+                        "trailing observations at each station, including in the "
+                        "L1/L2 holdouts, so it is NOT zero-shot transfer.")
     args = p.parse_args()
 
     frame = add_climatology(build_frame())
+    if args.anchor:
+        from ..model.anchor import anchor_frame
+        frame = anchor_frame(frame)
+        n_fb = int(frame["anchor_fallback"].sum())
+        print(f"Applied Component A anchor -> 'anchored' method added "
+              f"({n_fb:,}/{len(frame):,} rows fell back to multiplier 1.0).")
     if args.calibrator is not None:
         from ..model.calibrator import PooledCalibrator
         cal = PooledCalibrator.load(args.calibrator)
@@ -265,12 +344,18 @@ def main() -> None:
     ext = score(frame, split=args.split, extremes=True)
     ext.to_csv(args.out.with_name(args.out.stem + "_extremes.csv"), index=False)
 
-    print(f"\n=== Pooled headline (split={args.split}) - MAE + Very Poor+ POD by lead ===")
+    print(f"\n=== Pooled headline (split={args.split}) - MAE + Very Poor+ event skill ===")
     s = summary(frame, split=args.split)
     show = s.pivot(index="lead_h", columns="method", values="mae").round(1)
     print("MAE (ug/m3):"); print(show.to_string())
     pod = s.pivot(index="lead_h", columns="method", values="event_pod").round(2)
     print("\nVery Poor+ POD (hit rate):"); print(pod.to_string())
+    far = s.pivot(index="lead_h", columns="method", values="event_far").round(2)
+    print("\nVery Poor+ FAR (false-alarm ratio):"); print(far.to_string())
+    csi = s.pivot(index="lead_h", columns="method", values="event_csi").round(2)
+    print("\nVery Poor+ CSI:"); print(csi.to_string())
+    events = s.pivot(index="lead_h", columns="method", values="event_observed")
+    print("\nObserved Very Poor+ event count:"); print(events.to_string())
     print(f"\nWrote {args.out} (+_extremes)")
 
 

@@ -57,18 +57,29 @@ def _load_registry() -> pd.DataFrame:
 
 
 def _registry_version(reg: pd.DataFrame) -> str:
-    """Short fingerprint of the exact station set used for a run.
+    """Short fingerprint of the exact station identities and locations.
 
     Pairs produced against different registry versions are NOT comparable: the
     Nov-2025 pilot dates were sampled at 33 stations (some Phase-1 era, since
     retired) while later dates used 127, so a pooled metrics table would mix two
-    different station populations. Stamping the version makes that detectable
-    instead of silent -- audit compares these across dates.
+    different station populations. Coordinate or city corrections also change
+    the grid sample or reporting population, so they must invalidate resume
+    state even when station IDs stay the same.
     """
     import hashlib
 
-    ids = ",".join(str(s) for s in sorted(reg["station_id"]))
-    return f"{len(reg)}:{hashlib.sha1(ids.encode()).hexdigest()[:8]}"
+    required = ["station_id", "city", "lat", "lon"]
+    missing = [col for col in required if col not in reg.columns]
+    if missing:
+        raise ValueError(f"Registry fingerprint missing columns: {missing}")
+    canonical = reg[required].copy()
+    canonical["station_id"] = canonical["station_id"].astype(str).str.strip()
+    canonical["city"] = canonical["city"].astype(str).str.strip().str.casefold()
+    canonical["lat"] = pd.to_numeric(canonical["lat"]).map(lambda x: f"{x:.6f}")
+    canonical["lon"] = pd.to_numeric(canonical["lon"]).map(lambda x: f"{x:.6f}")
+    canonical = canonical.sort_values(required, kind="stable")
+    payload = canonical.to_csv(index=False, lineterminator="\n")
+    return f"{len(reg)}:{hashlib.sha1(payload.encode()).hexdigest()[:12]}"
 
 
 def _station_cells(reg: pd.DataFrame, lats: np.ndarray, lons: np.ndarray) -> pd.DataFrame:

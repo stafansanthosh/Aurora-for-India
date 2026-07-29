@@ -1,365 +1,254 @@
-# Aurora for India — IndiaAQBench
+# IndiaAQBench — low-compute air-quality forecasting for Indian cities
 
-An openly reproducible benchmark testing whether [Microsoft Aurora](https://github.com/microsoft/aurora)
-— a 1.3B-parameter atmospheric foundation model, run at a small fraction of the
-compute of an operational NWP system — can be adapted into a **practically
-useful multi-day PM2.5 forecaster** for Indian cities.
+IndiaAQBench asks a practical question:
 
-## The research question
+> Can a global atmospheric foundation model, public observations, and modest
+> compute produce useful multi-day PM2.5 forecasts for Indian cities that lack
+> a strong local forecasting system?
 
-> Can cheap post-processing or modest fine-tuning lift a global foundation
-> model into a decision-useful tier for Indian air quality — and can we prove
-> it with a fixed, public, reproducible benchmark rather than a one-off demo?
+The project combines [Microsoft Aurora](https://github.com/microsoft/aurora),
+CAMS atmospheric data, and OpenAQ station observations. It evaluates forecasts
+from **+12 to +96 hours** and tests inexpensive local adaptation before
+considering costly fine-tuning.
 
-**What "useful" means here is not "beats Delhi's flagship system."** Delhi runs
-AQEWS (MoES/IITM, WRF-Chem, 400 m, assimilating; Performance Index 87 —
-Yadav et al. 2025, JGR), and 7 more
-metros have deployments of varying maturity. Nationally, IMD runs a
-SILAM-based layer (WRF-driven) covering ~140 cities, including Patna,
-Varanasi, and Lucknow — but in the same 2025 seven-model Delhi evaluation,
-SILAM's Performance Index is 58 (global-tier models: 47–60), with "notable
-discrepancies during high-pollution events." **~465 of India's cities have no
-comparable public forecasting infrastructure at all.** 1,601 monitoring
-stations exist across 583 cities nationally, but 28 NCAP cities still lack
-continuous stations.
+**Current status:** the data and evaluation infrastructure are ready, but the
+full benchmark rollout has not been completed. There are currently **zero valid
+forecast-pair files for the 159-station registry**, so this repository does
+**not** claim final model skill or operational readiness. See the
+[live project scoreboard](docs/PROJECT_STATUS.md).
 
-So the claim IndiaAQBench tests is narrower and more defensible than "first
-ever": *no widely adopted, openly reproducible India AQ-forecasting benchmark
-with fixed public splits, shared code, and standard baselines currently
-exists* — the literature is fragmented city-by-city and method-by-method.
-We benchmark the public/global tier (CAMS + Aurora) and measure whether cheap
-adaptation (calibration, then scoped fine-tuning) can close enough of the gap
-to be genuinely actionable — decision-relevant AQI-category skill, not just
-lower MAE. Full spec: [docs/BENCHMARK_SPEC.md](docs/BENCHMARK_SPEC.md).
+> **Research-use disclaimer:** this is an experimental research system, not an
+> official air-quality warning service. Do not use it as the sole basis for
+> health or emergency decisions.
 
-## Results so far (Phase 1 — global-model baseline)
+## Why this exists
 
-Before running Aurora itself, we measure what a global atmospheric model
-*already* "knows" about Indian PM2.5, using the CAMS global reanalysis (EAC4,
-0.75°) as the model-side field, evaluated against real ground-station readings
-from OpenAQ (CPCB/DPCC stations), for 2018-02-01:
+India has sophisticated forecasting efforts in major metros, but comparable
+public infrastructure is not evenly available across the country. The intended
+beneficiaries of this research are under-served cities such as Patna, Varanasi,
+Kanpur, and Lucknow—not Delhi, which is included because its dense monitoring
+network makes it a useful diagnostic environment.
 
-| City      | Stations | Matched hours | CAMS MAE (µg/m³) |
-|-----------|----------|---------------|------------------|
-| Delhi     | 8        | 159           | **223**          |
-| Mumbai    | 1        | 23            | 218 *(small sample)* |
-| Chennai   | 2        | 44            | 65               |
-| Bangalore | 3        | 61            | **41**           |
+The research thesis is deliberately constrained:
 
-Two concrete failure modes, visible in the figures:
+- start with a global model that is inexpensive to run;
+- correct its local surface bias using public station observations;
+- test whether the correction transfers to stations and cities excluded from
+  fitting;
+- publish failures, uncertainty, and compute cost alongside successes;
+- turn the benchmark into a transparent experimental forecast feed.
 
-**1. Coarse resolution can't resolve intra-city variation.** Every station in
-Delhi receives essentially the same CAMS value per timestep (horizontal bands),
-while real stations spread widely — and skill vs. a naive persistence baseline
-is negative at every station.
+The goal is not to claim that a low-cost system replaces high-resolution
+regional chemistry models. The goal is to measure how far a reproducible,
+low-compute approach can go—and where it fails.
 
-![CAMS vs OpenAQ scatter, Delhi](docs/figures/delhi_scatter.png)
+## What “useful” means
 
-**2. The diurnal cycle is out of phase.** CAMS puts Delhi's pollution peak in
-the evening; the stations peak pre-dawn. Correlation ≈ 0.15.
+Average error is not the primary success criterion. A forecast can have a good
+mean absolute error (MAE) while smoothing away the pollution episodes that
+matter most.
 
-![Time series, Delhi station 13](docs/figures/delhi_timeseries.png)
+IndiaAQBench therefore treats **Very Poor or worse PM2.5 conditions
+(≥121 μg/m³)** as the headline event and reports:
 
-**Headline finding:** the global model's error scales with pollution severity —
-huge in the most polluted cities (Delhi), modest in cleaner southern cities
-(Bangalore). This quantifies exactly the gap a fine-tuned or higher-resolution
-model must close, and motivates Phase 2.
+- **POD (probability of detection):** what fraction of observed events were
+  forecast;
+- **FAR (false-alarm ratio):** what fraction of event forecasts did not occur;
+- **CSI (critical success index):** a combined score that penalizes both misses
+  and false alarms;
+- the number of observed events, so small samples cannot look authoritative.
 
-## Results so far (Phase 2 — Aurora Air Pollution, run directly)
+Concentration metrics such as MAE, RMSE, bias, and correlation remain useful,
+but they are secondary. This choice already exposed a failed early calibrator:
+it improved MAE while eliminating severe-event detection in a pilot. That
+pilot used superseded station registries and is not a final benchmark result,
+but it established the safety requirement now enforced in the calibrator.
 
-We then ran Aurora itself — specifically **`AuroraAirPollution`** (the 1.3B-param
-`aurora-0.4-air-pollution` checkpoint), which predicts PM2.5 *directly* — on
-global CAMS analysis data, and forecast +12 h from 2025-11-15 12:00 UTC (peak
-Delhi winter-pollution season). Aurora reproduces India's Indo-Gangetic
-pollution belt, but at Delhi its predicted PM2.5 sits far below the ground
-stations:
+## The pipeline
 
-![Aurora PM2.5 over India vs OpenAQ](docs/figures/delhi_phase2_india_map.png)
-
-The dark dots (OpenAQ stations, 187–370 µg/m³) sit on a pale model field
-(~86 µg/m³) — Aurora predicts **~86 µg/m³** for the Delhi cell while stations
-read **187–370 µg/m³** (mean absolute error ≈ **202 µg/m³**).
-
-Crucially, this is *not* an Aurora bug: the CAMS analysis it was given already
-reads only 85–98 µg/m³ at the Delhi cell, and Aurora faithfully evolves that
-field (86 µg/m³ at +12 h). **The global input under-represents Delhi's extreme
-local pollution by 2–4×, and Aurora inherits it** — the same failure Phase 1
-found in the reanalysis, now confirmed for the operational model. This is the
-concrete, quantified case for local adaptation (Phase 4).
-
-> Notably, the full 1.3B-param model ran end-to-end on a **32 GB CPU** (~12 min
-> per global forecast) — no GPU was required for single-timestep inference.
-
-## Results so far (Phase 3 — IndiaAQBench ground truth + first pilot scores)
-
-**Ground truth: ~1M station-hours over 9 cities.** Hourly OpenAQ PM2.5 for a
-6-city train/val pool (Delhi, Mumbai, Chennai, Bangalore, Lucknow, Patna) plus 3
-cities **held out entirely from training** (Kanpur, Varanasi, Kolkata) — so the
-benchmark measures regional *transfer*, not just within-city interpolation.
-
-Every response is snapshotted immutably under `data/openaq/archive/` with a full
-pull manifest (spec §7 reproducibility contract): anyone re-running this scores
-against the exact data we used, not whatever OpenAQ returns today. Pulls are
-resumable per city-month, because a home connection loses ~1 window in 3.
-
-> **Currently being re-pulled.** A sensor-selection bug (see Phase 4) was
-> silently dropping whole stations; the fix recovers roughly 40% more of them in
-> the thin-coverage cities that matter most. Station counts below are mid-flight.
-
-**Evaluation harness built and run on pilot data.** `src/eval/benchmark.py`
-joins Aurora's +12h→+96h rollout to these station observations and scores four
-baselines (persistence, climatology, raw CAMS, raw Aurora) on both
-concentration error and the metric that actually matters for action — Indian
-AQI category skill, with "Very Poor or above" (≥121 µg/m³) event detection as
-the headline number, since that's the threshold that triggers GRAP emergency
-actions.
-
-### What the pilot actually shows — including the part that looks bad
-
-**Pooled over all leads and cities, raw Aurora is *worse* than persistence:**
-
-| Method | POD ↑ | FAR ↓ | CSI ↑ | MAE ↓ |
-|---|---|---|---|---|
-| Persistence | 0.52 | **0.44** | **0.38** | **38.0** |
-| Raw Aurora | **0.64** | 0.67 | 0.24 | 63.4 |
-
-Aurora detects more events, but cries wolf about twice as often, and its
-combined score (CSI) is clearly behind. Reporting POD alone would flatter it;
-that would be the easiest way to mislead in this whole project, so the full row
-stays.
-
-**The interesting structure is in *where* it wins.** Persistence decays as lead
-time grows while Aurora's synoptic signal holds, and the event-detection rates
-cross over around +60 h:
-
-| Lead | Persistence POD | Raw Aurora POD |
-|---|---|---|
-| +12h | 0.67 | 0.47 |
-| +48h | 0.80 | 0.50 |
-| +60h | 0.53 | **0.88** |
-| +84h | 0.57 | **0.79** |
-| +96h | 0.70 | **1.00** |
-
-**Treat these as a hypothesis, not a result.** They rest on 2 init dates and 99
-event rows, mostly November Delhi-region; and the two pilot dates were sampled
-at a 33-station registry while later dates used 127, so pooled figures mix two
-station populations (found by `src/eval/audit.py`, fixed by a registry-version
-stamp, and being regenerated). The testable claim: **Aurora's value is long-lead
-event detection, and the job of adaptation is to fix its level and false-alarm
-rate without destroying that.**
-
-## Results so far (Phase 4 — a calibrator that failed, and what it taught)
-
-The obvious next step was a learned calibrator: map Aurora's output plus local
-meteorology to observed PM2.5, leaving the 1.3B model frozen. We built it
-(gradient boosting on `log1p(obs)`), and on the headline secondary metric it
-looked like a win — **MAE on held-out cities fell 46.3 → 35.4 µg/m³**.
-
-**It was a disaster, and the benchmark caught it:**
-
-| Lead | Raw Aurora POD | Calibrated POD |
-|---|---|---|
-| +60h | 0.88 | **0.00** |
-| +84h | 0.79 | **0.00** |
-| +96h | 1.00 | **0.00** |
-
-Of 99 severe events in the test set, raw Aurora caught 66. **The calibrator
-caught zero.** Its predictions never exceeded 107 µg/m³ against observations
-reaching 548 — it had regressed everything toward its training mean, and the MAE
-"improvement" came *from* discarding the extremes. For an air-quality warning
-system that is the worst possible trade.
-
-Diagnosis, from four root causes:
-
-1. **It predicted the target instead of correcting the forecast**, so its output
-   could never exceed its training distribution.
-2. **Tree ensembles cannot extrapolate** — under distribution shift they clamp
-   rather than degrade gracefully. Our synthetic test missed this because train
-   and test came from the *same* distribution.
-3. **Training data held no severe season** (95th percentile 98 µg/m³ vs test
-   values to 548).
-4. **The fit-time check printed MAE only** — the one metric that rewards tail
-   collapse.
-
-This is why the benchmark scores category events rather than error: **a
-metric-design choice caught a failure that would have shipped silently.**
-
-### What the failure forced us to fix
-
-- **Went looking for better data and found a bug instead.** `find_pm25_stations`
-  took only the *first* PM2.5 sensor per station; most Indian CPCB stations
-  expose two (a retired unit plus its replacement), so whole stations were
-  silently dropped. Recovered: Chennai 6→8 stations, Lucknow 4→6, Varanasi 2→4,
-  Kanpur 2→3, Bangalore 13→16 — concentrated in exactly the thin-coverage cities
-  the benchmark depends on.
-- **Proved a tempting fix was impossible.** OpenAQ advertises coverage since
-  2016, but its hourly endpoint serves nothing before ~Feb 2025 for *any* sensor.
-  Verified at sensor level and documented, so nobody re-investigates it.
-- **Revised the train/test cutoff once, and disclosed it.** Moving 2025-07-01 →
-  2025-12-01 (a contingency pre-registered in the spec, exercised before any
-  adaptation was trained on the new split) puts a severe season on both sides:
-  training events 13,844 → 40,538, training p95 142 → 360 µg/m³.
-- **Consolidated split constants into one module.** They had been duplicated
-  across three files — the setup where definitions drift until one module trains
-  on rows another calls "test".
-- **Wrote an integrity audit** (`python -m src.eval.audit`) that re-derives what
-  everything else assumes: nearest-grid-cell matching brute-forced against the
-  full 451×900 Aurora grid (0 mismatches), unit conversions, `valid_time ==
-  init + lead`, POD/FAR recomputed by hand, and split-leakage checks. 34 checks.
-  It is what found the registry-version skew noted above.
-
-The redesign is a per-station trailing-ratio anchor — the approach operational
-air-quality systems actually use ([Kalman/analog post-processing](https://www.sciencedirect.com/science/article/abs/pii/S1352231015001405))
-— which uses no training set and therefore cannot inherit a training-distribution
-ceiling. Fine-tuning remains planned; this establishes the bar it must clear.
-
-## How it works
-
-**Phase 1 pipeline** (single-day CAMS-vs-OpenAQ baseline):
-
-```
-OpenAQ v3 API ──► openaq_client.py ──► data/openaq/{city}_pm25.csv   (ground truth)
-Copernicus CDS ─► era5_downloader.py ─► data/era5/*.nc               (meteorology)
-Copernicus ADS ─► era5_downloader.py ─► data/cams/*.nc               (model PM2.5)
-                        │
-                        ▼
-                  align.py  ── nearest-grid-cell matching (haversine),
-                        │      hourly join, kg/m³ → µg/m³ conversion
-                        ▼
-          data/processed/{city}_aligned.csv
-                        │
-                        ▼
-        run_phase1.py / plots.py ──► per-station MAE/RMSE/correlation,
-                                     skill vs persistence, figures
+```mermaid
+flowchart LR
+    A["OpenAQ station observations"] --> E["Station-time matching"]
+    B["CAMS atmospheric analysis"] --> C["Aurora 0.4° rollout<br/>+12 to +96 hours"]
+    C --> E
+    E --> F["Raw forecast pairs"]
+    F --> G["Cheap local adaptation"]
+    G --> H["Event and concentration metrics"]
+    H --> I["Per-city scorecards"]
+    I --> J["Experimental forecast feed<br/>(planned)"]
 ```
 
-**IndiaAQBench pipeline** (Phase 3+, multi-date, multi-lead):
+CAMS supplies the current global atmospheric state; Aurora predicts how that
+state evolves; OpenAQ provides surface observations for evaluation and local
+correction. The benchmark compares raw Aurora with persistence, historical
+climatology, and the CAMS initialization field held constant through the same
+evaluation path.
 
-```
-OpenAQ v3 API ──► archive_pull.py ──► data/openaq/archive/{city}_*.csv  (versioned ground truth, 9 cities)
-CAMS analysis  ─► cams_composition.py ─► data/cams_analysis/*.nc       (global 0.4° input)
-                        │
-                        ▼
-        orchestrate.py  ── assembles Aurora Batch, rolls out +12h→+96h,
-                        │   samples predictions at station cells
-                        ▼
-          results/pairs/pairs_{date}.parquet   (aurora + CAMS pm2.5 per station × lead)
-                        │
-                        ▼
-        benchmark.py  ── joins pairs to archived obs, scores persistence /
-                        │  climatology / raw CAMS / raw Aurora baselines
-                        ▼
-   results/metrics/indiaaqbench*.csv ──► MAE/RMSE/bias/corr + AQI category
-                                         hit-rate + Very Poor+ POD/FAR/CSI,
-                                         per lead × city × method
-```
+## Verified repository state
 
-Full spec, city roles, and metric definitions: [docs/BENCHMARK_SPEC.md](docs/BENCHMARK_SPEC.md).
+As of the July 2026 status snapshot:
 
-Everything is a CLI module. Reproduce the Delhi result:
+| Item | Verified state |
+|---|---|
+| OpenAQ ground-truth archive | 1,489,534 hourly observations across 9 cities |
+| Station registry | 159 stations |
+| Frozen forecast initializations | 56 dates: 32 train, 24 test |
+| Forecast horizon | +12 to +96 hours in 12-hour steps |
+| Spatial transfer design | 20% hashed station holdout plus 3 fully held-out cities |
+| Integrity audit | 34 checks, last recorded with 0 failures |
+| Test suite | 26 tests discovered; the original 10 last passed before the current integration |
+| Valid 159-station forecast pairs | **0 of 56 dates** |
+| Final full-registry metrics | **Not available** |
+
+The five files currently under `results/pairs/` are legacy pilot artifacts
+generated with 33- or 127-station registries. The strict evaluator rejects all
+five rather than silently mixing them with the 159-station benchmark.
+
+The temporal cutoff was revised once, from **2025-07-01 to 2025-12-01**, under a
+pre-registered contingency and before adaptation was trained on the revised
+split. The reason was a verified lack of usable OpenAQ history before roughly
+February 2025, which left the original training period without adequate severe
+season coverage. This revision must be disclosed wherever results appear.
+
+For the complete, dated breakdown, see [Project status](docs/PROJECT_STATUS.md).
+
+## Evaluation design
+
+The benchmark covers nine cities:
+
+- **fit/validation pool:** Bangalore, Chennai, Delhi, Lucknow, Mumbai, Patna;
+- **fully held-out cities:** Kanpur, Kolkata, Varanasi.
+
+It has two spatial tests:
+
+1. **L1 — held-out stations:** a fixed subset of stations inside fit-pool
+   cities cannot contribute to learned calibration. This tests transfer to a
+   new monitoring location in a city the method has seen.
+2. **L2 — held-out cities:** all stations in Kanpur, Kolkata, and Varanasi are
+   excluded from ordinary model fitting. This tests transfer to an entirely
+   unseen city.
+
+The benchmark also uses a chronological split at 2025-12-01: fitting uses only
+earlier data and testing uses later data. Split constants live only in
+[`src/splits.py`](src/splits.py).
+
+Delhi is never intended to carry the headline conclusion. Every credible result
+table must show per-city performance and the L1/L2 transfer results, with event
+counts.
+
+## What has been built
+
+- OpenAQ collection, quality control, resumable archive assembly, and a
+  versioned station registry;
+- CAMS acquisition and Aurora air-pollution inference;
+- station-grid matching and forecast-pair generation;
+- persistence, climatology, CAMS-start-held-constant, and raw Aurora baselines;
+- concentration, category, and Very Poor+ event metrics;
+- chronological and spatial holdouts;
+- a 34-check integrity audit;
+- calibrator no-harm guardrails and regime-shift tests;
+- Component A, a chronological trailing local-observation anchor, with
+  leakage and fallback tests;
+- per-city/per-lead reporting and plotting code;
+- an interactive public-interface preview using explicitly illustrative data.
+
+The repository deliberately keeps the rejected calibrator as a documented
+negative baseline. Its failure is part of the research record, not a result to
+hide.
+
+## What has not been built or validated
+
+- the valid 56-date, 159-station Aurora rollout;
+- a valid full-registry evaluation of Component A;
+- a valid full-registry results table;
+- actual lead-dependent CAMS forecasts as a stronger operational baseline;
+- the latest-cycle live runner and immutable forecast ledger;
+- a deployed public experimental feed;
+- year-round prospective evidence, including an untouched post-monsoon test;
+- an Aurora fine-tune justified against the cheap-adaptation baseline.
+
+Until those milestones exist, this repository should be presented as a
+benchmark and system under active development—not as a validated public
+forecast service.
+
+## Roadmap to a public experimental feed
+
+1. Regenerate all 56 forecast dates against the 159-station registry.
+2. Run the integrity audit and publish raw baseline scorecards.
+3. Evaluate the implemented trailing local anchor and retain it only if event
+   skill is protected.
+4. Add real CAMS forecasts at each lead as an operational comparison.
+5. Build a latest-cycle runner that stores immutable, versioned forecasts.
+6. Run privately in shadow mode to measure failures and data latency.
+7. Publish an interactive nine-city feed with raw and corrected forecasts,
+   data-freshness indicators, and a rolling public scorecard.
+8. Expand carefully while accumulating prospective seasonal evidence.
+
+The intended product is transparent: visitors should be able to see what was
+predicted, which model version produced it, which observations later occurred,
+and where the system failed.
+
+## Explore the repository
+
+| Start here | Purpose |
+|---|---|
+| [Project status](docs/PROJECT_STATUS.md) | Plain-language scoreboard and immediate next steps |
+| [Benchmark specification](docs/BENCHMARK_SPEC.md) | Task, metrics, baselines, cities, and split design |
+| [Canonical agent brief](docs/AGENT_BRIEF.md) | Research decisions and non-negotiable constraints |
+| [Execution plan](docs/EXECUTION_PLAN.md) | Dependencies, risks, and research gates |
+| [Workstreams](docs/WORKSTREAMS.md) | Current parallel ownership model |
+| [Public product specification](docs/PRODUCT_SPEC.md) | User experience, claim boundaries, and launch gates |
+| [Live-feed specification](docs/LIVE_FEED_SPEC.md) | Versioned forecast contract and shadow-mode design |
+| [Additional-data plan](docs/DATA_EXPANSION_PLAN.md) | Ranked expansion experiments and leakage rules |
+| [Data-source audit](docs/DATA_SOURCE_AUDIT.md) | Verified access, licensing risks, and minimal pilots |
+| [Publication readiness](docs/PUBLICATION_READINESS.md) | Repository security, licensing, and release blockers |
+| [`web/`](web/) | Interactive product preview using illustrative data |
+| [GPU runbook](scripts/setup_gpu.md) | Reproducing the 56-date rollout |
+| [Development journal](JOURNAL.md) | Chronological decisions, bugs, and negative results |
+| [`src/data/`](src/data/) | OpenAQ, CAMS, registry, and alignment code |
+| [`src/pipeline/orchestrate.py`](src/pipeline/orchestrate.py) | Aurora rollout orchestration |
+| [`src/eval/`](src/eval/) | Audit, baselines, benchmark, and metrics |
+| [`src/model/calibrator.py`](src/model/calibrator.py) | Rejected baseline plus event-skill guardrails |
+| [`src/model/anchor.py`](src/model/anchor.py) | Component A chronological local anchor |
+| [`src/report/`](src/report/) | Scorecard and plot generation |
+
+The full OpenAQ archive is intentionally not tracked at `HEAD` because of its
+size. The repository contains the registry, pull provenance, code, and frozen
+date manifest. No archive release is promised until redistribution terms,
+attribution, and historical Git cleanup are resolved.
+
+## Reproduce the code checks
+
+Python 3.11 is the reference environment.
 
 ```bash
-python -m src.data.openaq_client   --city delhi --date-from 2018-02-01 --date-to 2018-02-03
-python -m src.data.era5_downloader --dataset cams --city delhi --date-from 2018-02-01 --date-to 2018-02-01
-python -m src.data.align           --city delhi --cams data/cams/delhi_cams_2018-02-01_2018-02-01.nc
-python -m src.eval.run_phase1      --city delhi
-python -m src.eval.plots           --city delhi
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# macOS/Linux: source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+python -m src.eval.audit
+python -m pytest -q
 ```
 
-Reproduce the IndiaAQBench pilot (2 dates, all 9 cities — station registry and
-2 days of pairs are already committed, so this just re-scores them):
+Data acquisition and Aurora rollout additionally require:
 
-```bash
-python -m src.eval.benchmark --split all
-```
+- an `OPENAQ_API_KEY` in `.env`;
+- a Copernicus credential in `~/.cdsapirc`;
+- acceptance of the relevant CAMS dataset licence;
+- enough memory for Aurora inference. The project uses a 48 GB GPU for the
+  batch rollout, although a single step has been demonstrated on a 32 GB CPU.
 
-Re-pull ground truth or extend to new init dates from scratch:
+Do not trust a generated results table unless `python -m src.eval.audit` passes.
+See the [GPU runbook](scripts/setup_gpu.md) for the controlled rollout.
 
-```bash
-python -m src.data.archive_pull                                    # all 9 cities, full window
-python -m src.pipeline.orchestrate --dates 2025-11-15 2025-11-20 --device cpu
-python -m src.eval.benchmark
-```
+## Data and model credits
 
-## Setup
+- Ground observations: [OpenAQ](https://openaq.org/) and its underlying Indian
+  providers.
+- Atmospheric inputs: [Copernicus Atmosphere Monitoring Service
+  (CAMS)](https://ads.atmosphere.copernicus.eu/).
+- Foundation model: [Microsoft Aurora](https://github.com/microsoft/aurora).
 
-```bash
-python -m venv .venv && .venv/Scripts/activate   # or source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-Credentials (never committed):
-- `OPENAQ_API_KEY` in `.env` — register at [explore.openaq.org](https://explore.openaq.org)
-- `~/.cdsapirc` with a Copernicus personal access token — works for both the
-  Climate Data Store (ERA5) and Atmosphere Data Store (CAMS); accept each
-  dataset's licence once on the website.
-
-## Status and roadmap
-
-- [x] **Phase 1 — data pipeline + global-model baseline.** OpenAQ / ERA5 / CAMS
-      clients, spatial alignment, metrics, plots; 4-city CAMS-vs-OpenAQ
-      benchmark (above).
-- [x] **Phase 2 — Aurora inference.** `AuroraAirPollution`
-      (`aurora-0.4-air-pollution.ckpt`) run end-to-end on global CAMS analysis
-      data; predicted PM2.5 sampled at OpenAQ stations (`src/model/aurora_runner.py`,
-      `src/eval/run_phase2.py`). First result above (Delhi, 2025-11-15).
-      GPU setup for scaling: [scripts/setup_gpu.md](scripts/setup_gpu.md).
-- [x] **Phase 3 — IndiaAQBench scaffold.** Spec frozen (v0.1), 9-city
-      ground-truth archive complete (~942K station-hours, 127 stations),
-      multi-date orchestrator (+12h→+96h rollout), AQI category metrics module,
-      and evaluation harness — all validated on a 2-date pilot (above).
-      **Next:** coverage audit to freeze the full benchmark date list and
-      train/test/held-out splits (`src/eval/coverage_audit.py`), then scale
-      the orchestrator run to the full date set.
-- [x] **Phase 4a — first calibrator: rejected, documented.** A learned pooled
-      calibrator improved MAE while collapsing Very Poor+ event detection to
-      zero (above). Kept in-tree as a negative baseline, with the four root
-      causes and the fixes it forced.
-- [ ] **Phase 4b — adaptation, redesigned.** Per-station trailing-ratio
-      anchoring (no training set, cannot flatten the tail), gated by a
-      no-harm-on-events rule; then a scoped fine-tune experiment — the one step
-      that genuinely wants a 40–80 GB card, since it backprops through the
-      rollout. The 56-date inference pass runs on a ~$0.5/hr 48 GB spot GPU, no
-      A100 needed: [scripts/setup_gpu.md](scripts/setup_gpu.md).
-- [ ] **Phase 5 — transparent research dashboard.** Public, per-city,
-      per-lead-time scorecards — the point being that anyone can see exactly
-      where the adapted model is (and isn't) trustworthy, city by city.
-
-## Honest limitations (so far)
-
-- Phase 1 covers **one day** (2018-02-01) — chosen for OpenAQ sensor overlap;
-  Phase 3 (IndiaAQBench) is the real seasonal scale-out, currently at 2
-  pilot dates pending the coverage audit.
-- Comparing a 0.4°–0.75° grid cell to a point station carries inherent
-  representativeness error; that's part of what's being measured, not a bug,
-  but it means "CAMS MAE" conflates model error with resolution mismatch.
-- Hourly persistence is a deliberately harsh baseline at short leads; the
-  IndiaAQBench pilot result (above) is the first evidence it stops being the
-  harder baseline to beat as lead time grows.
-- **The pilot's Very Poor+ POD numbers are computed on 2 dates / 99 event rows**
-  — enough to validate the harness end-to-end and motivate a hypothesis, not
-  enough to trust. They also mix two station registries (see below). Treat them
-  as a hint until the full benchmark-date run lands.
-- **Registry-version skew, found by our own audit:** the two pilot dates were
-  sampled at 33 stations, later dates at 127, so pooled metrics span two station
-  populations. This does not overturn the calibrator post-mortem (that concerned
-  the value distribution — training p95 98 vs test max 548) but those dates are
-  being regenerated before any figure is published.
-- The station registry is uneven across cities (a handful in Kanpur/Varanasi vs
-  ~55 in Delhi) — a real constraint of OpenAQ coverage, not a sampling choice,
-  and part of why held-out-city transfer is scored separately from held-out-
-  station interpolation.
-- **Post-monsoon is the season we can least afford to get wrong and have least
-  data for.** OpenAQ serves nothing before ~Feb 2025, so severe-season coverage
-  is thin by construction; the cutoff revision mitigates this but does not
-  eliminate it.
-
-## Data sources & credits
-
-- Ground truth: [OpenAQ](https://openaq.org) (CPCB / DPCC / IMD station data).
-- [ERA5](https://cds.climate.copernicus.eu) and [CAMS](https://ads.atmosphere.copernicus.eu)
-  data © Copernicus Climate Change / Atmosphere Monitoring Service.
-- Model: [Microsoft Aurora](https://github.com/microsoft/aurora)
-  ([paper](https://arxiv.org/abs/2405.13063)).
-
-Development journal with session-by-session decisions and findings: [JOURNAL.md](JOURNAL.md).
+For an honest portfolio description and milestone-based publishing guidance,
+see [Portfolio guide](docs/PORTFOLIO_GUIDE.md).

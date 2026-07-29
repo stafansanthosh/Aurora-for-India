@@ -513,3 +513,88 @@ subdirectory gap (`26d6005`).
 **Next:** WS-6 — the 56-date rollout (`scripts/setup_gpu.md`), which regenerates
 the two stale pilot dates on the 159-station registry as a side effect. Then
 Component A + calibrator re-fit on data that finally contains a severe season.
+
+---
+
+# July 29, 2026 — Integration, public-product design, and pre-publication audit
+
+All completed Claude/Codex workstreams were reviewed together on `master`.
+
+### Component A
+
+Integrated the chronological per-station trailing-ratio anchor in
+`src/model/anchor.py` and its benchmark hook. It uses only forecast errors whose
+verifying observations occur strictly before initialization, isolates station
+histories, shrinks thin support toward no correction, clips multipliers, and
+reports sample count, support age, and fallback status.
+
+Independent review found two edge cases before merge:
+
+- a zero Aurora forecast is valid maximum-underprediction evidence, so the
+  estimator now uses `max(raw, epsilon)` rather than discarding zero;
+- twice-daily cycles can verify multiple forecast leads against one observation,
+  so support is deduplicated by verifying time and the shorter lead is retained.
+
+The source now states an important boundary: retrospective timestamps can
+prevent future-observation leakage, but the archive cannot prove when an
+observation was retrieved. A live adapter must additionally enforce
+`retrieved_at <= init_time`.
+
+### Evaluation and provenance hardening
+
+The strict evaluator previously filtered registry versions but still admitted
+any extra pair date produced with the current registry. It now requires the
+exact frozen 56-date manifest, all 159 stations, all nine lead rows, no duplicate
+keys, 1,431 rows per date, and no missing dates.
+
+Registry fingerprints previously hashed station IDs only. A city or coordinate
+correction with the same IDs could therefore reuse stale samples. The
+fingerprint now canonicalizes and hashes station ID, city, latitude, and
+longitude.
+
+Event metrics now preserve hits, misses, false alarms, observed events, and
+forecast events beside POD/FAR/CSI. The observed-extremes-only table no longer
+reports FAR, which is undefined as a diagnostic after all non-event rows have
+been removed.
+
+### Scientific documentation correction
+
+The earlier journal entry's revised-training “p95 ≈360” was a provisional
+mislabel. Recalculation on the completed archive gives:
+
+| Population | Rows | Very Poor+ events | p95 | p99 |
+|---|---:|---:|---:|---:|
+| All pre-cutoff archive | 824,615 | 68,519 | 163 | 334 |
+| Six-city train pool | 691,327 | 63,188 | 175 | 352 |
+| Calibrator spatial fit pool | 578,113 | 52,024 | 171 | 343 |
+
+The old value was effectively p99, not p95. The split rationale remains valid
+because fitting still contains tens of thousands of severe observations.
+`docs/BENCHMARK_SPEC.md` and `src/splits.py` now carry the correction.
+
+### Product and additional data
+
+Added a non-operational interactive preview under `web/`, with every number
+labeled illustrative. Added the public product, immutable live-feed, data
+expansion, and independently verified source-audit documents. The first
+additional scientific baseline is actual CAMS forecasts at +12 through +96
+hours; the existing `raw_cams` field is only the CAMS starting field held
+constant. The official OGD India CPCB feed is suitable for a small live
+Patna/Varanasi redundancy pilot, not verified historical backfill. FIRMS and
+Sentinel-5P remain explanatory until a leakage-safe ablation proves predictive
+value.
+
+### Publication gate
+
+GitHub is still private. A history audit found hundreds of megabytes of raw
+OpenAQ files in reachable earlier commits, despite their removal from `HEAD`.
+There is also no software licence, the 26-test/web-build candidate has not yet
+run in CI, and the local Python/Node runtimes are unavailable. The repository
+must remain private until checks pass and the owner chooses a clean public
+mirror or explicitly authorizes a reviewed destructive history rewrite.
+
+Static integration checks completed here: no credential-pattern candidates in
+119 tracked/new files, no candidate file above 5 MB, no broken relative links
+across 23 Markdown files, all documentation JSON blocks parse, package/lock
+metadata agree, and `git diff --check` passes. Python tests, the data audit, and
+the web build remain explicitly unrun in this environment.

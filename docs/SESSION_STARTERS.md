@@ -1,157 +1,105 @@
-# Session starters — copy, paste, go
+# Current session starters
 
-Each tool auto-loads its own instructions file, and all three point at the same
-canonical brief (`docs/AGENT_BRIEF.md`), so **you never have to explain the
-project**. These prompts only say *which job to do*.
+**Updated:** 2026-07-29
 
-| Tool | Auto-loads | You still paste |
-|---|---|---|
-| Claude Code | `CLAUDE.md` | the workstream prompt |
-| OpenAI Codex | `AGENTS.md` | the workstream prompt |
-| GitHub Copilot (VS Code) | `.github/copilot-instructions.md` | the workstream prompt |
+The earlier archive, guardrail, reporting, Component A, product-design,
+additional-data, and public-documentation sessions are complete. Do not restart
+them. The scientific blocker is the user-run GPU rollout in
+`scripts/setup_gpu.md`.
 
-**Rule: one workstream per session.** Two sessions editing the same file is the
-only way parallel work goes wrong. Ownership: `docs/WORKSTREAMS.md`.
+Every new agent must first read `docs/AGENT_BRIEF.md`, `docs/HANDOFF.md`, and
+the relevant section of `docs/WORKSTREAMS.md`. The owner requested work on
+`master` for this phase; do not create or switch branches.
 
-Every prompt below starts with a read instruction anyway — belt and braces, in
-case a tool's auto-load is off or truncated.
+## GPU rollout — user/cloud action
 
----
+This is not a local agent task. Provision four temporary 48 GB GPU workers,
+split `docs/benchmark_dates.csv` into four disjoint slices, and run one slice
+per worker:
 
-# The one that matters right now
-
-## WS-1 — finish the data pull *(critical path; everything waits on it)*
-
-**Claude Code:**
-```
-Read docs/AGENT_BRIEF.md and docs/HANDOFF.md, then continue WS-1 (data acquisition).
-
-Pass 1 of the re-pull finished: bangalore, chennai and varanasi are complete
-("ok"); six cities still have 65 failed windows between them. Run:
-
-  python -m src.data.archive_pull --cities lucknow kolkata patna delhi kanpur mumbai
-
-Expect to run it MORE THAN ONCE - each pass only fetches what is still missing,
-so passes get shorter. Repeat until all nine cities report "status": "ok" in
-data/openaq/archive/pull_manifest.jsonl.
-
-Then, only once every city is "ok":
-  python -m src.data.build_station_registry
-  python -m src.eval.coverage_audit --n 56
-  python -m src.eval.audit
-
-Sanity gate: no city may end up with fewer rows than its copy in
-data/openaq/_backup_pre_sensorfix/. Station counts should RISE (that is the
-sensor-merge fix); row counts must NOT fall. Report the before/after station
-count per city, and whether the coverage audit now yields post-monsoon TRAIN
-dates - that is the point of the 2025-12-01 cutoff revision.
+```bash
+python -m src.pipeline.orchestrate --dates-file slice_0N --device cuda
 ```
 
-**Split across 2-3 sessions** (max 3 — one connection, one API key; more just
-triggers rate limiting). Give each session a disjoint city set:
-```
-Read docs/AGENT_BRIEF.md. Run ONLY:
-  python -m src.data.archive_pull --cities lucknow kolkata
-Re-run until BOTH report "status": "ok" in data/openaq/archive/pull_manifest.jsonl
-(expect several passes; each only fetches missing windows). Then stop.
-Do not touch other cities, do not rebuild the registry, do not edit other files.
-```
-Suggested disjoint split: `lucknow kolkata` / `delhi` / `patna kanpur mumbai`.
+Replace `N` with `0`, `1`, `2`, or `3`. Bring all pair files back before
+scoring. Exact setup and verification are in `scripts/setup_gpu.md`.
 
----
+## Actual CAMS forecast baseline — future coding session
 
-# Runs in parallel today (nothing blocks these)
+```text
+Read docs/AGENT_BRIEF.md, docs/HANDOFF.md, docs/DATA_SOURCE_AUDIT.md section 5,
+and docs/DATA_EXPANSION_PLAN.md sections 4.1, 8, 10, and 11.
 
-## WS-2 — Component A: per-station anchoring → **Claude** (design judgement)
+Implement the actual CAMS +12 through +96-hour PM2.5 forecast source as a new,
+lead-dependent baseline. Own only:
+  src/data/sources/cams_forecast.py
+  tests/data/test_cams_forecast_contract.py
+  new tiny fixtures/manifests required by those tests
 
-```
-Read docs/AGENT_BRIEF.md and docs/WORKSTREAMS.md, then implement WS-2 in a NEW
-file src/model/anchor.py, on branch ws2-anchor.
+Do not change Aurora's lead-zero CAMS inputs. Preserve source units and convert
+kg/m3 to ug/m3 exactly once. Store initialization, valid time, lead, request,
+retrieval time, dataset/version, hash, registry version, and source licence.
+Use a one-date minimal pilot, no bulk download. Do not edit src/eval/** or
+shared data until the coordinator reviews the handoff.
 
-Per-station trailing-ratio anchoring: trailing median obs/aurora per station over
-~14 days at short leads, shrunk toward 1.0 when the sample is thin, clipped to
-[1/3, 3], applied multiplicatively at all leads. It uses no training set, so it
-cannot inherit a training-distribution ceiling - that is the whole point, since
-the v1 learned calibrator collapsed the severe tail.
-
-Register it as a method in src/eval/benchmark.py (coordinate that single line
-with WS-3) and score it against raw Aurora on Very Poor+ POD/FAR/CSI, not MAE.
-Report whether it beats raw Aurora on events at each lead time.
+Before stopping: run the relevant tests, document the exact pilot request and
+result, update docs/HANDOFF.md only if the critical state changed, append
+JOURNAL.md, and commit reviewed files.
 ```
 
-## WS-3 — guardrails + tests → **Codex or Copilot** (fully specified)
+## OGD India Patna/Varanasi pilot — future coding session
 
-```
-Read docs/AGENT_BRIEF.md and docs/WORKSTREAMS.md section WS-3, then implement it
-exactly. You own src/model/calibrator.py and tests/ ONLY. Branch: ws3-guardrails.
+```text
+Read docs/AGENT_BRIEF.md, docs/HANDOFF.md, docs/DATA_SOURCE_AUDIT.md section 4.2,
+and docs/DATA_EXPANSION_PLAN.md sections 5, 6, 8, and 11.
 
-1. The calibrator CLI must print Very Poor+ POD and FAR beside MAE, and refuse to
-   save a model whose POD is below raw Aurora's ("no-harm-on-events" gate).
-2. Extend --selftest so train and test come from DIFFERENT regimes (calm train ->
-   severe test). This is the case that would have caught the v1 tail collapse and
-   the current same-distribution selftest misses it.
-3. Add a seasonal-transfer check: train winter-only -> test monsoon-only.
-4. Move the inline _test() functions in src/eval/aqi.py and src/model/calibrator.py
-   into a real tests/ tree, preserving every existing assertion.
+Build a tiny, licence-aware current-feed pilot for the official OGD India CPCB
+resource. Own only:
+  src/data/sources/cpcb.py
+  src/data/harmonize_external.py
+  tests/data/test_harmonize_external.py
+  data/external/manifests/ files that are safe and permitted to publish
 
-Do not modify the pipeline or any file outside your ownership.
-```
+Request only Patna and Varanasi for the smallest useful window. Preserve raw
+station/provider names, coordinates, pollutant, unit, observed time, retrieved
+time, resource ID, and raw hash. Produce a review report for identity,
+overlap with OpenAQ, latency, missingness, units, duplicates, and licence.
+Do not call it independent truth unless lineage proves that. Do not scrape
+undocumented endpoints or alter the frozen benchmark/registry.
 
-## WS-4 — dashboard → **Codex or Copilot** (read-only, cannot break anything)
-
-```
-Read docs/AGENT_BRIEF.md and docs/WORKSTREAMS.md section WS-4, then build
-src/report/ on branch ws4-dashboard. You own src/report/ and docs/figures/ ONLY.
-
-Read results/metrics/indiaaqbench.csv and render per-city x per-lead scorecards:
-Very Poor+ POD/FAR/CSI and AQI category hit-rate, comparing raw Aurora,
-persistence, climatology and calibrated. Event metrics are the headline; show MAE
-as secondary. Static matplotlib output to docs/figures/ is fine.
-
-This is a read-only consumer of an existing CSV schema - do not modify the
-pipeline, the metrics code, or anything under src/eval or src/model.
+Before stopping: run tests, record pass/fail counts, append JOURNAL.md, and
+commit reviewed files.
 ```
 
-## WS-5 — fine-tune design doc → **Claude** (research-heavy, no code)
+## Live runner and immutable ledger — future coding session
 
-```
-Read docs/AGENT_BRIEF.md and docs/EXECUTION_PLAN.md section 5, then write
-docs/FINETUNE_DESIGN.md on branch ws5-finetune-design. No pipeline code.
+```text
+Read docs/AGENT_BRIEF.md, docs/HANDOFF.md, docs/PRODUCT_SPEC.md, and
+docs/LIVE_FEED_SPEC.md completely.
 
-Settle all six prerequisites: what to unfreeze (LoRA / head-only / full), loss
-design for extremes (the literature finds plain MSE under-serves them - see
-asymmetric and quantile losses), station-sparse vs gridded supervision, training
-rollout length and its memory cost, and a catastrophic-forgetting protocol using
-the L2 held-out cities (Kanpur, Varanasi, Kolkata).
+Implement only the first vertical slice: latest-cycle state machine, validated
+input manifest, immutable forecast ledger, and generation of the documented
+public JSON using fixture forecasts. Own new src/live/** and tests/live/**.
+Do not connect cloud credentials, schedule production jobs, deploy a site, or
+replace web fixtures in this session. Enforce retrieved_at <= init_time for
+every live correction input. A failed correction must fall back visibly to raw
+Aurora and must never mutate an earlier forecast record.
 
-Research Aurora's actual fine-tuning API in its repo and docs rather than
-assuming what it supports. State clearly what we must measure BEFORE spending
-GPU money on fine-tuning.
-```
-
----
-
-# Blocked until WS-1 finishes
-
-## WS-6 — the 56-date GPU rollout
-
-```
-Read docs/AGENT_BRIEF.md, docs/HANDOFF.md and scripts/setup_gpu.md.
-WS-1 is complete and docs/benchmark_dates.csv has been re-frozen.
-
-Run the rollout on 48GB spot GPUs (NOT an A100 - see the brief), splitting the
-date list across 4 boxes so it finishes in ~2.5h instead of ~10h. Run the CAMS
-downloads on the boxes too; the datacenter link is the fix for our flaky
-downloads. Then fit the calibrator, run the full benchmark, and report Very Poor+
-POD/FAR by lead for every method. Run python -m src.eval.audit before reporting.
+Before stopping: validate schema fixtures, failure/retry/idempotency tests,
+append JOURNAL.md, and commit reviewed files.
 ```
 
----
+## Fine-tuning design — blocked future research session
 
-# Ending any session (paste this before you close the tab)
+Do not start this until raw Aurora, persistence, actual CAMS forecast,
+Component A, and the guarded calibrator have valid current-registry results.
 
-```
-Update docs/HANDOFF.md (Current state + Immediate next step) and append a
-JOURNAL.md entry covering what changed and why. Run python -m src.eval.audit,
-then commit and push.
+```text
+Read docs/AGENT_BRIEF.md, docs/BENCHMARK_SPEC.md, docs/EXECUTION_PLAN.md section
+6, and the versioned baseline tables.
+
+Write docs/FINETUNE_DESIGN.md only. Define trainable parameters, loss design,
+station-sparse/gridded supervision, rollout length, memory and cost, L1/L2 and
+temporal controls, catastrophic-forgetting checks, and the exact event-skill
+gain required to justify training. Do not implement or run fine-tuning.
 ```

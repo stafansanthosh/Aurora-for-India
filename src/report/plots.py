@@ -32,7 +32,7 @@ METHOD_LABELS = {
     "raw_aurora": "Raw Aurora",
     "calibrated": "Calibrated",
     "persistence": "Persistence",
-    "raw_cams": "Raw CAMS",
+    "raw_cams": "CAMS start held constant",
     "climatology": "Climatology",
 }
 

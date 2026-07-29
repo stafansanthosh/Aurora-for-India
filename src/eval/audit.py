@@ -32,6 +32,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 OPENAQ_DIR = PROJECT_ROOT / "data" / "openaq"
 PAIRS_DIR = PROJECT_ROOT / "results" / "pairs"
 REGISTRY = PROJECT_ROOT / "data" / "stations.csv"
+DATES_FILE = PROJECT_ROOT / "docs" / "benchmark_dates.csv"
 
 # Aurora's canonical 0.4 deg grid (451 x 900), lat 90 -> -90, lon 0 -> 359.6.
 GRID_LATS = 90.0 - 0.4 * np.arange(451)
@@ -206,6 +207,31 @@ def audit_pairs(reg: pd.DataFrame) -> pd.DataFrame:
           f"({stale[:5]}{'...' if len(stale) > 5 else ''}) -- "
           "regenerate these dates before pooling results",
           warn_only=True)
+
+    # Official-table readiness: the current registry must have one exact,
+    # complete pair matrix for every frozen date. Legacy pairs remain visible
+    # above for diagnosis but can never satisfy this gate.
+    from ..pipeline.orchestrate import _registry_version
+    current_version = _registry_version(reg)
+    stamps = (pairs["registry_version"] if "registry_version" in pairs.columns
+              else pd.Series([None] * len(pairs), index=pairs.index))
+    current_pairs = pairs[stamps.eq(current_version)].copy()
+    frozen = set(pd.read_csv(DATES_FILE)["init_date"].astype(str))
+    current_dates = set(current_pairs["init_date"].astype(str))
+    extra = sorted(current_dates - frozen)
+    check("pairs: current-registry dates are all in frozen manifest", not extra,
+          f"{len(extra)} extra dates: {extra}")
+    expected_rows = len(reg) * 9
+    per_current_date = current_pairs.groupby("init_date").size()
+    complete = (
+        current_dates == frozen
+        and len(per_current_date) == len(frozen)
+        and bool((per_current_date == expected_rows).all())
+        and not current_pairs.duplicated(["init_date", "station_id", "lead_h"]).any()
+    )
+    check("pairs: current-registry rollout is exactly complete", complete,
+          f"{len(current_dates)}/{len(frozen)} dates; expected "
+          f"{expected_rows:,} rows/date")
     return pairs
 
 

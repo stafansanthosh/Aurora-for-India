@@ -1,9 +1,9 @@
 # GPU setup — run the frozen IndiaAQBench 56-date orchestrator
 
-This is the runbook for the full benchmark pass: roll out AuroraAirPollution at
-every frozen init date, fit the pooled calibrator, and score the whole metric
-suite. It supersedes the old `setup_a100.md` (which was written for the earlier
-single-timestep Phase-2 validation, before the orchestrator/calibrator existed).
+This is the runbook for the expensive part of the benchmark: roll out
+AuroraAirPollution at every frozen init date and bring the small forecast-pair
+files back to the machine that holds the untracked OpenAQ archive. Calibration
+and scoring happen there after the integrity audit.
 
 ## You do NOT need an A100
 
@@ -30,14 +30,14 @@ runs in ~32 GB of **CPU** RAM on the laptop.
 Modal) rent by the hour with no quota approval and boot in ~2 minutes. Estimated
 total for all 56 dates: **~$10–30**.
 
-## Run the WHOLE pipeline on the box, not just the GPU step
+## Run CAMS retrieval and Aurora inference on the box
 
 The real bottleneck is **not** compute — it is the CAMS download from Copernicus
 ADS (~240 MB/date). Over a home connection this repeatedly drops mid-stream
 (`IncompleteRead`, 120 s backoffs → ~14 min for one file). A cloud box has a
-datacenter pipe to Copernicus, so **both** the download and the rollout get
-faster and more reliable. Do everything on the box; copy only the small result
-parquet/CSV files back.
+datacenter pipe to Copernicus, so **both** CAMS retrieval and the rollout get
+faster and more reliable. Copy only the small pair files back. The cloud box
+does not need the untracked OpenAQ archive to generate those pairs.
 
 ---
 
@@ -53,6 +53,8 @@ parquet/CSV files back.
 ## 1. Environment
 
 ```bash
+# The repository is currently private. Use an authenticated GitHub clone or
+# upload the exact reviewed source snapshot.
 git clone https://github.com/stafansanthosh/Aurora-for-India.git
 cd Aurora-for-India
 python -m venv .venv && source .venv/bin/activate
@@ -71,14 +73,13 @@ cat > ~/.cdsapirc <<'EOF'
 url: https://ads.atmosphere.copernicus.eu/api
 key: <YOUR_ADS_KEY>
 EOF
-
-# OpenAQ (required: the archive CSVs are NOT tracked in git -- see spec section 7.
-# Either re-pull with src.data.archive_pull, or fetch the published release asset):
-echo "OPENAQ_API_KEY=<YOUR_KEY>" > .env
 ```
 
 Accept the **CAMS global-atmospheric-composition-forecasts** licence once on the
 ADS website, or the first download 403s.
+
+An OpenAQ key and the observation archive are not required for the rollout.
+They are required later on the local scoring machine.
 
 ## 3. Checkpoint
 
@@ -103,8 +104,9 @@ list across 4 boxes for ~2.5 h wall, ~$5 total** — dates are independent and t
 manifest makes each box resumable:
 
 ```bash
-split -n l/4 -d <(tail -n +2 docs/benchmark_dates.csv | cut -d, -f1) slice_
-python -m src.pipeline.orchestrate --dates-file slice_0X --device cuda
+tail -n +2 docs/benchmark_dates.csv | cut -d, -f1 | split -n l/4 -d - slice_
+# worker 0 uses slice_00; workers 1, 2, and 3 use slice_01, slice_02, slice_03
+python -m src.pipeline.orchestrate --dates-file slice_00 --device cuda
 ```
 
 Run under `tmux`/`nohup` so an SSH drop doesn't kill it. Progress: `tail -f` the
@@ -115,34 +117,36 @@ date** (159 stations × 9 lead rows) and **80,136 rows** across all 56. Resume i
 registry-aware, so dates rolled out at an older station registry are re-run
 rather than silently reused.
 
-## 5. Fit the calibrator + score everything
+## 5. Pull results back + tear down
 
 ```bash
-python -m src.model.calibrator                                             # fits on train-split pairs
-python -m src.eval.benchmark                                               # baselines only
-python -m src.eval.benchmark --calibrator results/models/pooled_calibrator.joblib  # + calibrated method
+# from your laptop; repeat for workers 1, 2, and 3
+scp -r <worker-0>:Aurora-for-India/results/pairs/* results/pairs/
 ```
 
-This writes `results/metrics/indiaaqbench.csv` (+ `_extremes`) — the headline
-per lead × city × method table, including whether the calibrator fixes the level
-error **without** killing Aurora's long-lead Very-Poor+ event skill.
+Then **stop/terminate every worker** so billing ends. The pair files are small;
+the roughly 240 MB/date global inputs were not retained.
 
-## 6. Pull results back + tear down
+## 6. Audit, score, and evaluate adaptation locally
+
+Run this on the machine that holds the complete OpenAQ archive:
 
 ```bash
-# from your laptop:
-scp -r <pod>:Aurora-for-India/results/pairs      results/
-scp -r <pod>:Aurora-for-India/results/metrics    results/
-scp -r <pod>:Aurora-for-India/results/models     results/
-scp -r <pod>:Aurora-for-India/results/india_fields results/
+python -m src.eval.audit
+python -m src.eval.benchmark
+python -m src.eval.benchmark --anchor
+python -m src.model.calibrator
+python -m src.eval.benchmark --calibrator results/models/pooled_calibrator.joblib
 ```
 
-Then **stop/terminate the pod** so billing ends. The pairs + metrics + model are
-small and get committed; the 240 MB/date globals were never persisted.
+The evaluator writes `results/metrics/indiaaqbench.csv` and the corresponding
+`_extremes` file. Do not fit or publish an adaptation if the audit fails.
+Component A is online local adaptation and must be labeled as using trailing
+observations in L1 and L2 cities.
 
 ## Reproducibility note
 
-Everything the run consumes is pinned: the frozen `docs/benchmark_dates.csv`, the
-versioned `data/stations.csv` (159 stations), the archived OpenAQ pulls, and the
-CAMS extraction scripts + date manifest. A second person can reproduce the exact
-results table from a clean clone by repeating steps 1–5.
+Everything the rollout consumes is pinned: the frozen
+`docs/benchmark_dates.csv`, versioned `data/stations.csv` (159 stations), code
+commit, and CAMS request/provenance manifests. Reproducing the final results
+also requires the separately versioned OpenAQ archive and its provenance.

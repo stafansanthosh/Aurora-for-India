@@ -1,159 +1,139 @@
-# Handoff: IndiaAQBench — calibration redesign after a documented failure
+# Handoff: IndiaAQBench current state
 
-> Adapted from the `handoff` skill. Its template says paste work-in-progress
-> **verbatim**, which is right when the next model has no repo access. Here the
-> next session *has the repo*, so this points at files instead — pasted code
-> would be huge and would go stale the moment a file changes. Everything below
-> is verifiable in-tree; nothing is invented.
+**Updated:** 2026-07-29
+**Branch:** `master`
+**Scientific blocker:** the 56-date Aurora rollout
+**Product status:** interface preview and specifications exist; no live feed
 
-## Context & goal
+## Objective and non-negotiables
 
-Building **IndiaAQBench**: an open, reproducible benchmark for multi-day PM2.5
-forecasting over Indian cities, testing whether cheap adaptation can lift
-Microsoft Aurora (1.3B atmospheric foundation model) into a practically useful
-tier. Target is **not** beating Delhi's AQEWS (WRF-Chem 400m, PI 87) — it is the
-~465 Indian cities with no public forecast system. Success is measured by
-**decision-relevant AQI category skill (Very Poor+ event POD/FAR), not MAE**,
-because GRAP emergency actions trigger on forecast category.
+IndiaAQBench tests whether Microsoft Aurora plus inexpensive, auditable
+adaptation can provide useful multi-day PM2.5 forecasts for Indian cities that
+lack a strong public forecasting system. Delhi is a dense diagnostic
+environment, not the target.
 
-## Key decisions made — do NOT re-litigate
+Success means detecting **Very Poor+ events (at least 121 µg/m³)**. POD, FAR,
+CSI, and event counts are headline results; MAE is secondary. Split constants
+live only in `src/splits.py`. Run `python -m src.eval.audit` before trusting a
+results table.
 
-- **Metrics**: category/event metrics are the headline; MAE is secondary. Spec §4.
-- **No A100 needed.** Aurora's docs specify ~40 GB at 0.25° *inference*; the
-  A100-80GB figure is for 0.1° + backprop. We run 0.4° inference → a ~$0.50/hr
-  48 GB spot GPU (A6000) on RunPod/Vast/Lambda. Azure quota was denied and is
-  irrelevant. Runbook: `scripts/setup_gpu.md`.
-- **Temporal cutoff revised once: 2025-07-01 → 2025-12-01** (commit `0593506`),
-  under the contingency pre-registered in spec §6, before any adaptation was
-  trained on the new split. Rationale and numbers in `src/splits.py` docstring
-  and spec §6. **This must be disclosed wherever results appear.**
-- **Split constants live in `src/splits.py` only.** They were duplicated in three
-  modules; that is now the single source of truth.
-- **Calibration comes before fine-tuning** — not instead of it. Fine-tuning is
-  still planned (task #14); it needs the baseline as a bar to beat.
-- **OpenAQ backfill is impossible.** Location metadata claims coverage since
-  2016, but the hours endpoint serves nothing before ~Feb 2025 for *any* sensor,
-  old or new. Verified at sensor level. Do not spend time re-checking this;
-  see `src/data/archive_probe.py`.
+## Verified current state
 
-## Current state
+| Item | State |
+|---|---|
+| OpenAQ archive | Complete: 1,489,534 observations |
+| Station registry | Complete: 159 stations across 9 cities |
+| Frozen dates | Complete: 56 dates, 32 train and 24 test |
+| Integrity audit | Last recorded: 34 checks, 0 failures |
+| Calibrator guardrail tests | Original 10 last recorded passing |
+| Current test collection | 26 tests after integration review; not yet run in this integration |
+| Current-registry pair files | **0** |
+| Valid full benchmark table | **Absent** |
+| Public live forecast | **Absent** |
 
-**Done and pushed** (through commit `cb19d45` on `ws4-dashboard`):
-- Full pipeline: CAMS download → Aurora rollout (+12h…+96h) → station sampling →
-  eval harness with 4 baselines + category/event metrics.
-- **WS-4 Dashboard & Reporting Package** (`src/report/`): `scorecard.py` and `plots.py`
-  for generating per-city/per-lead scorecards and matplotlib dashboard figures.
-- **5 dates of pairs** in `results/pairs/` (2025-02-19, 2025-03-03, 2025-06-03,
-  2025-11-15, 2025-11-20), 1,143 rows each at 127 stations.
-- **56 benchmark dates frozen** in `docs/benchmark_dates.csv` — **stale, must be
-  re-run** after the pull (it used the old cutoff and the old registry).
-- **v1 calibrator: documented NEGATIVE result.** See "Rejected paths".
+The five pair files under `results/pairs/` are legacy pilot artifacts. They use
+superseded 33- or 127-station registries; two dates are also outside the frozen
+schedule. The strict loader correctly rejects all five.
 
-**RE-PULL COMPLETE (2026-07-28): all 9 cities `ok`.** ~1.49M station-hours,
-registry rebuilt to **159 stations**, dates re-frozen with **8 post-monsoon
-TRAIN dates** (32 train / 24 test). Sanity gate passed: every city gained
-stations, none lost rows. Delhi's last 3 windows were failing on OpenAQ's
-per-minute rate limit (empty-month requests fire too fast to self-pace); fixed
-in `openaq_client.py` with Retry-After-aware backoff + 0.35 s sensor pacing.
-**Immediate next step is now WS-6: the 56-date GPU rollout** (see
-`scripts/setup_gpu.md`), which also regenerates the 2 stale pilot dates on the
-new registry. The table below is the historical pass-1 record:
+The temporal cutoff changed once from 2025-07-01 to 2025-12-01 under the
+pre-registered data-coverage contingency, before adaptation was fitted on the
+revised split. Every public result must disclose that change. The frozen test
+period has no post-monsoon dates, so the present benchmark cannot support a
+year-round utility claim.
 
-65 of 198 windows failed on the flaky home connection. Three cities are complete
-and show exactly the gains the sensor fix predicted; six need another pass.
+## Work completed in the current integration
 
-| City | Status | Rows | Stations (was) | Failed windows |
-|---|---|---|---|---|
-| bangalore | **ok** | 112,258 | 16 (13) | 0 |
-| chennai | **ok** | 78,154 | 8 (6) | 0 |
-| varanasi | **ok** | 43,329 | 4 (2) | 0 |
-| mumbai | partial | 327,694 | 36 (32) | 2 |
-| kanpur | partial | 31,353 | 3 (2) | 1 |
-| patna | partial | — | — (4) | 12 |
-| delhi | partial | — | — (55) | 13 |
-| kolkata | partial | — | — (9) | 15 |
-| lucknow | partial | — | — (4) | **22 (all)** |
+- Component A exists in `src/model/anchor.py`. It uses only forecast errors
+  whose verifying observations occur strictly before each initialization,
+  isolates station histories, shrinks thin samples toward no correction, clips
+  the multiplier, and reports fallback diagnostics.
+- `src/eval/benchmark.py --anchor` adds Component A to the common scoring path.
+- Fifteen Component A tests exist in `tests/test_anchor.py`; they have not run
+  locally because the Windows virtual environment points to a missing base
+  Python interpreter.
+- The public product and live-feed contracts are documented in
+  `docs/PRODUCT_SPEC.md` and `docs/LIVE_FEED_SPEC.md`.
+- An interactive product preview lives under `web/`. Every forecast value is
+  illustrative and the UI states that no live forecast is being issued.
+- Additional-data work is documented in `docs/DATA_EXPANSION_PLAN.md` and
+  independently checked in `docs/DATA_SOURCE_AUDIT.md`.
+- GitHub Actions is configured to run the Python tests and web build after the
+  reviewed commit is pushed.
 
-**Delhi and Patna were degraded and have been restored from
-`data/openaq/_backup_pre_sensorfix/`.** The no-overwrite-on-partial guard was
-added *during* the run, so the already-loaded module never used it. It is active
-now, so this cannot recur. Kolkata was restored earlier; Lucknow wrote nothing
-(0 rows), so it is untouched. **All 121 part files are preserved** — the re-run
-only fetches the missing windows and then assembles complete + station-enriched
-data.
+Component A is **implemented, not scientifically accepted**. It cannot be
+scored until valid 159-station pairs exist. It uses trailing local
+observations even in held-out cities, so report it as “held-out-city transfer
+with trailing local observations,” never pure zero-shot transfer.
+Its retrospective frame can enforce observation time but does not contain a
+reliable source `retrieved_at`; the live adapter must enforce retrieval
+availability separately.
 
-## Work in progress
+## Additional-data decisions
 
-**The one command that matters** — resumable, skips completed windows:
-```bash
-python -m src.data.archive_pull --cities varanasi kanpur patna lucknow kolkata chennai bangalore mumbai delhi
-```
-- Progress: `ls data/openaq/archive/parts/*.csv | wc -l` (198 windows total)
-- Offline rebuild from parts, no network: `python -m src.data.archive_pull --assemble-only`
-- Backup of pre-re-pull CSVs: `data/openaq/_backup_pre_sensorfix/`
-- A partial pass no longer overwrites a good CSV (fixed after Kolkata was
-  degraded 93k → 55k rows and restored from backup).
+1. Add the actual CAMS +12 to +96-hour forecast as a separate operational
+   baseline. The current `raw_cams` method only carries the initialization
+   field forward and must be labeled “CAMS starting field held constant.”
+2. Pilot the official OGD India CPCB hourly feed as a live observation backup
+   and latency/completeness check. It probably overlaps OpenAQ and is not
+   automatically independent truth.
+3. No licence-clear 2023/24 hourly Patna or Varanasi archive has been verified.
+   Use a narrow official export test or formal request, not undocumented bulk
+   scraping.
+4. Start FIRMS fire detections and Sentinel-5P aerosol as explanatory UI
+   context. Promote either to a predictive input only if a leakage-safe
+   ablation improves held-out-city event skill.
+5. Do not make the discontinued public GFAS v1.2 archive a live dependency.
 
-**Why the re-pull exists:** `find_pm25_stations` took only the *first* PM2.5
-sensor per station; most Indian CPCB stations expose two (retired + active), so
-whole stations were silently dropped. Fixed in `8d4ec33`. Recovers:
-patna 4→7, varanasi 2→4, kanpur 2→3, lucknow 4→6, kolkata 9→15.
+## Publication boundary
 
-## Rejected paths — do not propose again
+The GitHub repository is private. It must not simply be switched to public:
 
-- **v1 pooled calibrator** (HistGradientBoosting predicting `log1p(obs)` directly
-  from Aurora features). Scored **Very Poor+ POD 0.00 at every lead**, caught
-  **0 of 99** test events, vs raw Aurora's 0.64. Causes: (RC1) predicting the
-  target instead of a *correction* caps output at the training distribution;
-  (RC2) trees cannot extrapolate; (RC3) calm-season-only training data;
-  (RC4) the fit-time check printed MAE only, which *rewards* tail collapse.
-  Code kept at `src/model/calibrator.py` as the documented baseline #5.
-- **Backfilling OpenAQ history** — proven unavailable (see Key decisions).
-- **Azure A100 / any A100** — unnecessary and unavailable on this subscription.
-- **Serial 56-date rollout on one box** (~10 h) — dates are independent; split
-  across 4 GPUs for ~2.5 h, ~$5.
+- reachable Git history contains hundreds of megabytes of raw OpenAQ archive
+  files even though they are no longer tracked at `HEAD`;
+- there is no repository licence;
+- the current 26-test and web-build candidate has not passed CI;
+- the integrity audit has not been rerun after this integration.
 
-## Tone & working preferences
+The safest publication route is a new clean public mirror containing only an
+approved source snapshot. A history rewrite is possible but destructive and
+requires explicit owner approval. See `docs/PUBLICATION_READINESS.md`.
 
-- Wants to understand *why*, not just what — explain vocabulary (POD/FAR/MAE/
-  persistence) and reasoning, don't assume.
-- **Challenges premises and expects push-back with data.** Correctly pushed on
-  "are we concerned with Delhi?" (we are not — it has AQEWS) and on whether
-  fine-tuning deserved more weight.
-- Wants negative results surfaced honestly, not smoothed over.
-- Verify before asserting; run the check rather than reasoning from memory.
-- Prefers work to continue autonomously; do not block on questions that data
-  can answer. Do surface genuinely irreversible or scope-changing decisions.
+## Exact next scientific action
 
-## Immediate next step
-
-Fill the 65 failed windows. Only these six cities need it — the other three are
-done, so naming them saves hours:
+Run the 56 frozen dates on four temporary 48 GB GPU workers, each with a
+disjoint date slice. On each configured worker, the command is:
 
 ```bash
-python -m src.data.archive_pull --cities lucknow kolkata patna delhi kanpur mumbai
+python -m src.pipeline.orchestrate --dates-file slice_0N --device cuda
 ```
 
-**Expect to run this more than once.** Each pass fetches only what is still
-missing, so passes get progressively shorter. Repeat until every city reports
-`"status": "ok"`. Check with:
+Replace `N` with that worker's slice number (`0` through `3`). Follow
+`scripts/setup_gpu.md`; do not run all 56 dates on every worker.
+
+After copying all pair files back, verify:
 
 ```bash
-python -c "import json;[print(r['city'],r['status'],r['windows']) for r in map(json.loads,open('data/openaq/archive/pull_manifest.jsonl')) if 'windows' in r]" | tail -9
+python -m src.eval.audit
+python -m src.eval.benchmark
+python -m src.eval.benchmark --anchor
 ```
 
-Then, and only once all nine are `ok`:
+Expected completeness is 1,431 rows per date and 80,136 rows total. Do not fit
+or publish a calibration result before the audit passes.
 
-```bash
-python -m src.data.build_station_registry   # 127 -> ~170 stations expected
-python -m src.eval.coverage_audit --n 56    # re-freeze dates under cutoff 2025-12-01
-python -m src.eval.audit                    # must pass before trusting anything
-```
+## Local setup still required
 
-**Sanity gate before moving on:** no city may end up with fewer rows than
-`data/openaq/_backup_pre_sensorfix/`. Station counts should rise (that is the
-sensor fix); row counts must not fall.
+The current `.venv` is not usable: its base Python 3.11 installation is
+missing. Node.js is also absent. Repair/install those runtimes later or rely on
+GitHub Actions for the source-only test and web-build checks. The local
+data-dependent audit still requires a repaired Python environment.
 
-The coverage audit should now yield **post-monsoon training dates** for the first
-time — that is the entire point of the cutoff revision, and what unblocks a
-calibrator able to survive severe episodes.
+## Rejected paths
+
+- The v1 direct-target tree calibrator: it improved MAE while detecting 0 of 99
+  pilot Very Poor+ events. It remains as a negative baseline with a no-harm
+  save gate.
+- OpenAQ pre-February-2025 backfill: unavailable at sensor level.
+- An A100: unnecessary for 0.4° inference.
+- Calling Component A zero-shot: it uses recent local observations.
+- Publishing legacy pilot pair metrics as current results.

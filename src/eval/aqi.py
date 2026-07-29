@@ -37,14 +37,15 @@ def category_name(pm25) -> np.ndarray:
     return np.asarray(CATEGORIES)[category_index(pm25)]
 
 
-def category_metrics(obs, pred) -> dict[str, float]:
+def category_metrics(obs, pred) -> dict[str, float | int]:
     """Category + event-detection metrics for paired obs/pred PM2.5 arrays.
 
     Returns:
       n              sample count (NaN pairs dropped)
       cat_hit_rate   exact 6-band accuracy
       cat_adjacent   accuracy within +/-1 band
-      event_*        Very Poor+ (>=121): pod, far, miss_rate, csi, base_rate
+      event_*        Very Poor+ (>=121): contingency counts, pod, far,
+                       miss_rate, csi, base_rate
     """
     obs = np.asarray(obs, dtype=float)
     pred = np.asarray(pred, dtype=float)
@@ -67,6 +68,11 @@ def category_metrics(obs, pred) -> dict[str, float]:
     hits = int((eo & ep).sum())
     misses = int((eo & ~ep).sum())
     false_alarms = int((~eo & ep).sum())
+    out["event_hits"] = hits
+    out["event_misses"] = misses
+    out["event_false_alarms"] = false_alarms
+    out["event_observed"] = hits + misses
+    out["event_forecast"] = hits + false_alarms
     out["event_base_rate"] = float(eo.mean())
     out["event_pod"] = hits / (hits + misses) if (hits + misses) else np.nan
     out["event_far"] = false_alarms / (hits + false_alarms) if (hits + false_alarms) else np.nan

@@ -1,94 +1,148 @@
-# 2-Day Execution Plan — full IndiaAQBench baseline + Component A
+# IndiaAQBench execution plan
 
-**Goal at the end of Day 2:** the real benchmark table — all baselines across the
-frozen dates × 9 cities × 8 leads, plus Component A scored on it — with severe
-events present in both train and test. That is spec §9's S1 criterion met.
+**Updated:** 2026-07-29
 
-**Explicitly NOT in 2 days:** fine-tuning. It needs its own cycle (design
-decisions, memory-bound training, forgetting checks) and it *needs* this
-baseline first to have anything to beat. Prereqs listed in §5.
+The goal is a publicly understandable experimental forecast feed backed by a
+credible benchmark. The product can become useful before year-round scientific
+validation is complete, but every screen and post must distinguish
+illustrative design, retrospective evidence, and prospective live forecasts.
 
----
+## 1. Current gates
 
-## 1. Critical path
+| Gate | State |
+|---|---|
+| Nine-city observation archive | Complete |
+| 159-station registry | Complete |
+| 56-date schedule | Complete |
+| Calibrator guardrails | Complete; rerun pending |
+| Component A implementation | Complete; evaluation pending |
+| Reporting code | Complete |
+| Product/live-feed specification | Complete |
+| UI preview | Complete; build pending |
+| Valid 159-station pairs | **0** |
+| Actual CAMS forecast baseline | **Absent** |
+| Live runner/ledger | **Absent** |
+| Public repository | **Blocked by licence/history/checks** |
 
+## 2. Scientific critical path
+
+```text
+four-worker Aurora rollout
+  -> copy 56 current-registry pair files home
+  -> verify 1,431 rows/date and 80,136 total
+  -> integrity audit
+  -> raw baseline scorecards
+  -> Component A scorecard
+  -> guarded calibrator scorecard
+  -> fine-tuning decision
 ```
-re-pull  ->  registry  ->  coverage audit  ->  56-date rollout  ->  calibrate + score
-(~11h, running)  (min)        (min)            (~2.5h parallel)        (~min)
-```
 
-Only the rollout needs the cloud. Everything else is local and fast. The long
-pole is the re-pull, which is why it is already running and why Component A is
-built *while* it runs.
+Only CAMS retrieval and Aurora inference need cloud GPU workers. Pair
+generation does not need the untracked OpenAQ archive; scoring does, so copy the
+pairs back before evaluation.
 
-## 2. Day 1
-
-**Running unattended:** OpenAQ re-pull (task #17). Monthly resumable windows,
-target cities first, `status="partial"` if any window fails.
-- Disruption? Re-run the identical command — completed windows are skipped.
-- Need data before it finishes? `python -m src.data.archive_pull --assemble-only`
-  rebuilds every city CSV from whatever parts exist, no network.
-
-**Meanwhile (local, no conflict with the pull — reads `results/pairs/` only):**
-1. **Component A** (task #18) — per-station trailing-ratio anchoring.
-2. **Guardrails** (task #19) — no-harm-on-events gate at fit time, OOD selftest,
-   seasonal-transfer check.
-3. Validate both against the 5 existing dates. Numbers will be thin; the point
-   is that the code path and the gate work.
-
-**End of Day 1, once the pull completes:**
-```bash
-python -m src.data.build_station_registry     # 127 -> ~170 stations
-python -m src.eval.coverage_audit --n 56      # NEW frozen dates, post-revision
-```
-The audit now runs with cutoff 2025-12-01, so it should yield **post-monsoon
-train dates** for the first time — the whole point of the revision.
-
-## 3. Day 2 — the rollout, parallelized
-
-The orchestrator is embarrassingly parallel across dates (per-date manifest,
-independent CAMS files). Do **not** run 56 dates serially on one box (~10 h).
-Split across 4 cheap GPUs instead:
+On each configured worker:
 
 ```bash
-# on each of 4 boxes (see scripts/setup_gpu.md for provisioning):
-split -n l/4 -d <(tail -n +2 docs/benchmark_dates.csv | cut -d, -f1) slice_
-python -m src.pipeline.orchestrate --dates-file slice_0X --device cuda
+tail -n +2 docs/benchmark_dates.csv | cut -d, -f1 | split -n l/4 -d - slice_
+python -m src.pipeline.orchestrate --dates-file slice_00 --device cuda
 ```
 
-~14 dates/box × ~10 min = **~2.5 h wall**, ~$5 total on 48 GB A6000 spot.
-Run the pull *and* the rollout on the box — a datacenter link to Copernicus is
-the fix for the flaky-download problem, not just faster compute.
+Use one distinct slice (`slice_00` through `slice_03`) per worker. See
+`scripts/setup_gpu.md`.
 
-Pull back only the small outputs (`results/pairs/`, `results/india_fields/`),
-then locally:
+After retrieval:
+
 ```bash
-python -m src.model.calibrator                # now fits WITH severe-season data
+python -m src.eval.audit
+python -m src.eval.benchmark
+python -m src.eval.benchmark --anchor
+python -m src.model.calibrator
 python -m src.eval.benchmark --calibrator results/models/pooled_calibrator.joblib
 ```
 
-**Deliverable:** `results/metrics/indiaaqbench.csv` — the real table.
+Do not trust or publish any table if the audit fails.
 
-## 4. Risks and mitigations
+## 3. Product path
 
-| Risk | Mitigation |
+This path can proceed while the retrospective rollout runs:
+
+1. Pass the web build and source tests in a clean CI environment.
+2. Replace interface fixtures with the versioned public JSON contract.
+3. Implement latest-CAMS-cycle detection, input validation, and an immutable
+   forecast ledger.
+4. Publish raw Aurora first if no correction has passed the event-safety gate.
+5. Run privately in shadow mode for at least 14 days and 20 complete cycles.
+6. Publish an experimental nine-city beta with freshness, missing-method
+   states, provenance, cost, and an explicit non-warning disclaimer.
+7. Score observations only after they arrive and retain every miss.
+
+The initial product is useful as an auditable experiment. It is not a
+year-round reliability claim or an official health service.
+
+## 4. Additional-data path
+
+The first addition is the actual lead-dependent CAMS forecast:
+
+1. Retrieve CAMS PM2.5 at +12 through +96 hours from the same initialization.
+2. Store it separately from Aurora's lead-zero CAMS inputs.
+3. Sample it at the same stations and match it to the same observations.
+4. Label the existing comparator “CAMS starting field held constant.”
+5. Report whether Aurora adds skill over the forecast CAMS actually issued.
+
+In parallel, run a tiny official OGD India CPCB live-feed pilot for Patna and
+Varanasi. Treat it as a latency/completeness backup until provenance proves it
+is independent of OpenAQ. Do not bulk scrape historical portals.
+
+FIRMS and Sentinel-5P begin as explanatory layers. They become predictive
+features only after availability-time controls and one-at-a-time held-out-city
+ablations.
+
+## 5. Publication path
+
+The current repository remains private. Before sharing a GitHub link publicly:
+
+1. pass Python CI and the web build;
+2. rerun the local data-dependent audit;
+3. choose a software licence;
+4. create a clean public mirror or explicitly authorize a reviewed destructive
+   history rewrite;
+5. rerun secret and large-history checks;
+6. set the GitHub description/topics;
+7. verify README links anonymously.
+
+A portfolio soft launch can happen once those software/publication gates pass,
+even while the full benchmark is running. The main technical post should wait
+for a versioned 159-station scorecard. The product launch should wait for
+shadow-mode evidence.
+
+## 6. Fine-tuning decision
+
+Do not buy substantially more training compute until the cheap ladder is
+scored. A fine-tuning design must define:
+
+1. which parameters are trainable;
+2. a loss that protects severe-event detection;
+3. station-sparse versus gridded supervision;
+4. training rollout length and memory budget;
+5. L1/L2 and temporal leakage controls;
+6. catastrophic-forgetting tests;
+7. the minimum gain over raw Aurora, persistence, actual CAMS forecast,
+   Component A, and the guarded calibrator that justifies the cost.
+
+More compute is transformational only if the error is representational rather
+than a missing-input, data-quality, or surface-observation problem. The
+baseline ladder identifies which case applies.
+
+## 7. Main risks
+
+| Risk | Control |
 |---|---|
-| Connection drops during re-pull | Already handled: per-window parts, resume on re-run, `--assemble-only` |
-| Re-pull slower than 11 h | Target cities first; Delhi (slowest, least relevant) last; proceed on partial data |
-| Copernicus ADS queues/throttles | 4 boxes fetch independently; start early; orchestrator is resumable per date |
-| Coverage audit yields < 56 usable dates | Run what it yields; the audit reports density honestly |
-| Registry changes after the rollout | Already de-risked (`4c3041f`): all feature vars saved on the India grid, so station samples re-derive offline without re-running Aurora |
-| Component A underperforms | That is a result, not a failure — it is scored against raw Aurora either way |
-
-## 5. What to settle before fine-tuning (not Day 1–2)
-
-1. The 56-date raw baseline (Day 2) — the bar to beat.
-2. Component A's numbers — how much a $0 correction already buys.
-3. What to unfreeze: LoRA / head-only vs full (Aurora's repo documents its
-   fine-tuning API).
-4. Loss design: station-sparse supervision vs gridded; asymmetric/quantile loss,
-   since the literature consistently finds plain MSE under-serves extremes.
-5. Rollout length during training — this is the genuinely memory-bound part and
-   the only step that wants a 40–80 GB card.
-6. A catastrophic-forgetting protocol: naive fine-tuning can improve Delhi while
-   silently degrading held-out cities. The L2 split is the check.
+| Stale or wrong-registry pairs | Registry stamp, frozen-date filter, audit |
+| Correction improves MAE but misses events | POD no-harm gate and event counts |
+| Component A is mislabeled zero-shot | State that it uses trailing local observations |
+| Actual CAMS and lead-zero CAMS are conflated | Separate storage, columns, and labels |
+| Live input arrives after forecast initialization | Availability-time enforcement |
+| Illustrative UI values are mistaken for results | Persistent demo labeling and source tests |
+| Raw data leak during repository publication | Clean mirror/history decision and audit |
+| One season drives public claims | Prospective immutable scorecard and untouched post-monsoon evidence |

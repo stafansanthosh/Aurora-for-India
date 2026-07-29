@@ -1,100 +1,160 @@
-# Parallel workstreams — Claude / Copilot / Codex
+# IndiaAQBench workstreams
 
-The repository is the shared memory. Any agent picks up from `docs/HANDOFF.md`
-plus this file; nothing important lives only in a chat session.
+**Updated:** 2026-07-29
+**Integration policy for this phase:** the owner requested work directly on
+`master`. Do not create or switch branches unless that instruction changes.
 
-## The one rule that makes parallelism safe
+The repository is the shared memory. Read `docs/AGENT_BRIEF.md` and
+`docs/HANDOFF.md` before starting. File ownership below prevents concurrent
+sessions from overwriting each other; it does not authorize changes outside a
+session's assigned scope.
 
-**One workstream = one branch = a disjoint set of files.** Two agents editing
-the same file in parallel is the only way this goes wrong. Ownership below is
-binding; if a workstream needs to touch a file it does not own, it opens a PR
-against that owner's branch instead of editing directly.
+For future WS-8 implementation, `tests/data/**` belongs to WS-8. WS-3's
+completed guardrail ownership is limited to existing calibrator/AQI tests;
+exact source-by-source paths are assigned in `docs/DATA_EXPANSION_PLAN.md`.
 
-Shared-by-everyone (read-only unless you own it): `src/splits.py`,
-`docs/BENCHMARK_SPEC.md`, `data/`, `results/`.
+## Scoreboard
 
-## Does parallelism actually help here?
-
-Partly. The critical path is **inherently serial**:
-
-```
-re-pull -> station registry -> coverage audit -> 56-date rollout -> score
-```
-
-Nothing downstream can start before the pull finishes. So parallelism buys
-nothing *on* that path — but three things run fully in parallel *beside* it
-(WS-2/4/5 below), and the pull itself can be split by city.
-
-**Highest-value parallelism right now:** split the remaining re-pull by city
-across 2–3 sessions. Part files are per-city-per-window, so there is no
-collision:
-
-```bash
-# session A
-python -m src.data.archive_pull --cities lucknow kolkata
-# session B
-python -m src.data.archive_pull --cities delhi
-# session C
-python -m src.data.archive_pull --cities mumbai bangalore
-```
-
-**Cap it at ~3.** All sessions share one home connection and one OpenAQ API key;
-too many concurrent pullers trigger rate limiting (the client retries 429s, so
-the failure mode is slowness, not corruption) and compete for the same flaky
-bandwidth that caused these failures in the first place.
-
-## Workstreams
-
-| ID | Workstream | Owns (exclusive) | Blocked by | Best tool |
+| ID | Workstream | State | Main outputs | Next gate |
 |---|---|---|---|---|
-| **WS-1** | Data acquisition | `src/data/**`, `data/**` | — | **Claude** (judgment on partial data) |
-| **WS-2** | Component A: anchoring | `src/model/anchor.py` (new) | — | **Claude** (design-heavy) |
-| **WS-3** | Guardrails + tests | `src/model/calibrator.py`, `tests/**` | — | **Copilot / Codex** (well-specified) |
-| **WS-4** | Dashboard + reporting | `src/report/**`, `docs/figures/**` | — | **Copilot / Codex** (self-contained) |
-| **WS-5** | Fine-tune design doc | `docs/FINETUNE_DESIGN.md` (new) | — | **Claude** (research-heavy) |
-| **WS-6** | 56-date GPU rollout | `results/pairs/**` | **WS-1** | Claude, on the cloud box |
+| WS-1 | OpenAQ archive and station registry | **Complete** | `src/data/**`, `data/stations.csv`, frozen dates | Preserve provenance; no new bulk source without licence review |
+| WS-2 | Component A local anchoring | **Implementation complete; evaluation blocked** | `src/model/anchor.py`, `tests/test_anchor.py`, benchmark hook | Pass tests, then score valid 159-station pairs |
+| WS-3 | Calibrator guardrails and tests | **Complete at last recorded run** | `src/model/calibrator.py`, guardrail tests | Re-run in CI/current environment |
+| WS-4 | Reporting package | **Complete; real table blocked** | `src/report/**`, diagnostic figures | Render only after valid audit and metrics |
+| WS-5 | Fine-tuning design | **Not started** | planned `docs/FINETUNE_DESIGN.md` | Start after cheap baselines are scored |
+| WS-6 | 56-date Aurora rollout | **Ready; user/cloud action required** | `results/pairs/**` | Four disjoint GPU slices, 80,136 rows, audit pass |
+| WS-7 | Public product and interface | **Design/preview complete; live system absent** | `docs/PRODUCT_SPEC.md`, `docs/LIVE_FEED_SPEC.md`, `web/**` | Web build pass, then shadow runner |
+| WS-8 | Additional data and baselines | **Plan and source audit complete** | `docs/DATA_EXPANSION_PLAN.md`, `docs/DATA_SOURCE_AUDIT.md` | Implement actual CAMS forecasts; run small OGD pilot |
+| WS-9 | Repository publication | **Blocked** | README, status, portfolio and readiness docs, CI | Tests/build, licence, clean-history decision |
 
-### WS-1 — Data acquisition *(critical path; in flight)*
-Finish the re-pull (second pass required), then rebuild the registry and re-run
-the coverage audit. Exit criterion: every city logs `status: "ok"`, and
-`docs/benchmark_dates.csv` is regenerated under cutoff 2025-12-01 **with
-post-monsoon train dates present**.
+## Critical path
 
-### WS-2 — Component A: per-station trailing-ratio anchoring
-Literature-standard adaptive bias correction (Kalman/MOS family; Djalalova &
-Delle Monache 2015 for CMAQ). Trailing median `obs/aurora` per station over ~14
-days at short leads, shrunk toward 1.0 when the sample is thin, clipped to
-`[1/3, 3]`, applied multiplicatively at all leads. No training set → no
-distribution ceiling, adapts through seasons, transfers to held-out cities,
-cannot flatten the tail. **New file**, so zero conflict with WS-3.
-Registers itself as a method in `benchmark.py` via a one-line addition —
-coordinate that single line with WS-3.
+```text
+56-date rollout
+  -> copy all current-registry pairs home
+  -> integrity audit
+  -> raw baseline scorecards
+  -> Component A scorecard and event-safety decision
+  -> calibrator comparison
+  -> decide whether fine-tuning is justified
+```
 
-### WS-3 — Guardrails + tests *(good first Copilot/Codex task)*
-Fully specified, mechanical, no design judgment needed:
-1. `calibrator.py` CLI must print Very Poor+ **POD/FAR beside MAE**, and refuse
-   to save a model whose POD is below raw Aurora's ("no-harm-on-events" gate).
-2. Extend `--selftest` so train and test come from **different regimes**
-   (calm train → severe test) — the case that would have caught the v1 collapse.
-3. Add a seasonal-transfer check: train winter-only → test monsoon-only.
-4. Move the existing inline `_test()` functions into a real `tests/` tree.
+The product path can proceed beside that scientific path:
 
-### WS-4 — Dashboard + reporting *(good Copilot/Codex task)*
-Read `results/metrics/indiaaqbench.csv`, render per-city × per-lead scorecards:
-POD/FAR/CSI and category hit-rate, raw vs calibrated vs persistence. Pure
-read-only consumer of an existing schema — cannot break the pipeline.
+```text
+interface preview
+  -> validated public JSON/ledger implementation
+  -> latest-cycle runner
+  -> private shadow mode
+  -> experimental public beta
+  -> rolling prospective scorecard
+```
 
-### WS-5 — Fine-tune design doc
-Settle, on paper, the six prerequisites in `docs/EXECUTION_PLAN.md` §5: what to
-unfreeze (LoRA/head-only vs full), loss design (station-sparse vs gridded;
-asymmetric/quantile, since the literature finds plain MSE under-serves
-extremes), training rollout length (the genuinely memory-bound part), and a
-catastrophic-forgetting protocol using the L2 held-out cities.
+## WS-1 — OpenAQ archive and registry
 
-## Handoff discipline (all agents)
+The nine-city archive is complete at 1,489,534 observations and the registry is
+complete at 159 stations. The sensor-selection, partial-overwrite, and
+rate-limit bugs have been fixed. The 56 dates are frozen at 32 train and 24
+test.
 
-1. Read `docs/HANDOFF.md` first, then this file.
-2. Work on your branch; commit early with real messages.
-3. Record decisions in the repo — spec, plan, or a docstring — never only in chat.
-4. When a claim rests on data, put the verifying command in the commit message.
-5. Update `docs/HANDOFF.md` "Current state" + "Immediate next step" before you stop.
+Do not spend time attempting OpenAQ backfill before February 2025. Any direct
+CPCB/state-board addition is a separate source with its own station matching,
+quality checks, licence, availability time, and provenance.
+
+## WS-2 — Component A
+
+Component A estimates a per-station multiplier from recent short-lead
+`observation / Aurora` ratios. Only observations verified strictly before the
+new initialization are eligible. Thin samples shrink toward 1.0 and no-history
+cases fall back to raw Aurora.
+
+It is online local adaptation, not ordinary fitted calibration and not
+zero-shot city transfer. Its implementation exists, but acceptance requires:
+
+1. all source tests passing;
+2. the integrity audit passing on current-registry pairs;
+3. fallback/sample-age coverage reported by city and lead;
+4. Very Poor+ POD/FAR/CSI and event counts compared with raw Aurora and
+   persistence;
+5. no public selection unless event safety is protected.
+
+## WS-3 — Calibrator guardrails
+
+The v1 direct-target calibrator remains a documented negative baseline. Its
+save path reports event metrics beside MAE and refuses a model that reduces
+Very Poor+ POD relative to raw Aurora. Regime-shift and seasonal-transfer tests
+exist. Re-run them in CI because the local virtual environment is currently
+broken.
+
+## WS-4 — Reporting
+
+`src/report/` can render per-city and per-lead scorecards. It is a consumer of
+metrics, not evidence by itself. Do not publish the legacy PNGs as current
+results. Every event score must carry its event count and split label.
+
+## WS-5 — Fine-tuning design
+
+Fine-tuning is deliberately downstream of the cheap baselines. The design
+document must define what is trainable, loss weighting for severe events,
+rollout length, memory budget, split discipline, catastrophic-forgetting
+checks, and the exact improvement needed over raw Aurora, persistence,
+Component A, and the guarded calibrator.
+
+## WS-6 — GPU rollout
+
+The only required cloud execution is the 56-date Aurora inference pass. Use
+four temporary 48 GB workers with disjoint date slices and follow
+`scripts/setup_gpu.md`. The pass is complete only at 1,431 rows per date and
+80,136 rows total for the current registry.
+
+The rollout creates model/station pairs; it does not require the untracked
+OpenAQ archive. Pull pairs back to the machine that holds the archive before
+running the audit and evaluator.
+
+## WS-7 — Product and interface
+
+The current `web/` application is a product preview. Its numbers are fixtures,
+not forecasts or benchmark results. The live implementation must consume the
+versioned contract in `docs/LIVE_FEED_SPEC.md`, display source age and missing
+methods, preserve immutable forecasts before observations arrive, and carry an
+experimental-research disclaimer.
+
+## WS-8 — Additional data
+
+Priorities are:
+
+1. actual CAMS forecast values at +12 through +96 hours as a separate baseline;
+2. a minimal official OGD India CPCB live-feed pilot for Patna/Varanasi;
+3. one-day/manual official historical export tests or formal data requests;
+4. FIRMS and Sentinel-5P as explanatory UI layers;
+5. predictive feature experiments only after availability-time controls and
+   held-out-city ablations.
+
+No licence-clear historical Patna/Varanasi hourly archive has yet been
+verified. Aakash data can support northwest-India transport diagnostics, but
+its geography and CC BY-NC-ND terms make it unsuitable for silent integration.
+
+## WS-9 — Publication
+
+The repository remains private. Before any visibility change:
+
+1. pass Python CI and the web build;
+2. rerun the data-dependent integrity audit locally;
+3. choose a software licence;
+4. choose a clean public mirror or explicitly authorize a reviewed history
+   rewrite;
+5. recheck secrets and large historical blobs;
+6. set the GitHub description/topics and verify all links anonymously.
+
+See `docs/PUBLICATION_READINESS.md`.
+
+## Handoff discipline
+
+Before stopping any workstream:
+
+1. verify claims with a command or cited primary source;
+2. update `docs/HANDOFF.md` if the critical state or exact next command changed;
+3. append the decision and verification to `JOURNAL.md`;
+4. commit only reviewed files;
+5. never present an unrun test, illustrative UI value, or legacy pair as a
+   validated result.

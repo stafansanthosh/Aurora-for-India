@@ -23,10 +23,12 @@ A calibrator fit on it collapsed the severe tail entirely (Very Poor+ POD 0.00
 vs raw Aurora's 0.64) because it had never seen an extreme value.
 
 The revision puts post-monsoon 2025 (Diwali + stubble burning) in TRAIN and
-keeps winter 2025-26 in TEST, so BOTH sides contain the severe regime:
-    train events (>=121):  13,844 -> 40,538   (2.9x)
-    train p95:               ~142 -> ~360
-    test  events (>=121):            51,875   (Dec 2025 - Feb 2026 severe season)
+keeps winter 2025-26 in TEST, so both sides contain many Very-Poor+ examples.
+The completed archive later showed that the provisional "~360 p95" quoted when
+the revision was made was mislabeled: in the current six-city train pool p95 is
+about 175 ug/m3 and p99 about 352 ug/m3. The split rationale still holds--the
+fit period now includes tens of thousands of severe observations--but current
+publications must use the corrected distribution figures in spec section 6.
 
 Disclosure requirement: this revision happened once, before any adaptation model
 was trained on the new split, and must be reported wherever results appear.

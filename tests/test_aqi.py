@@ -35,6 +35,11 @@ class AqiTests(unittest.TestCase):
         metrics = category_metrics([290.0], [86.0])
         self.assertEqual(metrics["event_pod"], 0.0)
         self.assertEqual(metrics["event_miss_rate"], 1.0)
+        self.assertEqual(metrics["event_hits"], 0)
+        self.assertEqual(metrics["event_misses"], 1)
+        self.assertEqual(metrics["event_false_alarms"], 0)
+        self.assertEqual(metrics["event_observed"], 1)
+        self.assertEqual(metrics["event_forecast"], 0)
         self.assertEqual(metrics["cat_hit_rate"], 0.0)
 
     def test_adjacent_band_credit(self) -> None:
