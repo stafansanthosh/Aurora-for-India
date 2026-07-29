@@ -30,14 +30,14 @@ runs in ~32 GB of **CPU** RAM on the laptop.
 Modal) rent by the hour with no quota approval and boot in ~2 minutes. Estimated
 total for all 56 dates: **~$10–30**.
 
-## Run CAMS retrieval and Aurora inference on the box
+## Copy CAMS forecasts, then run Aurora inference on the box
 
-The real bottleneck is **not** compute — it is the CAMS download from Copernicus
-ADS (~240 MB/date). Over a home connection this repeatedly drops mid-stream
-(`IncompleteRead`, 120 s backoffs → ~14 min for one file). A cloud box has a
-datacenter pipe to Copernicus, so **both** CAMS retrieval and the rollout get
-faster and more reliable. Copy only the small pair files back. The cloud box
-does not need the untracked OpenAQ archive to generate those pairs.
+The 56 lead-dependent CAMS PM2.5 forecasts are already downloaded and
+hash-validated locally. Copy that archive to every worker so the paid boxes do
+not repeat the network work. Each date still needs CAMS analysis fields that
+initialize Aurora; those are retrieved by the orchestrator and cleaned up
+afterward. The cloud box does not need the untracked OpenAQ archive to generate
+forecast pairs.
 
 ---
 
@@ -81,6 +81,13 @@ ADS website, or the first download 403s.
 An OpenAQ key and the observation archive are not required for the rollout.
 They are required later on the local scoring machine.
 
+The environment must import the GRIB stack used for the operational CAMS
+baseline:
+
+```bash
+python -c "import cfgrib, eccodes; print(cfgrib.__version__, eccodes.__version__)"
+```
+
 ## 3. Checkpoint
 
 ```bash
@@ -91,8 +98,9 @@ python -c "from src.model.aurora_runner import load_model; load_model('cuda')"
 ## 4. Run the full benchmark pass
 
 The orchestrator is resumable (skips dates already `done` in the manifest) and
-self-cleaning (deletes the ~240 MB/date globals after extracting). Point it at
-the frozen date list and let it run:
+self-cleaning for Aurora's large global inputs. It deliberately retains the
+actual CAMS forecast GRIB, request, checksum, provenance, and station samples.
+Point it at the frozen date list and let it run:
 
 ```bash
 python -m src.pipeline.orchestrate --dates-file docs/benchmark_dates.csv --device cuda
@@ -112,6 +120,15 @@ python -m src.pipeline.orchestrate --dates-file slice_00 --device cuda
 Run under `tmux`/`nohup` so an SSH drop doesn't kill it. Progress: `tail -f` the
 log or watch `results/pairs/manifest.jsonl`.
 
+Validate the local archive, then copy it to every worker before starting. The
+orchestrator verifies each raw file's request and checksum, re-extracts it at
+the current registry version, and skips the forecast-baseline network request:
+
+```bash
+python -m scripts.validate_cams_download
+scp -r data/cams_forecast <worker-0>:Aurora-for-India/data/
+```
+
 **Verify before trusting results:** a complete run produces **1,431 rows per
 date** (159 stations × 9 lead rows) and **80,136 rows** across all 56. Resume is
 registry-aware, so dates rolled out at an older station registry are re-run
@@ -120,12 +137,28 @@ rather than silently reused.
 ## 5. Pull results back + tear down
 
 ```bash
-# from your laptop; repeat for workers 1, 2, and 3
-scp -r <worker-0>:Aurora-for-India/results/pairs/* results/pairs/
+# from your laptop; repeat with worker/index 1, 2, and 3
+scp <worker-0>:Aurora-for-India/results/pairs/pairs_*.parquet results/pairs/
+scp <worker-0>:Aurora-for-India/results/pairs/manifest.jsonl \
+  results/pairs/manifest_worker_0.jsonl
+scp -r <worker-0>:Aurora-for-India/data/cams_forecast/* data/cams_forecast/
+```
+
+Never copy `results/pairs/*` wholesale: every worker uses the same
+`manifest.jsonl` name, so later copies would overwrite earlier workers'
+provenance. After all four transfers, append their distinct records safely:
+
+```bash
+python scripts/merge_worker_manifests.py \
+  results/pairs/manifest_worker_0.jsonl \
+  results/pairs/manifest_worker_1.jsonl \
+  results/pairs/manifest_worker_2.jsonl \
+  results/pairs/manifest_worker_3.jsonl
 ```
 
 Then **stop/terminate every worker** so billing ends. The pair files are small;
-the roughly 240 MB/date global inputs were not retained.
+Aurora's large initialization inputs were not retained. The smaller
+lead-dependent CAMS GRIBs are retained as reproducibility evidence.
 
 ## 6. Audit, score, and evaluate adaptation locally
 

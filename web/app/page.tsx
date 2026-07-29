@@ -16,7 +16,7 @@ type CityForecast = {
 const METHODS: { id: Method; label: string; short: string }[] = [
   { id: "corrected", label: "Locally adjusted", short: "Adjusted" },
   { id: "raw_aurora", label: "Raw Aurora", short: "Aurora" },
-  { id: "cams_forecast", label: "Illustrative future CAMS forecast", short: "CAMS (planned)" },
+  { id: "cams_forecast", label: "Illustrative CAMS forecast", short: "CAMS (illustrative)" },
   { id: "persistence", label: "Persistence", short: "Persistence" },
 ];
 
@@ -397,7 +397,7 @@ export default function Home() {
               <div className="signal-list">
                 <div><span>Registry coverage</span><strong>{city.stations} benchmark stations</strong></div>
                 <div><span>Atmospheric evolution</span><strong>Aurora</strong></div>
-                <div><span>Planned global comparison</span><strong>CAMS forecast</strong></div>
+                <div><span>Operational global comparison</span><strong>CAMS forecast</strong></div>
                 <div><span>Simple reality check</span><strong>Persistence</strong></div>
               </div>
               <div className="explain-note">

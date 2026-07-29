@@ -65,12 +65,12 @@ benchmark split, cutoff, event threshold, or current OpenAQ archive.
 - `src/data/cams_composition.py` requests the CAMS global atmospheric
   composition **forecast** dataset at `leadtime_hour=0`. Those fields initialize
   Aurora. The current benchmark then carries the lead-zero PM2.5 value forward
-  and calls that fixed comparator `raw_cams`.
+  and now calls that fixed comparator `cams_lead0_fixed`.
 - The benchmark grid is +12, +24, …, +96 hours.
 
 ### Consequence
 
-`raw_cams` is not the operational CAMS forecast baseline. It asks, “Is Aurora
+`cams_lead0_fixed` is not the operational CAMS forecast baseline. It asks, “Is Aurora
 better than leaving CAMS's initialization value unchanged?” The missing
 baseline asks, “Is Aurora better than the CAMS forecast that was actually
 available for the same future time?” Both can remain in the table, but their

@@ -14,13 +14,13 @@ illustrative design, retrospective evidence, and prospective live forecasts.
 | Nine-city observation archive | Complete |
 | 159-station registry | Complete |
 | 56-date schedule | Complete |
-| Calibrator guardrails | Complete; rerun pending |
+| Calibrator guardrails | Complete; 64-test suite passes |
 | Component A implementation | Complete; evaluation pending |
 | Reporting code | Complete |
 | Product/live-feed specification | Complete |
-| UI preview | Complete; build pending |
+| UI preview | Complete; CI build/render and private deployment pass |
 | Valid 159-station pairs | **0** |
-| Actual CAMS forecast baseline | **Absent** |
+| Actual CAMS forecast baseline | Complete: 56 dates, 71,232 station-lead rows |
 | Live runner/ledger | **Absent** |
 | Public repository | **Blocked by licence/history/checks** |
 
@@ -37,9 +37,13 @@ four-worker Aurora rollout
   -> fine-tuning decision
 ```
 
-Only CAMS retrieval and Aurora inference need cloud GPU workers. Pair
-generation does not need the untracked OpenAQ archive; scoring does, so copy the
-pairs back before evaluation.
+The lead-dependent CAMS forecast archive has already been downloaded and
+hash-validated locally. Copy `data/cams_forecast/` to every worker before the
+run. The orchestrator verifies the retained request and raw-file checksum,
+re-extracts station values against the current registry, retrieves Aurora's
+analysis inputs, and runs Aurora inference. Only Aurora inference requires the
+GPU. Pair generation does not need the untracked OpenAQ archive; scoring does,
+so copy the pairs back before evaluation.
 
 On each configured worker:
 
@@ -90,9 +94,11 @@ The first addition is the actual lead-dependent CAMS forecast:
 4. Label the existing comparator “CAMS starting field held constant.”
 5. Report whether Aurora adds skill over the forecast CAMS actually issued.
 
-In parallel, run a tiny official OGD India CPCB live-feed pilot for Patna and
-Varanasi. Treat it as a latency/completeness backup until provenance proves it
-is independent of OpenAQ. Do not bulk scrape historical portals.
+A tiny official OGD India CPCB live-feed pilot for Patna and Varanasi is
+implemented. It writes immutable private snapshots, preserves provider fields,
+and refuses fuzzy station matches. Running the live probe requires a
+`DATA_GOV_IN_API_KEY`; it remains an optional latency/completeness diagnostic,
+not a prerequisite for the frozen benchmark.
 
 FIRMS and Sentinel-5P begin as explanatory layers. They become predictive
 features only after availability-time controls and one-at-a-time held-out-city

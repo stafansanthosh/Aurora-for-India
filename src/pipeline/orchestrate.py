@@ -32,7 +32,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from ..data import cams_composition
+from ..data import cams_composition, cams_forecast
 from ..model import aurora_runner
 from ..utils.geo import find_nearest_grid_cell
 
@@ -127,7 +127,50 @@ def _india_subset(pred_batch) -> xr.Dataset:
     return xr.Dataset(data, coords={"latitude": lats[la], "longitude": lons[lo]})
 
 
-def _manifest_done(registry_version: str | None = None) -> set[str]:
+def _pair_artifact_complete(
+    path: Path,
+    date: str,
+    registry_version: str,
+    expected_stations: int,
+    steps: int,
+) -> bool:
+    """Return whether a manifest's pair artifact is safe to resume past."""
+    if not path.exists():
+        return False
+    try:
+        pairs = pd.read_parquet(path)
+    except Exception:
+        return False
+    required = {
+        "init_date",
+        "station_id",
+        "lead_h",
+        "registry_version",
+        "cams_forecast_pm25",
+    }
+    if not required.issubset(pairs.columns):
+        return False
+    expected_leads = set(range(0, steps * 12 + 1, 12))
+    expected_rows = expected_stations * (steps + 1)
+    positive = pairs["lead_h"] > 0
+    return bool(
+        len(pairs) == expected_rows
+        and set(pairs["init_date"].astype(str)) == {date}
+        and set(pairs["registry_version"].astype(str)) == {registry_version}
+        and pairs["station_id"].astype(str).nunique() == expected_stations
+        and set(pd.to_numeric(pairs["lead_h"])) == expected_leads
+        and not pairs.duplicated(["init_date", "station_id", "lead_h"]).any()
+        and pairs.loc[positive, "cams_forecast_pm25"].notna().all()
+        and pairs.loc[~positive, "cams_forecast_pm25"].isna().all()
+    )
+
+
+def _manifest_done(
+    registry_version: str | None = None,
+    *,
+    expected_stations: int | None = None,
+    steps: int = 8,
+) -> set[str]:
     """Dates already rolled out AT THE GIVEN REGISTRY VERSION.
 
     Resume must be registry-aware. The station registry grew 127 -> 159 after
@@ -146,6 +189,22 @@ def _manifest_done(registry_version: str | None = None) -> set[str]:
             continue
         if registry_version is not None and rec.get("registry_version") != registry_version:
             continue  # rolled out at a different station set -> must redo
+        if registry_version is not None and expected_stations is not None:
+            pair_name = rec.get("pairs_file") or f"pairs_{rec.get('date')}.parquet"
+            pair_path = PAIRS_DIR / pair_name
+            if not _pair_artifact_complete(
+                pair_path,
+                str(rec.get("date")),
+                registry_version,
+                expected_stations,
+                steps,
+            ):
+                print(
+                    f"[resume] {rec.get('date')} has a done record but no "
+                    "complete matching pair artifact; regenerating.",
+                    flush=True,
+                )
+                continue
         done.add(rec["date"])
     return done
 
@@ -159,7 +218,27 @@ def _log(rec: dict) -> None:
 def process_date(date: str, model, reg: pd.DataFrame, steps: int, device: str,
                  cleanup: bool) -> int:
     """Run one init date end-to-end; returns number of pair rows written."""
+    if steps != len(cams_forecast.DEFAULT_LEADS):
+        raise ValueError(
+            "The benchmark is pinned to 8 twelve-hour steps (+12..+96 h) "
+            "so Aurora and CAMS have identical support."
+        )
     t0 = time.time()
+    registry_version = _registry_version(reg)
+
+    # Retrieve CAMS's own lead-dependent forecast alongside the CAMS analysis
+    # used to initialise Aurora. This makes the one GPU job self-contained:
+    # when a date is marked done, its pair file contains both Aurora and the
+    # operational global forecast baseline on identical station/lead support.
+    forecast_request = cams_forecast.ForecastRequest(date)
+    forecast_paths = cams_forecast.retrieve_forecast(forecast_request)
+    forecast_samples = cams_forecast.extract_and_record(
+        forecast_request,
+        forecast_paths,
+        REGISTRY,
+        registry_version=registry_version,
+    )
+
     sfc_path, plev_path = cams_composition.download(date)
 
     batch = aurora_runner.assemble_inputs(sfc_path, plev_path)
@@ -192,7 +271,8 @@ def process_date(date: str, model, reg: pd.DataFrame, steps: int, device: str,
     pairs.insert(0, "init_date", date)
     # Self-describing provenance: the eval harness filters on this so pairs from
     # a different station set can never be pooled into one results table.
-    pairs["registry_version"] = _registry_version(reg)
+    pairs["registry_version"] = registry_version
+    pairs = cams_forecast.attach_to_pairs(pairs, forecast_samples)
 
     PAIRS_DIR.mkdir(parents=True, exist_ok=True)
     out_parquet = PAIRS_DIR / f"pairs_{date}.parquet"
@@ -210,7 +290,9 @@ def process_date(date: str, model, reg: pd.DataFrame, steps: int, device: str,
 
     _log({"date": date, "status": "done", "rows": len(pairs),
           "stations": int(cells["station_id"].nunique()), "steps": steps,
-          "registry_version": _registry_version(reg),
+          "registry_version": registry_version,
+          "cams_forecast_file": forecast_paths.raw_grib.name,
+          "cams_forecast_samples": forecast_paths.station_samples_csv.name,
           "seconds": round(time.time() - t0), "pairs_file": out_parquet.name,
           "india_file": india_path.name, "written_at": datetime.utcnow().isoformat()})
     return len(pairs)
@@ -241,7 +323,16 @@ def main() -> None:
 
     reg = _load_registry()
     version = _registry_version(reg)
-    done = _manifest_done(version)
+    if args.steps != len(cams_forecast.DEFAULT_LEADS):
+        raise SystemExit(
+            "IndiaAQBench requires --steps 8 so Aurora and the pinned CAMS "
+            "forecast baseline share +12..+96 h support."
+        )
+    done = _manifest_done(
+        version,
+        expected_stations=len(reg),
+        steps=args.steps,
+    )
     todo = [d for d in dates if d not in done]
     print(f"registry {version} ({len(reg)} stations) | {len(dates)} dates requested, "
           f"{len(dates)-len(todo)} already done at this registry, "

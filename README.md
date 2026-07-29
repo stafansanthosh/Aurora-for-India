@@ -93,10 +93,11 @@ As of the July 2026 status snapshot:
 | OpenAQ ground-truth archive | 1,489,534 hourly observations across 9 cities |
 | Station registry | 159 stations |
 | Frozen forecast initializations | 56 dates: 32 train, 24 test |
+| Actual CAMS forecast archive | Complete: 56 dates, 71,232 station-lead rows |
 | Forecast horizon | +12 to +96 hours in 12-hour steps |
 | Spatial transfer design | 20% hashed station holdout plus 3 fully held-out cities |
-| Integrity audit | 34 checks, last recorded with 0 failures |
-| Test suite | 26/26 passing in GitHub Actions |
+| Integrity audit | 39 checks: 36 pass, 2 legacy warnings, 1 GPU blocker |
+| Test suite | 64/64 passing locally |
 | Valid 159-station forecast pairs | **0 of 56 dates** |
 | Final full-registry metrics | **Not available** |
 
@@ -145,12 +146,14 @@ counts.
 - persistence, climatology, CAMS-start-held-constant, and raw Aurora baselines;
 - concentration, category, and Very Poor+ event metrics;
 - chronological and spatial holdouts;
-- a 34-check integrity audit;
+- a 39-check integrity audit;
 - calibrator no-harm guardrails and regime-shift tests;
 - Component A, a chronological trailing local-observation anchor, with
   leakage and fallback tests;
 - per-city/per-lead reporting and plotting code;
 - an interactive public-interface preview using explicitly illustrative data.
+- the complete lead-dependent CAMS operational baseline for all 56 dates,
+  retained with raw files, checksums, requests, and extraction provenance.
 
 The repository deliberately keeps the rejected calibrator as a documented
 negative baseline. Its failure is part of the research record, not a result to
@@ -161,7 +164,6 @@ hide.
 - the valid 56-date, 159-station Aurora rollout;
 - a valid full-registry evaluation of Component A;
 - a valid full-registry results table;
-- actual lead-dependent CAMS forecasts as a stronger operational baseline;
 - the latest-cycle live runner and immutable forecast ledger;
 - a deployed public experimental feed;
 - year-round prospective evidence, including an untouched post-monsoon test;
@@ -177,7 +179,7 @@ forecast service.
 2. Run the integrity audit and publish raw baseline scorecards.
 3. Evaluate the implemented trailing local anchor and retain it only if event
    skill is protected.
-4. Add real CAMS forecasts at each lead as an operational comparison.
+4. Score the real CAMS forecasts already attached by the integrated rollout.
 5. Build a latest-cycle runner that stores immutable, versioned forecasts.
 6. Run privately in shadow mode to measure failures and data latency.
 7. Publish an interactive nine-city feed with raw and corrected forecasts,

@@ -3,6 +3,8 @@ torch>=2.0.0
 xarray
 netcdf4
 cdsapi
+cfgrib
+eccodes
 requests
 python-dotenv
 pandas

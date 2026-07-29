@@ -15,15 +15,16 @@ Repository facts relevant to implementation:
   at 12:00 UTC.
 - The current orchestrator is date-oriented, writes one Parquet file per date,
   stamps the station-registry version, and has registry-aware resume behavior.
-- The orchestrator output contains a CAMS-derived lead-zero initial state plus
-  Aurora +12 h through +96 h station samples.
+- The orchestrator output contains a CAMS-derived lead-zero initial state,
+  CAMS's actual +12 h through +96 h forecast, and Aurora samples on identical
+  station/lead support.
 - OpenAQ archival rows contain observation timestamps, values, station
   identity, coordinates, and city, but not the time at which an observation
   first became available to the system.
 - The current evaluator matches the nearest observation within 90 minutes.
-- The current `raw_cams` baseline is CAMS analysis at initialization carried
-  forward; actual CAMS forecasts at future leads are not implemented in the
-  inspected modules.
+- The fixed-field comparator is now named `cams_lead0_fixed`. The separate
+  `cams_forecast` method is implemented in `src/data/cams_forecast.py` and
+  attached by the orchestrator.
 
 Implementation assumptions:
 
@@ -639,7 +640,7 @@ are fixtures rather than a real forecast.
   "methods": [
     {"id": "corrected", "label": "Corrected Aurora", "status": "available", "unavailable_reason": null},
     {"id": "raw_aurora", "label": "Raw Aurora", "status": "available", "unavailable_reason": null},
-    {"id": "cams_forecast", "label": "CAMS forecast", "status": "unavailable", "unavailable_reason": "Lead-dependent CAMS forecast not implemented"},
+    {"id": "cams_forecast", "label": "CAMS forecast", "status": "unavailable", "unavailable_reason": "Illustrative fixture contains no downloaded forecast"},
     {"id": "persistence", "label": "Persistence", "status": "available", "unavailable_reason": null},
     {"id": "cams_analysis_persistence", "label": "CAMS starting field held constant", "status": "available", "unavailable_reason": null}
   ],
@@ -1352,9 +1353,11 @@ the selected method/support status is explicit per location.
 
 ### Actual CAMS forecast
 
-Depends on: lead-dependent CAMS retrieval and station sampling.
-Done when: every matching lead is stored and labeled `cams_forecast`, while the
-analysis-held-constant comparator remains separately named.
+Implemented: deterministic lead-dependent CAMS retrieval, raw GRIB retention,
+checksummed provenance, station sampling, exact support/registry attachment,
+and the `cams_forecast` evaluator method. The analysis-held-constant comparator
+remains separately named `cams_lead0_fixed`. The 56-date data acquisition is
+part of the pending integrated GPU rollout.
 
 ### Ledger/publication
 

@@ -30,5 +30,6 @@ results/metrics/*
 results/plots/*
 data/cams_analysis/*.nc
 data/cams_analysis/*.zip
+data/cams_forecast/
 !**/.gitkeep
 results/*.nc

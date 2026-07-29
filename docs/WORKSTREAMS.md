@@ -19,12 +19,12 @@ exact source-by-source paths are assigned in `docs/DATA_EXPANSION_PLAN.md`.
 |---|---|---|---|---|
 | WS-1 | OpenAQ archive and station registry | **Complete** | `src/data/**`, `data/stations.csv`, frozen dates | Preserve provenance; no new bulk source without licence review |
 | WS-2 | Component A local anchoring | **Implementation complete; evaluation blocked** | `src/model/anchor.py`, `tests/test_anchor.py`, benchmark hook | Pass tests, then score valid 159-station pairs |
-| WS-3 | Calibrator guardrails and tests | **Complete at last recorded run** | `src/model/calibrator.py`, guardrail tests | Re-run in CI/current environment |
+| WS-3 | Calibrator guardrails and tests | **Complete; local suite green** | `src/model/calibrator.py`, guardrail tests | Score after valid pairs |
 | WS-4 | Reporting package | **Complete; real table blocked** | `src/report/**`, diagnostic figures | Render only after valid audit and metrics |
 | WS-5 | Fine-tuning design | **Not started** | planned `docs/FINETUNE_DESIGN.md` | Start after cheap baselines are scored |
 | WS-6 | 56-date Aurora rollout | **Ready; user/cloud action required** | `results/pairs/**` | Four disjoint GPU slices, 80,136 rows, audit pass |
-| WS-7 | Public product and interface | **Design/preview complete; live system absent** | `docs/PRODUCT_SPEC.md`, `docs/LIVE_FEED_SPEC.md`, `web/**` | Web build pass, then shadow runner |
-| WS-8 | Additional data and baselines | **Plan and source audit complete** | `docs/DATA_EXPANSION_PLAN.md`, `docs/DATA_SOURCE_AUDIT.md` | Implement actual CAMS forecasts; run small OGD pilot |
+| WS-7 | Public product and interface | **Private preview deployed; live system absent** | `docs/PRODUCT_SPEC.md`, `docs/LIVE_FEED_SPEC.md`, `web/**` | Shadow runner |
+| WS-8 | Additional data and baselines | **CAMS archive complete; OGD probe optional** | `src/data/cams_forecast.py`, `src/data/ogd_aqi.py` | Copy CAMS archive to GPU workers; optional keyed OGD probe |
 | WS-9 | Repository publication | **Blocked** | README, status, portfolio and readiness docs, CI | Tests/build, licence, clean-history decision |
 
 ## Critical path
@@ -83,8 +83,7 @@ zero-shot city transfer. Its implementation exists, but acceptance requires:
 The v1 direct-target calibrator remains a documented negative baseline. Its
 save path reports event metrics beside MAE and refuses a model that reduces
 Very Poor+ POD relative to raw Aurora. Regime-shift and seasonal-transfer tests
-exist. Re-run them in CI because the local virtual environment is currently
-broken.
+exist. The restored local environment passes the complete 64-test suite.
 
 ## WS-4 — Reporting
 
@@ -121,10 +120,16 @@ experimental-research disclaimer.
 
 ## WS-8 — Additional data
 
-Priorities are:
+Implemented foundations:
 
-1. actual CAMS forecast values at +12 through +96 hours as a separate baseline;
-2. a minimal official OGD India CPCB live-feed pilot for Patna/Varanasi;
+1. actual CAMS forecast values at +12 through +96 hours as a separate baseline,
+   integrated into the resumable orchestrator and strict evaluator; all 56
+   frozen dates are downloaded and validated at 71,232 station-lead rows;
+2. a minimal official OGD India CPCB live-feed pilot for Patna/Varanasi with
+   immutable private snapshots and conservative station matching;
+
+Remaining priorities are:
+
 3. one-day/manual official historical export tests or formal data requests;
 4. FIRMS and Sentinel-5P as explanatory UI layers;
 5. predictive feature experiments only after availability-time controls and

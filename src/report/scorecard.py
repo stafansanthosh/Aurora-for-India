@@ -180,7 +180,13 @@ def _test() -> None:
         rows = []
         for lead in [12, 24, 48, 72]:
             for city in ["delhi", "kanpur", "kolkata"]:
-                for method in ["raw_aurora", "calibrated", "persistence", "raw_cams"]:
+                for method in [
+                    "raw_aurora",
+                    "calibrated",
+                    "persistence",
+                    "cams_forecast",
+                    "cams_lead0_fixed",
+                ]:
                     rows.append({
                         "lead_h": lead,
                         "city": city,

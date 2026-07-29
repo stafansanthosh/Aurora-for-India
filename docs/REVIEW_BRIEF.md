@@ -21,7 +21,7 @@ Read in this order, then verify the code matches what they claim:
 | `JOURNAL.md` | Why each decision was made, in order |
 | `src/splits.py` | The split contract (single source of truth) |
 | `src/eval/aqi.py`, `src/eval/benchmark.py` | Metrics + scoring harness |
-| `src/eval/audit.py` | The existing self-audit (34 checks) — **audit the auditor** |
+| `src/eval/audit.py` | The existing self-audit (39 checks) — **audit the auditor** |
 | `src/data/openaq_client.py`, `archive_pull.py` | Ground-truth acquisition |
 | `src/pipeline/orchestrate.py` | Aurora rollout → station samples |
 | `src/model/calibrator.py` | The rejected v1 calibrator + guardrails |

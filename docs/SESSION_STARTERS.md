@@ -24,7 +24,12 @@ python -m src.pipeline.orchestrate --dates-file slice_0N --device cuda
 Replace `N` with `0`, `1`, `2`, or `3`. Bring all pair files back before
 scoring. Exact setup and verification are in `scripts/setup_gpu.md`.
 
-## Actual CAMS forecast baseline — future coding session
+## Actual CAMS forecast baseline — completed
+
+Do not start another implementation session. The reviewed implementation is in
+`src/data/cams_forecast.py` with tests in `tests/test_cams_forecast.py`; it is
+integrated into the orchestrator and evaluator. The block below is retained
+only as the original assignment record.
 
 ```text
 Read docs/AGENT_BRIEF.md, docs/HANDOFF.md, docs/DATA_SOURCE_AUDIT.md section 5,
@@ -47,7 +52,12 @@ result, update docs/HANDOFF.md only if the critical state changed, append
 JOURNAL.md, and commit reviewed files.
 ```
 
-## OGD India Patna/Varanasi pilot — future coding session
+## OGD India Patna/Varanasi pilot — implementation completed
+
+Do not start another implementation session. The bounded official API pilot is
+in `src/data/ogd_aqi.py` with tests in `tests/test_ogd_aqi.py`. A live probe
+requires `DATA_GOV_IN_API_KEY`. The block below is retained as the original
+assignment record.
 
 ```text
 Read docs/AGENT_BRIEF.md, docs/HANDOFF.md, docs/DATA_SOURCE_AUDIT.md section 4.2,

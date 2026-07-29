@@ -48,7 +48,7 @@ These roles must never be blurred. In particular:
 
 ### Recommendation in one sentence
 
-Add actual CAMS forecast leads first; run a small direct-ground-data pilot in
+Actual CAMS forecast leads are now implemented; run the small direct-ground-data pilot in
 Patna and Varanasi in parallel; add fire and satellite data initially as
 explanatory layers; promote any source into model fitting only after a
 same-support ablation shows better held-out event skill.
@@ -733,7 +733,7 @@ event counts.
 | Step | Change from previous step | Question |
 |---|---|---|
 | A0 | Persistence, climatology, current fixed CAMS lead-zero, raw Aurora | Existing benchmark reference |
-| A1 | Add actual CAMS forecast at every lead as a separate baseline | Does Aurora add value over the available operational global forecast? |
+| A1 (implemented) | Add actual CAMS forecast at every lead as a separate baseline | Does Aurora add value over the available operational global forecast? |
 | A2 | Add Component A using current OpenAQ only | What does the cheapest recent-local-observation correction buy? |
 | A3 | Use direct-source observations only to fill live pre-init gaps in Component A | Does lower latency/completeness improve event skill? |
 | A4 | Add earlier ground observations to the authorized fit pool, with the evaluation population unchanged | Does additional seasonal truth improve transfer? |
@@ -767,16 +767,16 @@ MAE-only improvement is not sufficient.
 This section proposes future ownership; it does not override
 `docs/WORKSTREAMS.md`. The coordinator must assign it before code begins.
 
-### Disjoint future implementation ownership
+### Implementation ownership record
 
-The source audit is complete. If implementation is parallelized, assign these
-non-overlapping paths:
+The source audit is complete. CAMS and the bounded OGD pilot were implemented
+in the paths below; the remaining rows are future non-overlapping ownership:
 
 | Session | Exclusive paths |
 |---|---|
 | Source framework and identity | `src/data/sources/base.py`, `src/data/station_identity.py`, `src/data/provenance.py`, `tests/data/test_station_identity.py`, `tests/data/test_provenance.py` |
-| Actual CAMS forecast | `src/data/sources/cams_forecast.py`, `tests/data/test_cams_forecast_contract.py` |
-| OGD/CPCB ground pilot | `src/data/sources/cpcb.py`, `src/data/harmonize_external.py`, `tests/data/test_harmonize_external.py` |
+| Actual CAMS forecast (complete) | `src/data/cams_forecast.py`, `tests/test_cams_forecast.py` |
+| OGD/CPCB ground pilot (complete) | `src/data/ogd_aqi.py`, `tests/test_ogd_aqi.py` |
 | Context layers | `src/data/sources/firms.py`, `src/data/sources/sentinel5p.py`, source-specific tests under `tests/data/context/` |
 
 `tests/data/**` belongs to WS-8 during these assignments; WS-3's historical
@@ -814,10 +814,11 @@ the GPU rollout is in flight.
    specification; no bulk download.
 2. **Identity session:** implement schema, matching candidates, and review
    report using tiny fixture data.
-3. **CAMS forecast session:** add lead-dependent CAMS retrieval and extraction
-   as a separate baseline.
-4. **Ground pilot session:** acquire only the approved Patna/Varanasi slices,
-   match, and produce the gate report.
+3. **CAMS forecast session (complete):** lead-dependent retrieval, extraction,
+   provenance, strict attachment, and evaluator integration are implemented.
+4. **Ground pilot session (implementation complete):** the approved
+   Patna/Varanasi current-feed probe is ready; a live call requires the owner's
+   data.gov.in API key.
 5. **Context session:** add FIRMS and satellite UI artifacts only after the live
    forecast schema is stable.
 6. **Ablation session:** run one-source-at-a-time comparisons after valid

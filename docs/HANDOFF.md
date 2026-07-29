@@ -24,9 +24,10 @@ results table.
 | OpenAQ archive | Complete: 1,489,534 observations |
 | Station registry | Complete: 159 stations across 9 cities |
 | Frozen dates | Complete: 56 dates, 32 train and 24 test |
-| Integrity audit | Last recorded: 34 checks, 0 failures |
-| Current test collection | 26/26 passing in GitHub Actions |
-| Web preview | Install, build, and render tests passing in GitHub Actions |
+| Actual CAMS forecasts | Complete: 56 dates, 71,232 station-lead rows |
+| Integrity audit | 39 checks: 36 pass, 2 legacy warnings, 1 expected GPU blocker |
+| Current test collection | 64/64 passing locally |
+| Web preview | CI build/render pass; private owner-only deployment succeeds |
 | Current-registry pair files | **0** |
 | Valid full benchmark table | **Absent** |
 | Public live forecast | **Absent** |
@@ -48,13 +49,18 @@ year-round utility claim.
   isolates station histories, shrinks thin samples toward no correction, clips
   the multiplier, and reports fallback diagnostics.
 - `src/eval/benchmark.py --anchor` adds Component A to the common scoring path.
-- Sixteen Component A tests exist in `tests/test_anchor.py`; the full 26-test
-  suite passes in GitHub Actions. They have not run locally because the Windows
-  virtual environment points to a missing base Python interpreter.
+- Sixteen Component A tests exist in `tests/test_anchor.py`; the full 64-test
+  suite passes locally in the restored Python 3.11.9 environment.
 - The public product and live-feed contracts are documented in
   `docs/PRODUCT_SPEC.md` and `docs/LIVE_FEED_SPEC.md`.
 - An interactive product preview lives under `web/`. Every forecast value is
   illustrative and the UI states that no live forecast is being issued.
+- The preview has an owner-only Sites production deployment. Deployment
+  succeeded; CI and the restored local Node runtime verify build/render
+  behavior. Browser interaction checks passed for city selection, method
+  selection, and forecast-day selection with no client errors. The production
+  dependency audit reports zero known vulnerabilities after patching Next.js
+  and its vulnerable transitive dependencies.
 - Additional-data work is documented in `docs/DATA_EXPANSION_PLAN.md` and
   independently checked in `docs/DATA_SOURCE_AUDIT.md`.
 - GitHub Actions run `30473089540` passed the 26-test Python job and the web
@@ -70,12 +76,21 @@ availability separately.
 
 ## Additional-data decisions
 
-1. Add the actual CAMS +12 to +96-hour forecast as a separate operational
-   baseline. The current `raw_cams` method only carries the initialization
-   field forward and must be labeled “CAMS starting field held constant.”
-2. Pilot the official OGD India CPCB hourly feed as a live observation backup
-   and latency/completeness check. It probably overlaps OpenAQ and is not
-   automatically independent truth.
+**Implementation update:** the actual CAMS +12 to +96-hour retriever, GRIB
+sampler, provenance record, exact-support pair attachment, and evaluator method
+are complete. All 56 frozen CAMS cycles have been downloaded and validated:
+71,232 station-lead rows, 159 stations per date, eight leads, matching raw and
+sample hashes, and no missing or extra dates. The former `raw_cams` label is
+now `cams_lead0_fixed`.
+The bounded official OGD India CPCB Patna/Varanasi live-feed diagnostic is also
+implemented. A live probe needs the owner's `DATA_GOV_IN_API_KEY`; it remains
+optional and is not a frozen-benchmark blocker.
+
+1. Preserve and copy the locally validated 56-date CAMS archive to each GPU
+   worker. Recheck it with `python -m scripts.validate_cams_download`.
+2. Run the implemented official OGD India CPCB live probe only when the owner
+   supplies an API key. It probably overlaps OpenAQ and is not independent
+   truth.
 3. No licence-clear 2023/24 hourly Patna or Varanasi archive has been verified.
    Use a narrow official export test or formal request, not undocumented bulk
    scraping.
@@ -100,7 +115,10 @@ requires explicit owner approval. See `docs/PUBLICATION_READINESS.md`.
 ## Exact next scientific action
 
 Run the 56 frozen dates on four temporary 48 GB GPU workers, each with a
-disjoint date slice. On each configured worker, the command is:
+disjoint date slice. Copy the validated local `data/cams_forecast/` directory
+to every worker first. The orchestrator verifies and re-extracts those CAMS
+files, runs Aurora, and writes both methods into each current-registry pair
+file. On each configured worker, the command is:
 
 ```bash
 python -m src.pipeline.orchestrate --dates-file slice_0N --device cuda
@@ -120,12 +138,13 @@ python -m src.eval.benchmark --anchor
 Expected completeness is 1,431 rows per date and 80,136 rows total. Do not fit
 or publish a calibration result before the audit passes.
 
-## Local setup still required
+## Local environment
 
-The current `.venv` is not usable: its base Python 3.11 installation is
-missing. Node.js is also absent. Repair/install those runtimes later or rely on
-GitHub Actions for the source-only test and web-build checks. The local
-data-dependent audit still requires a repaired Python environment.
+The Windows Python 3.11.9 base runtime was restored and the project `.venv`
+is healthy. The complete 64-test suite and local data-dependent audit run.
+A checksum-verified portable Node.js 24 runtime is available locally; the web
+build/render tests, production dependency audit, browser interactions, and
+owner-only Sites deployment all pass.
 
 ## Rejected paths
 

@@ -24,7 +24,8 @@ METHOD_COLORS = {
     "raw_aurora": "#1f77b4",   # Blue - Foundation model baseline
     "calibrated": "#ff7f0e",   # Orange - Calibrated model
     "persistence": "#2ca02c",  # Green - Naive persistence
-    "raw_cams": "#9467bd",     # Purple - CAMS global analysis
+    "cams_forecast": "#9467bd",  # Purple - Operational CAMS forecast
+    "cams_lead0_fixed": "#8c564b",  # Brown - CAMS start held constant
     "climatology": "#7f7f7f",  # Grey - Historical station climatology
 }
 
@@ -32,7 +33,8 @@ METHOD_LABELS = {
     "raw_aurora": "Raw Aurora",
     "calibrated": "Calibrated",
     "persistence": "Persistence",
-    "raw_cams": "CAMS start held constant",
+    "cams_forecast": "CAMS forecast",
+    "cams_lead0_fixed": "CAMS start held constant",
     "climatology": "Climatology",
 }
 
@@ -40,7 +42,8 @@ METHOD_STYLES = {
     "raw_aurora": {"ls": "-", "marker": "o", "lw": 2},
     "calibrated": {"ls": "-", "marker": "s", "lw": 2},
     "persistence": {"ls": "--", "marker": "^", "lw": 1.5},
-    "raw_cams": {"ls": ":", "marker": "v", "lw": 1.5},
+    "cams_forecast": {"ls": ":", "marker": "v", "lw": 1.8},
+    "cams_lead0_fixed": {"ls": ":", "marker": "x", "lw": 1.2},
     "climatology": {"ls": "-.", "marker": "x", "lw": 1.5},
 }
 
@@ -197,7 +200,17 @@ def plot_per_city_breakdown(df: pd.DataFrame, out_path: Path, target_lead: int =
         return out_path
 
     cities = sorted(valid["city"].unique())
-    methods = [m for m in ["raw_aurora", "calibrated", "persistence", "raw_cams"] if m in valid["method"].unique()]
+    methods = [
+        method
+        for method in [
+            "raw_aurora",
+            "calibrated",
+            "persistence",
+            "cams_forecast",
+            "cams_lead0_fixed",
+        ]
+        if method in valid["method"].unique()
+    ]
 
     fig, (ax_pod, ax_cat) = plt.subplots(1, 2, figsize=(14, 5))
     x = np.arange(len(cities))

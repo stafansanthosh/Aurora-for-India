@@ -23,9 +23,9 @@ the [development journal](../JOURNAL.md) preserves the full history.
 | Expected full pair rows | 80,136 |
 | Valid current-registry pair files | **0** |
 | Legacy pair files rejected by the loader | 5 |
-| Integrity audit | 34 checks, last recorded with 0 failures |
-| Unit tests | 26/26 passing in GitHub Actions |
-| Web preview | Install, build, and render tests passing in GitHub Actions |
+| Integrity audit | 39 checks: 36 pass, 2 legacy warnings, 1 GPU blocker |
+| Unit tests | 64/64 passing locally |
+| Web preview | CI build/render and owner-only deployment passing |
 
 The expected pair count is 56 dates × 159 stations × 9 rows per station: one
 lead-zero CAMS row plus eight Aurora forecast leads.
@@ -88,31 +88,33 @@ The temporal cutoff was revised once on 2026-07-24:
 - Implemented CAMS download, Aurora rollout, and station sampling.
 - Implemented persistence, climatology, CAMS-start-held-constant, and raw
   Aurora baselines.
+- Implemented and integrated the actual lead-dependent CAMS +12 to +96-hour
+  operational forecast baseline with immutable request/provenance records.
+- Downloaded and validated all 56 actual CAMS forecast cycles: 71,232
+  station-lead rows with matching raw and extracted-file hashes.
 - Implemented PM2.5 concentration, AQI category, and Very Poor+ event metrics.
 - Centralized all temporal and spatial split constants in
   [`src/splits.py`](../src/splits.py).
 - Implemented registry-aware rollout resumption and strict pair-file loading.
-- Implemented a 34-check integrity audit.
+- Implemented a 39-check integrity audit.
 - Added calibrator guardrails that report event skill beside MAE and refuse to
   save a calibration model that harms Very Poor+ detection.
 - Added regime-shift, seasonal-transfer, anchoring, leakage, and event-count
-  tests; all 26 tests pass in GitHub Actions.
+  tests; all 64 tests pass locally.
 - Implemented the reporting package under [`src/report/`](../src/report/).
 - Preserved the first failed calibrator as a documented negative baseline.
 - Implemented a public-interface preview with illustrative data and explicit
   non-operational labeling; its install, build, and render tests pass in CI.
 - Specified the public product, immutable live-feed contract, and
   additional-data experiments.
+- Implemented the bounded official OGD India CPCB Patna/Varanasi live-feed
+  diagnostic; it remains optional and is not claimed as independent truth.
 
 ## In progress
 
 - Preparing the four-worker GPU rollout for all 56 frozen dates.
-- Reviewing and validating the implemented chronological trailing
-  local-observation anchor (“Component A”).
 - Resolving repository licensing and historical raw-data publication before a
   public launch.
-- Preparing minimal pilots for the official OGD India live observation feed
-  and lead-dependent CAMS forecasts.
 
 ## Blocked or absent
 
@@ -125,8 +127,6 @@ These are not complete and must not be implied in public claims:
   but has no valid current-registry pairs to evaluate.
 - **Fine-tuning design:** absent.
 - **Scoped Aurora fine-tune:** not run.
-- **Lead-dependent operational CAMS baseline:** absent; the current baseline
-  carries the initialization analysis forward.
 - **Latest-cycle forecast runner:** absent.
 - **Immutable live forecast ledger:** absent.
 - **Public experimental forecast feed:** absent.
@@ -165,7 +165,8 @@ The critical scientific sequence is:
 4. Produce raw baseline tables by city, lead, L1 holdout, and L2 holdout.
 5. Evaluate the implemented Component A without future-data leakage.
 6. Apply the guarded calibrator only if it protects event detection.
-7. Add actual CAMS forecasts at each lead as a stronger operational baseline.
+7. Compare Aurora against the actual CAMS forecasts already attached by the
+   integrated rollout.
 8. Publish versioned tables and figures with the cutoff revision disclosed.
 
 The public-product sequence can run beside it:

@@ -47,7 +47,7 @@ test("keeps public claims and demo boundaries in source", async () => {
   assert.match(page, /not official health guidance/i);
   assert.match(page, /Awaiting full benchmark/i);
   assert.match(page, /Delhi is not the target/i);
-  assert.match(page, /CAMS \(planned\)/i);
+  assert.match(page, /CAMS \(illustrative\)/i);
   assert.match(page, /"corrected" \| "raw_aurora" \| "cams_forecast"/);
   assert.match(page, /limited-data or method-unavailable state/i);
   assert.match(page, /POD · FAR · CSI/);

@@ -4,7 +4,8 @@ Joins the orchestrator's pairs (Aurora rollout sampled at station cells) to the
 archived OpenAQ observations at each (station, valid_time), builds the mandatory
 baselines, and computes the full metric suite per lead x city x method:
 
-  methods   persistence | climatology | raw_cams | raw_aurora
+  methods   persistence | climatology | cams_lead0_fixed |
+            cams_forecast | raw_aurora
   metrics   MAE, RMSE, bias, corr (secondary)  +  AQI category hit/adjacent,
             Very Poor+ POD/FAR/miss/CSI, Brier (headline)  +  the same on the
             extremes subset (obs >= 121 ug/m3)
@@ -12,8 +13,11 @@ baselines, and computes the full metric suite per lead x city x method:
 Baselines (spec §5):
   persistence  obs at init time (the lead-0 valid_time) carried to every lead.
   climatology  per station x month x hour-of-day mean over the TRAIN period.
-  raw_cams     the CAMS analysis pm2p5 sampled at init (pairs lead_h == 0),
-               carried forward -- the "free global product" reference.
+  cams_lead0_fixed
+               the CAMS analysis pm2p5 sampled at init (pairs lead_h == 0),
+               carried forward as a deliberately weak fixed-field reference.
+  cams_forecast
+               CAMS's actual lead-dependent +12..+96 h operational forecast.
   raw_aurora   aurora_pm2p5 at each lead -- the foundation-model baseline.
 
 Usage:
@@ -132,6 +136,20 @@ def load_pairs(strict: bool = True) -> pd.DataFrame:
                 raise SystemExit(f"{date}: lead set is incomplete or unexpected.")
             if set(group["station_id"].astype(str)) != expected_stations:
                 raise SystemExit(f"{date}: station set differs from current registry.")
+        if "cams_forecast_pm25" not in df.columns:
+            raise SystemExit(
+                "Current pair files lack the lead-dependent CAMS forecast "
+                "baseline; rerun the integrated orchestrator."
+            )
+        positive = df["lead_h"] > 0
+        if df.loc[positive, "cams_forecast_pm25"].isna().any():
+            raise SystemExit(
+                "CAMS forecast baseline is incomplete at one or more positive leads."
+            )
+        if df.loc[~positive, "cams_forecast_pm25"].notna().any():
+            raise SystemExit(
+                "CAMS forecast baseline must be empty at lead zero."
+            )
 
     df["valid_time"] = pd.to_datetime(df["valid_time"], utc=True)
     df["init_time"] = pd.to_datetime(df["init_date"], utc=True) + pd.Timedelta(hours=12)
@@ -180,8 +198,9 @@ def build_frame(strict: bool = True) -> pd.DataFrame:
     # Persistence: obs at the init time (same for all leads of an init).
     pairs["persist_pm25"] = _match_obs(pairs, obs, "init_time", "persist_pm25")
 
-    # raw_cams: the lead-0 aurora_pm2p5 (== CAMS input) per (init, station),
-    # carried to every lead.
+    # Fixed CAMS lead-zero field: the Aurora initial condition carried forward.
+    # This is not CAMS's operational forecast; that lives in
+    # cams_forecast_pm25 and is attached by the orchestrator.
     cams0 = (pairs[pairs["lead_h"] == 0]
              .set_index(["init_date", "station_id"])["aurora_pm2p5"]
              .rename("cams_pm25"))
@@ -214,14 +233,19 @@ def add_climatology(frame: pd.DataFrame) -> pd.DataFrame:
 METHODS = {
     "persistence": "persist_pm25",
     "climatology": "clim_pm25",
-    "raw_cams": "cams_pm25",
+    "cams_lead0_fixed": "cams_pm25",
+    "cams_forecast": "cams_forecast_pm25",
     "raw_aurora": "aurora_pm2p5",
 }
 
 
 def active_methods(frame: pd.DataFrame) -> dict[str, str]:
     """METHODS plus any adaptation columns present on the frame."""
-    m = dict(METHODS)
+    m = {
+        method: column
+        for method, column in METHODS.items()
+        if column in frame.columns
+    }
     if "cal_pm25" in frame.columns:
         m["calibrated"] = "cal_pm25"
     if "anchored_pm25" in frame.columns:

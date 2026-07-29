@@ -232,6 +232,46 @@ def audit_pairs(reg: pd.DataFrame) -> pd.DataFrame:
     check("pairs: current-registry rollout is exactly complete", complete,
           f"{len(current_dates)}/{len(frozen)} dates; expected "
           f"{expected_rows:,} rows/date")
+
+    # The operational CAMS baseline is a separate lead-dependent forecast,
+    # not the lead-zero initial field carried forward. These checks are
+    # vacuously satisfied until a current-registry artifact exists; the exact
+    # completeness gate above remains the single pre-rollout failure.
+    cams_present = current_pairs.empty or "cams_forecast_pm25" in current_pairs.columns
+    check("pairs: current artifacts contain actual CAMS forecast column",
+          cams_present,
+          "deferred until current pairs exist" if current_pairs.empty
+          else "cams_forecast_pm25 present")
+    if current_pairs.empty or not cams_present:
+        cams_support = current_pairs.empty
+        cams_magnitude = current_pairs.empty
+        cams_detail = "deferred until current pairs exist"
+    else:
+        positive = current_pairs["lead_h"] > 0
+        cams = pd.to_numeric(
+            current_pairs.loc[positive, "cams_forecast_pm25"],
+            errors="coerce",
+        )
+        cams_support = bool(
+            current_pairs.loc[positive, "cams_forecast_pm25"].notna().all()
+            and current_pairs.loc[~positive, "cams_forecast_pm25"].isna().all()
+        )
+        cams_magnitude = bool(
+            len(cams) > 0
+            and cams.notna().all()
+            and cams.between(0, 5000).all()
+            and 1 < cams.median() < 1000
+        )
+        cams_detail = (
+            f"positive={int(positive.sum()):,}, "
+            f"lead0={int((~positive).sum()):,}"
+        )
+    check("pairs: actual CAMS support is positive-lead-only and complete",
+          cams_support, cams_detail)
+    check("pairs: actual CAMS magnitude is consistent with one kg-to-ug conversion",
+          cams_magnitude,
+          "deferred until current pairs exist" if current_pairs.empty
+          else f"median={cams.median():.2f} ug/m3")
     return pairs
 
 

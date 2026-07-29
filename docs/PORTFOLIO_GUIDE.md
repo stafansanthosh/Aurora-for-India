@@ -33,7 +33,7 @@ Use three to five, adjusted to the role:
   tests to prevent recurrence.
 - Implemented reproducibility controls including a versioned station registry,
   frozen dates, centralized split constants, registry-aware resumption, strict
-  stale-artifact rejection, and a 34-check integrity audit.
+  stale-artifact rejection, and a 39-check integrity audit.
 
 Do not add an accuracy-improvement percentage until the valid 159-station
 rollout and full benchmark table exist.

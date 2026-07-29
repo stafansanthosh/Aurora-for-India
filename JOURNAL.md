@@ -605,3 +605,62 @@ integrity audit remains unrun because it needs the complete local archive plus
 a repaired Python interpreter. The workflow actions were then updated to their
 current official v7 major releases to remove the runner's Node 20 deprecation
 warning.
+
+## 2026-07-29 — Final non-GPU integration and data acquisition
+
+Integrated and independently reviewed every completed workstream on `master`.
+Component A, calibrator guardrails, reporting, public-product documentation,
+the interface preview, actual CAMS forecasts, and the bounded official OGD
+diagnostic now share one tested repository state.
+
+The operational CAMS baseline is no longer the Aurora lead-zero input carried
+forward. `src/data/cams_forecast.py` retrieves the actual +12 through +96-hour
+CAMS PM2.5 forecast, retains the exact request and raw GRIB, records checksums
+and retrieval provenance, performs a guarded single unit conversion, and
+samples the same 159-station support as Aurora. The evaluator now labels the
+two comparisons separately as `cams_lead0_fixed` and `cams_forecast`.
+
+Downloaded all 56 frozen CAMS cycles locally in disjoint resumable workers.
+The reusable validator confirmed:
+
+- 56/56 exact frozen dates, with no extras;
+- 159 stations and eight positive leads per date;
+- 71,232 station-lead rows;
+- matching raw-GRIB and extracted-sample SHA-256 records;
+- PM2.5 range 1.59 to 363.62 ug/m3;
+- maximum station-to-grid-cell distance 27.75 km;
+- no retrieval failures.
+
+The GPU workers must receive this validated `data/cams_forecast/` directory
+before Aurora inference. The orchestrator re-verifies and re-extracts the
+archive at the current registry version. Its resume path now checks that the
+referenced pair artifact actually exists and has the correct date, registry,
+station support, leads, row count, and CAMS coverage. Four-worker manifest
+collection is append-only through `scripts/merge_worker_manifests.py`, avoiding
+the prior overwrite risk.
+
+The interface preview passed a real browser interaction check for city,
+method, and forecast-day controls. Its production dependencies were patched:
+the production-only audit reports zero known vulnerabilities. The owner-only
+Sites deployment succeeds; every displayed forecast remains explicitly
+illustrative.
+
+The Windows Python 3.11.9 base runtime and project virtual environment were
+restored, and a checksum-verified portable Node.js 24 runtime was used for
+local web verification. Final local results:
+
+- Python tests: 64/64 passed;
+- CAMS archive validator: passed;
+- report self-test: passed;
+- Python dependency check: clean;
+- web build/render tests: passed;
+- production web dependency audit: zero vulnerabilities;
+- integrity audit: 39 checks, 36 pass, two expected legacy-pair warnings, and
+  one expected failure — zero of 56 current-registry Aurora rollout dates.
+
+That sole audit failure is now the exact scientific boundary. All required
+observations and the actual CAMS comparator are local; only the paid GPU Aurora
+inference remains before raw, Component A, and calibrated scorecards can be
+trusted. Public release remains a separate governance decision because the
+private repository has no licence and reachable history contains raw OpenAQ
+archives.

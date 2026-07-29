@@ -24,8 +24,15 @@ current scientific state is tracked in
   `.claude/settings.local.json` in `.gitignore`.
 - Public-facing documentation and the interactive UI preview completed
   independent integration review.
-- GitHub Actions run `30473089540` passed all 26 Python tests and the web
-  install/build/render checks on integration commit `48135cc`.
+- GitHub Actions run `30473358275` passed all then-current Python tests and the
+  web install/build/render checks on commit `b10d348`.
+- The restored local Python 3.11.9 environment passes the expanded 64-test
+  collection.
+- The local integrity audit now runs against the complete archive. Its only
+  failure is the explicit 0/56 current-registry pair completeness gate.
+- An owner-only Sites deployment of the illustrative UI succeeded.
+- Local browser interaction checks passed, and `npm audit --omit=dev` reports
+  zero known production vulnerabilities on the patched lockfile.
 
 ## Publication blockers
 
@@ -57,13 +64,13 @@ The owner must select the software licence. Data and third-party model
 artefacts must retain their own terms and attribution rather than being
 implicitly covered by the software licence.
 
-### 3. The local data-dependent audit still needs to run
+### 3. The full benchmark still needs the GPU rollout
 
-The source-only checks are green in GitHub Actions. The local Python
-environment still points to a missing base interpreter, so the integrity audit
-has not been rerun after the registry-fingerprint and exact-completeness
-changes. That audit needs the complete local archive and a repaired local
-environment.
+The local audit now verifies the 1,489,534-row observation archive,
+159-station registry, grid matching, split logic, and event metrics. It reports
+36 passes, two expected warnings about legacy pilot files, and one failure:
+zero of 56 current-registry rollout dates exist. That is the intended
+scientific blocker, not an environment problem.
 
 ### 4. Scientific outputs are not final
 
@@ -83,7 +90,8 @@ service until the scientific and operational gates in
 3. Commit only reviewed source and documentation; exclude local configuration.
 4. Push while the repository remains private.
 5. Require the Python and web CI jobs to pass. **Passed on `48135cc`.**
-6. Repair the local Python environment and rerun the integrity audit.
+6. Run the 56-date GPU rollout and require the local integrity audit to clear
+   the exact-completeness gate.
 7. Resolve the software licence.
 8. Resolve the historical raw-data choice: rights confirmation, history
    rewrite, or clean public mirror.

@@ -13,19 +13,24 @@ What exists in the repository:
   analysis), initializes Aurora at 12:00 UTC, rolls it out at 12-hour steps from
   +12 h through +96 h, and samples the grid at registered stations.
 - The evaluator matches predictions to OpenAQ observations, builds persistence,
-  station climatology, CAMS-analysis-held-constant, and raw Aurora baselines,
-  and reports concentration, category, and Very Poor+ event metrics.
+  station climatology, CAMS-analysis-held-constant, actual lead-dependent CAMS,
+  and raw Aurora baselines, and reports concentration, category, and Very
+  Poor+ event metrics.
 - The benchmark covers nine cities. Kanpur, Kolkata, and Varanasi are held-out
   cities; Delhi is a diagnostic city, not the target.
 - The official Indian PM2.5 category thresholds refer to a 24-hour averaging
   period. Applying those thresholds to instantaneous values is a sensitivity
   analysis, not the public headline.
-- No live scheduler, deployed feed, public endpoint, immutable forecast ledger,
-  actual lead-dependent CAMS forecast baseline, or production website is
-  implemented in the inspected files.
+- No live scheduler, public endpoint, immutable forecast ledger, validated
+  forecast feed, or complete 56-date current-registry rollout exists. The
+  actual lead-dependent CAMS baseline code is implemented and integrated, and
+  an owner-only illustrative website is deployed.
 
 Assumptions this product contract makes:
 
+- The separate operational `cams_forecast` method is implemented. The
+  lead-zero fixed-field evaluator method is named `cams_lead0_fixed`; neither
+  has a complete 56-date score until the pending rollout finishes.
 - The first live release covers the existing nine-city registry. Expansion is a
   later, separately validated step.
 - The live pipeline will be generalized from one 12:00 UTC initialization per
@@ -33,10 +38,9 @@ Assumptions this product contract makes:
 - The public product may launch with raw Aurora if no correction method has
   passed the event-safety gate. An unsafe or unavailable correction is never a
   launch blocker and is never silently substituted.
-- “CAMS forecast” will mean actual CAMS values at each future lead. The current
-  `raw_cams` benchmark is only the CAMS initial field carried forward and must
-  be labeled “CAMS starting field held constant” until the lead-dependent
-  forecast is implemented.
+- “CAMS forecast” means actual CAMS values at each future lead. The separate
+  `cams_lead0_fixed` evaluator method is the CAMS initial field carried forward
+  and is labeled “CAMS starting field held constant.”
 - Product copy asserting that a particular city has no other forecast service
   requires a source check immediately before publication. The stable claim is
   that the product is designed for underserved Indian cities and transparent
@@ -138,7 +142,7 @@ The landing and city pages follow this order.
 
 - Corrected Aurora, if it passed its scientific and operational gates.
 - Raw Aurora.
-- Actual CAMS forecast, once implemented.
+- Actual CAMS forecast.
 - Persistence from the last timely OpenAQ observation.
 - “CAMS starting field held constant” as a technical baseline while that is the
   only CAMS comparator available.
@@ -207,7 +211,7 @@ The default chart overlays:
 - observations;
 - corrected Aurora, if available;
 - raw Aurora;
-- actual CAMS forecast, when available;
+- actual CAMS forecast;
 - persistence.
 
 The chart must not connect across missing periods. Hover/focus reveals the
@@ -309,7 +313,7 @@ Headline and sensitivity results must never be pooled in one scorecard.
 | Raw Aurora | `raw_aurora` | Unmodified Aurora rollout |
 | CAMS forecast | `cams_forecast` | Actual CAMS value at the corresponding future lead |
 | Persistence | `persistence` | Timely observed PM2.5 at initialization carried forward |
-| CAMS starting field held constant | `cams_analysis_persistence` | CAMS lead-zero analysis carried forward; current benchmark `raw_cams` |
+| CAMS starting field held constant | `cams_analysis_persistence` | CAMS lead-zero analysis carried forward; evaluator method `cams_lead0_fixed` |
 
 Rules:
 
@@ -462,7 +466,7 @@ the full text. The full text must not be hidden behind acceptance.
 
 ### Later
 
-- Actual lead-dependent CAMS forecast if not ready for MVP.
+- Complete 56-date CAMS forecast data and scorecards if not ready for MVP.
 - Additional cities in monitored/intermittent/unmonitored tiers.
 - Fire, dust, satellite, boundary-layer, and wind context.
 - Probabilistic Very Poor+ forecasts and reliability diagrams.
