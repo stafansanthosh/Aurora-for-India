@@ -218,7 +218,7 @@ def audit_splits() -> None:
     from . import benchmark as bench
     from ..model.calibrator import split_frame
 
-    frame = bench.add_climatology(bench.build_frame())
+    frame = bench.add_climatology(bench.build_frame(strict=False))
     check("split: is_test matches the cutoff exactly",
           bool((frame.is_test == (frame.valid_time >= SPLIT_CUTOFF)).all()),
           f"cutoff {SPLIT_CUTOFF.date()}")
@@ -288,7 +288,7 @@ def main() -> None:
     audit_pairs(reg)
     try:
         audit_splits()
-    except Exception as e:
+    except BaseException as e:  # SystemExit from strict guards must not abort the audit
         check("split audit ran", False, f"{type(e).__name__}: {e}")
     audit_metrics()
 

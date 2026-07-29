@@ -72,7 +72,8 @@ url: https://ads.atmosphere.copernicus.eu/api
 key: <YOUR_ADS_KEY>
 EOF
 
-# OpenAQ (only needed if re-pulling ground truth; the archive is already in-repo):
+# OpenAQ (required: the archive CSVs are NOT tracked in git -- see spec section 7.
+# Either re-pull with src.data.archive_pull, or fetch the published release asset):
 echo "OPENAQ_API_KEY=<YOUR_KEY>" > .env
 ```
 
@@ -97,9 +98,22 @@ python -m src.pipeline.orchestrate --dates-file docs/benchmark_dates.csv --devic
 ```
 
 Rough budget on an A6000: ~2–4 min/date download (datacenter) + ~5–10 min/date
-rollout (8 steps) ≈ **10–14 h wall for 56 dates**. Run it under `tmux`/`nohup`
-so an SSH drop doesn't kill it. Progress: `tail -f` the log or watch
-`results/pairs/manifest.jsonl`.
+rollout (8 steps). Serially that is ~10–14 h for 56 dates, so **split the date
+list across 4 boxes for ~2.5 h wall, ~$5 total** — dates are independent and the
+manifest makes each box resumable:
+
+```bash
+split -n l/4 -d <(tail -n +2 docs/benchmark_dates.csv | cut -d, -f1) slice_
+python -m src.pipeline.orchestrate --dates-file slice_0X --device cuda
+```
+
+Run under `tmux`/`nohup` so an SSH drop doesn't kill it. Progress: `tail -f` the
+log or watch `results/pairs/manifest.jsonl`.
+
+**Verify before trusting results:** a complete run produces **1,431 rows per
+date** (159 stations × 9 lead rows) and **80,136 rows** across all 56. Resume is
+registry-aware, so dates rolled out at an older station registry are re-run
+rather than silently reused.
 
 ## 5. Fit the calibrator + score everything
 
@@ -129,6 +143,6 @@ small and get committed; the 240 MB/date globals were never persisted.
 ## Reproducibility note
 
 Everything the run consumes is pinned: the frozen `docs/benchmark_dates.csv`, the
-versioned `data/stations.csv` (127 stations), the archived OpenAQ pulls, and the
+versioned `data/stations.csv` (159 stations), the archived OpenAQ pulls, and the
 CAMS extraction scripts + date manifest. A second person can reproduce the exact
 results table from a clean clone by repeating steps 1–5.

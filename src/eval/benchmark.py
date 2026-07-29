@@ -44,11 +44,47 @@ EXTREME = aqi.VERY_POOR_THRESHOLD
 # Loading + observation join
 # --------------------------------------------------------------------------- #
 
-def load_pairs() -> pd.DataFrame:
+def _current_registry_version() -> str | None:
+    """Fingerprint of the station registry as it stands right now."""
+    reg_path = PROJECT_ROOT / "data" / "stations.csv"
+    if not reg_path.exists():
+        return None
+    from ..pipeline.orchestrate import _registry_version
+
+    return _registry_version(pd.read_csv(reg_path))
+
+
+def load_pairs(strict: bool = True) -> pd.DataFrame:
+    """Load rollout pairs, EXCLUDING any produced at a stale station registry.
+
+    Pairs are only comparable when sampled at the same station set. Two hazards
+    this guards against, both silent in the output:
+      * pilot dates rolled out at 33 or 127 stations sitting alongside 159-station
+        dates, so pooled metrics span different station populations;
+      * dates no longer in the frozen list lingering on disk and contaminating
+        the final table (2025-11-15 / 2025-11-20 are exactly this case).
+    Pre-versioning files carry no stamp and are therefore treated as stale.
+    """
     files = sorted(PAIRS_DIR.glob("pairs_*.parquet"))
     if not files:
         raise SystemExit(f"No pairs_*.parquet under {PAIRS_DIR} - run the orchestrator.")
     df = pd.concat((pd.read_parquet(f) for f in files), ignore_index=True)
+
+    if strict:
+        current = _current_registry_version()
+        stamped = df["registry_version"] if "registry_version" in df.columns else pd.Series(
+            [None] * len(df), index=df.index)
+        keep = stamped.eq(current) if current else stamped.notna()
+        if not keep.all():
+            dropped = sorted(df.loc[~keep, "init_date"].unique())
+            print(f"[benchmark] excluding {len(dropped)} date(s) from a stale/unstamped "
+                  f"registry (current={current}): {dropped}")
+        df = df[keep]
+        if df.empty:
+            raise SystemExit(
+                f"No pairs match the current registry ({current}). Re-run the "
+                "orchestrator, or pass strict=False to score legacy pairs.")
+
     df["valid_time"] = pd.to_datetime(df["valid_time"], utc=True)
     df["init_time"] = pd.to_datetime(df["init_date"], utc=True) + pd.Timedelta(hours=12)
     return df
@@ -80,10 +116,15 @@ def _match_obs(times: pd.DataFrame, obs: pd.DataFrame, left_time: str,
     return merged["obs_pm25"].rename(out_col)
 
 
-def build_frame() -> pd.DataFrame:
+def build_frame(strict: bool = True) -> pd.DataFrame:
     """Assemble the scored frame: one row per (init, station, lead) with obs +
-    every method's prediction."""
-    pairs = load_pairs()
+    every method's prediction.
+
+    ``strict`` drops pairs from a stale station registry (see load_pairs). Keep
+    it on for scoring and for fitting any adaptation; the integrity audit passes
+    False because inspecting stale pairs is precisely its job.
+    """
+    pairs = load_pairs(strict=strict)
     obs = load_obs()
 
     # Ground truth at each forecast valid time.

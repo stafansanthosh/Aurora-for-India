@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import time
 import traceback
 from datetime import datetime, timedelta
@@ -115,14 +116,26 @@ def _india_subset(pred_batch) -> xr.Dataset:
     return xr.Dataset(data, coords={"latitude": lats[la], "longitude": lons[lo]})
 
 
-def _manifest_done() -> set[str]:
+def _manifest_done(registry_version: str | None = None) -> set[str]:
+    """Dates already rolled out AT THE GIVEN REGISTRY VERSION.
+
+    Resume must be registry-aware. The station registry grew 127 -> 159 after
+    the OpenAQ re-pull, so dates completed under the old registry are NOT
+    reusable: they sample Aurora at a different station set and pooling them
+    with new dates would mix two populations. Ignoring the version here would
+    have silently skipped three frozen dates at stale coverage -- invisible in
+    the output, and only discoverable by counting rows.
+    """
     if not MANIFEST.exists():
         return set()
     done = set()
     for line in MANIFEST.read_text().splitlines():
         rec = json.loads(line)
-        if rec.get("status") == "done":
-            done.add(rec["date"])
+        if rec.get("status") != "done":
+            continue
+        if registry_version is not None and rec.get("registry_version") != registry_version:
+            continue  # rolled out at a different station set -> must redo
+        done.add(rec["date"])
     return done
 
 
@@ -166,6 +179,9 @@ def process_date(date: str, model, reg: pd.DataFrame, steps: int, device: str,
 
     pairs = pd.concat(frames, ignore_index=True)
     pairs.insert(0, "init_date", date)
+    # Self-describing provenance: the eval harness filters on this so pairs from
+    # a different station set can never be pooled into one results table.
+    pairs["registry_version"] = _registry_version(reg)
 
     PAIRS_DIR.mkdir(parents=True, exist_ok=True)
     out_parquet = PAIRS_DIR / f"pairs_{date}.parquet"
@@ -202,20 +218,26 @@ def main() -> None:
     dates = list(args.dates)
     if args.dates_file:
         txt = args.dates_file.read_text().splitlines()
-        dates += [ln.strip().split(",")[0] for ln in txt
-                  if ln.strip() and not ln.startswith("date")]
+        # Match YYYY-MM-DD rather than filtering header prefixes: the frozen
+        # list's header is `init_date,...`, which does NOT start with "date",
+        # so the old filter let the literal string "init_date" through as a
+        # forecast date.
+        dates += [tok for tok in (ln.strip().split(",")[0] for ln in txt)
+                  if re.fullmatch(r"\d{4}-\d{2}-\d{2}", tok)]
+    dates = list(dict.fromkeys(dates))  # de-dup, preserve order
     if not dates:
         raise SystemExit("No dates given.")
 
-    done = _manifest_done()
+    reg = _load_registry()
+    version = _registry_version(reg)
+    done = _manifest_done(version)
     todo = [d for d in dates if d not in done]
-    print(f"{len(dates)} dates requested, {len(dates)-len(todo)} already done, "
+    print(f"registry {version} ({len(reg)} stations) | {len(dates)} dates requested, "
+          f"{len(dates)-len(todo)} already done at this registry, "
           f"{len(todo)} to run: {todo}", flush=True)
     if not todo:
         return
 
-    reg = _load_registry()
-    print(f"Station registry: {len(reg)} stations / {reg['city'].nunique()} cities.")
     print(f"Loading model on {args.device}...", flush=True)
     model = aurora_runner.load_model(args.device)
 

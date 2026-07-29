@@ -12,3 +12,4 @@ matplotlib
 jupyter
 tqdm
 pytest
+tabulate
