@@ -78,6 +78,36 @@ def test_process_date_rejects_nonstandard_steps_before_download() -> None:
         )
 
 
+def test_offline_preflight_requires_both_cams_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[tuple[str, str, bool]] = []
+
+    monkeypatch.setattr(
+        orchestrate.cams_forecast,
+        "retrieve_forecast",
+        lambda request, allow_retrieve: calls.append(
+            ("forecast", request.date, allow_retrieve)
+        ),
+    )
+    monkeypatch.setattr(
+        orchestrate.cams_composition,
+        "retrieve",
+        lambda date, allow_retrieve: calls.append(
+            ("analysis", date, allow_retrieve)
+        ),
+    )
+
+    orchestrate._preflight_offline_inputs(["2025-02-19", "2025-02-20"])
+
+    assert calls == [
+        ("forecast", "2025-02-19", False),
+        ("analysis", "2025-02-19", False),
+        ("forecast", "2025-02-20", False),
+        ("analysis", "2025-02-20", False),
+    ]
+
+
 def test_worker_manifests_append_without_overwriting_or_duplicate_records(
     tmp_path: Path,
 ) -> None:

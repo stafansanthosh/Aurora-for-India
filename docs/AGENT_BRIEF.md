@@ -98,12 +98,12 @@ python -m src.data.archive_pull                   # resumable OpenAQ pull
 python -m src.data.archive_pull --assemble-only   # rebuild CSVs offline
 python -m src.data.build_station_registry         # data/stations.csv
 python -m src.eval.coverage_audit --n 56          # re-freeze benchmark dates
-python -m src.pipeline.orchestrate --dates-file docs/benchmark_dates.csv --device cuda
+python -m src.pipeline.orchestrate --dates-file slice_0N --device cuda --offline-inputs
 python -m src.eval.benchmark                      # score all baselines
 ```
 
-Windows: use `.venv/Scripts/python.exe`. Credentials: `.env`
-(`OPENAQ_API_KEY`), `~/.cdsapirc` (Copernicus ADS).
+Windows: use `.venv/Scripts/python.exe`. Local acquisition credentials: `.env`
+(`OPENAQ_API_KEY`), `~/.cdsapirc` (Copernicus ADS). GPU workers receive neither.
 
 ## Before you stop
 

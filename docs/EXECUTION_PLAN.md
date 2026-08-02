@@ -1,6 +1,6 @@
 # IndiaAQBench execution plan
 
-**Updated:** 2026-07-29
+**Updated:** 2026-08-02
 
 The goal is a publicly understandable experimental forecast feed backed by a
 credible benchmark. The product can become useful before year-round scientific
@@ -14,13 +14,14 @@ illustrative design, retrospective evidence, and prospective live forecasts.
 | Nine-city observation archive | Complete |
 | 159-station registry | Complete |
 | 56-date schedule | Complete |
-| Calibrator guardrails | Complete; 64-test suite passes |
+| Calibrator guardrails | Complete; 83-test suite passes |
 | Component A implementation | Complete; evaluation pending |
 | Reporting code | Complete |
 | Product/live-feed specification | Complete |
 | UI preview | Complete; CI build/render and private deployment pass |
 | Valid 159-station pairs | **0** |
 | Actual CAMS forecast baseline | Complete: 56 dates, 71,232 station-lead rows |
+| Aurora CAMS analysis inputs | Complete: 56 dates, 12.397 GiB, deep validated |
 | Live runner/ledger | **Absent** |
 | Public repository | **Blocked by licence/history/checks** |
 
@@ -37,19 +38,19 @@ four-worker Aurora rollout
   -> fine-tuning decision
 ```
 
-The lead-dependent CAMS forecast archive has already been downloaded and
-hash-validated locally. Copy `data/cams_forecast/` to every worker before the
-run. The orchestrator verifies the retained request and raw-file checksum,
-re-extracts station values against the current registry, retrieves Aurora's
-analysis inputs, and runs Aurora inference. Only Aurora inference requires the
-GPU. Pair generation does not need the untracked OpenAQ archive; scoring does,
-so copy the pairs back before evaluation.
+Both CAMS archives have been downloaded and validated locally. Build four
+disjoint input bundles with `python -m scripts.package_gpu_inputs`; each worker
+receives only its 14 dates. The orchestrator verifies every retained request
+and raw-file checksum before loading Aurora and fails closed if any local input
+is absent. Workers need no Copernicus, OpenAQ, GitHub, or SSH credentials. Only
+Aurora inference requires the GPU. Pair generation does not need the untracked
+OpenAQ archive; scoring does, so copy the pairs back before evaluation.
 
 On each configured worker:
 
 ```bash
 tail -n +2 docs/benchmark_dates.csv | cut -d, -f1 | split -n l/4 -d - slice_
-python -m src.pipeline.orchestrate --dates-file slice_00 --device cuda
+python -m src.pipeline.orchestrate --dates-file slice_00 --device cuda --offline-inputs
 ```
 
 Use one distinct slice (`slice_00` through `slice_03`) per worker. See

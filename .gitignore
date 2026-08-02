@@ -30,6 +30,10 @@ results/metrics/*
 results/plots/*
 data/cams_analysis/*.nc
 data/cams_analysis/*.zip
+data/cams_analysis/*.json
+data/cams_analysis/*.log
+data/cams_analysis/*.part
 data/cams_forecast/
+artifacts/gpu_inputs/
 !**/.gitkeep
 results/*.nc

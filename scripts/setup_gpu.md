@@ -30,33 +30,68 @@ runs in ~32 GB of **CPU** RAM on the laptop.
 Modal) rent by the hour with no quota approval and boot in ~2 minutes. Estimated
 total for all 56 dates: **~$10–30**.
 
-## Copy CAMS forecasts, then run Aurora inference on the box
+## Package all CAMS inputs locally; send each worker only its assigned dates
 
-The 56 lead-dependent CAMS PM2.5 forecasts are already downloaded and
-hash-validated locally. Copy that archive to every worker so the paid boxes do
-not repeat the network work. Each date still needs CAMS analysis fields that
-initialize Aurora; those are retrieved by the orchestrator and cleaned up
-afterward. The cloud box does not need the untracked OpenAQ archive to generate
-forecast pairs.
+Both CAMS inputs are downloaded and hash-validated locally before renting GPUs:
+
+- the lead-dependent PM2.5 forecasts used as the operational comparator;
+- the global 00/12 UTC atmospheric analyses that initialize Aurora.
+
+Each worker receives one exact 14-date input bundle and runs with
+`--offline-inputs`. That flag fails closed if any file is absent and prohibits
+all Copernicus retrieval. No Copernicus or OpenAQ credential belongs on a GPU
+worker.
 
 ---
 
-## 0. Provision (RunPod example)
+## 0. Validate and package locally before provisioning
 
-- RunPod → Deploy → an **A6000 48 GB** pod, an EU/India region if available
-  (closer to Copernicus). Template: a PyTorch/CUDA image on Ubuntu 22.04.
+Run on the laptop that holds the complete local data:
+
+```powershell
+.\.venv\Scripts\python.exe -m src.data.cams_composition `
+  --dates-file docs\benchmark_dates.csv --validate-only --deep-validate
+.\.venv\Scripts\python.exe -m scripts.validate_cams_download
+.\.venv\Scripts\python.exe -m scripts.package_gpu_inputs
+```
+
+The packager writes four untracked TAR files and SHA-256 sidecars under
+`artifacts/gpu_inputs/`. Each contains exactly 14 dates, its matching
+`slice_0N`, the analysis ZIPs, actual CAMS forecast artifacts, and a per-file
+manifest. Do not provision GPUs unless both validators pass and all four
+bundles exist.
+
+Create an exact source archive from the reviewed commit after it is pushed:
+
+```powershell
+git archive --format=tar.gz --prefix=indiaaqbench/ `
+  --output="$env:TEMP\indiaaqbench-source.tar.gz" HEAD
+```
+
+## 1. Provision (RunPod example)
+
+- RunPod → Deploy → an **A6000 48 GB** pod. Region no longer affects
+  Copernicus access because all inputs are local. Template: a PyTorch/CUDA
+  image on Ubuntu 22.04.
 - Give it ~60 GB disk (globals are deleted per-date, but leave headroom).
 - Open a web terminal or SSH in. `nvidia-smi` should show the card.
 
 (Vast.ai / Lambda / Modal all work — only this provisioning step differs.)
 
-## 1. Environment
+## 2. Upload and environment
+
+Upload the source archive and only the assigned worker bundle. For example,
+worker 0 receives `worker_00_cams_inputs.tar`; never send all four bundles to
+every worker. Extract both under `/workspace`:
 
 ```bash
-# The repository is currently private. Use an authenticated GitHub clone or
-# upload the exact reviewed source snapshot.
-git clone https://github.com/stafansanthosh/Aurora-for-India.git
-cd Aurora-for-India
+cd /workspace
+tar -xzf indiaaqbench-source.tar.gz
+tar -xf worker_00_cams_inputs.tar -C indiaaqbench
+cd indiaaqbench
+```
+
+```bash
 python -m venv .venv && source .venv/bin/activate
 
 pip install torch --index-url https://download.pytorch.org/whl/cu124   # CUDA build
@@ -65,21 +100,12 @@ pip install -r requirements.txt                                        # aurora,
 python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
 ```
 
-## 2. Credentials
+## 3. Credentials
 
-```bash
-# Copernicus (CDS + ADS share one token; CAMS analysis is on ADS):
-cat > ~/.cdsapirc <<'EOF'
-url: https://ads.atmosphere.copernicus.eu/api
-key: <YOUR_ADS_KEY>
-EOF
-```
-
-Accept the **CAMS global-atmospheric-composition-forecasts** licence once on the
-ADS website, or the first download 403s.
-
-An OpenAQ key and the observation archive are not required for the rollout.
-They are required later on the local scoring machine.
+**None.** Do not copy `.cdsapirc`, `.env`, an OpenAQ key, a GitHub token, or an
+SSH private key to any worker. The source snapshot and assigned CAMS bundle are
+the complete GPU inputs. SSH authentication uses only the public key injected
+by the provider; the private key remains on the laptop.
 
 The environment must import the GRIB stack used for the operational CAMS
 baseline:
@@ -88,60 +114,51 @@ baseline:
 python -c "import cfgrib, eccodes; print(cfgrib.__version__, eccodes.__version__)"
 ```
 
-## 3. Checkpoint
+## 4. Checkpoint
 
 ```bash
 python -c "from src.model.aurora_runner import load_model; load_model('cuda')"
 # pulls microsoft/aurora :: aurora-0.4-air-pollution.ckpt into the HF cache
 ```
 
-## 4. Run the full benchmark pass
+## 5. Run the full benchmark pass
 
-The orchestrator is resumable (skips dates already `done` in the manifest) and
-self-cleaning for Aurora's large global inputs. It deliberately retains the
-actual CAMS forecast GRIB, request, checksum, provenance, and station samples.
-Point it at the frozen date list and let it run:
+The orchestrator is resumable and self-cleaning for Aurora's extracted global
+inputs. The assigned raw analysis ZIP is removed from the disposable worker
+after that date completes; the validated source remains on the laptop. Run only
+the bundle-provided slice and require offline inputs:
 
 ```bash
-python -m src.pipeline.orchestrate --dates-file docs/benchmark_dates.csv --device cuda
+python -m src.pipeline.orchestrate \
+  --dates-file slice_00 --device cuda --offline-inputs
 ```
 
-Rough budget on an A6000: ~2–4 min/date download (datacenter) + ~5–10 min/date
-rollout (8 steps). Serially that is ~10–14 h for 56 dates, so **split the date
-list across 4 boxes for ~2.5 h wall, ~$5 total** — dates are independent and the
-manifest makes each box resumable:
+Rough budget on an A6000: ~5–10 min/date for the eight-step rollout. The large
+network requests are already complete. Serially that is still several hours,
+so split across four boxes for roughly 1.5–2.5 hours wall time — dates are
+independent and the manifest makes each box resumable:
 
 ```bash
-tail -n +2 docs/benchmark_dates.csv | cut -d, -f1 | split -n l/4 -d - slice_
 # worker 0 uses slice_00; workers 1, 2, and 3 use slice_01, slice_02, slice_03
-python -m src.pipeline.orchestrate --dates-file slice_00 --device cuda
+python -m src.pipeline.orchestrate \
+  --dates-file slice_00 --device cuda --offline-inputs
 ```
 
 Run under `tmux`/`nohup` so an SSH drop doesn't kill it. Progress: `tail -f` the
 log or watch `results/pairs/manifest.jsonl`.
-
-Validate the local archive, then copy it to every worker before starting. The
-orchestrator verifies each raw file's request and checksum, re-extracts it at
-the current registry version, and skips the forecast-baseline network request:
-
-```bash
-python -m scripts.validate_cams_download
-scp -r data/cams_forecast <worker-0>:Aurora-for-India/data/
-```
 
 **Verify before trusting results:** a complete run produces **1,431 rows per
 date** (159 stations × 9 lead rows) and **80,136 rows** across all 56. Resume is
 registry-aware, so dates rolled out at an older station registry are re-run
 rather than silently reused.
 
-## 5. Pull results back + tear down
+## 6. Pull results back + tear down
 
 ```bash
 # from your laptop; repeat with worker/index 1, 2, and 3
-scp <worker-0>:Aurora-for-India/results/pairs/pairs_*.parquet results/pairs/
-scp <worker-0>:Aurora-for-India/results/pairs/manifest.jsonl \
+scp <worker-0>:/workspace/indiaaqbench/results/pairs/pairs_*.parquet results/pairs/
+scp <worker-0>:/workspace/indiaaqbench/results/pairs/manifest.jsonl \
   results/pairs/manifest_worker_0.jsonl
-scp -r <worker-0>:Aurora-for-India/data/cams_forecast/* data/cams_forecast/
 ```
 
 Never copy `results/pairs/*` wholesale: every worker uses the same
@@ -156,11 +173,12 @@ python scripts/merge_worker_manifests.py \
   results/pairs/manifest_worker_3.jsonl
 ```
 
-Then **stop/terminate every worker** so billing ends. The pair files are small;
-Aurora's large initialization inputs were not retained. The smaller
-lead-dependent CAMS GRIBs are retained as reproducibility evidence.
+Then **stop/terminate every worker** so billing ends. The pair files are small.
+Aurora's extracted initialization files and assigned raw analysis ZIPs are not
+retained on the disposable workers. Their validated source archives and the
+lead-dependent CAMS GRIBs remain on the laptop as reproducibility evidence.
 
-## 6. Audit, score, and evaluate adaptation locally
+## 7. Audit, score, and evaluate adaptation locally
 
 Run this on the machine that holds the complete OpenAQ archive:
 

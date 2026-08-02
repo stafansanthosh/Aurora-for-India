@@ -367,6 +367,7 @@ def retrieve_forecast(
     output_dir: Path = DEFAULT_OUTPUT_DIR,
     *,
     client: Any | None = None,
+    allow_retrieve: bool = True,
     now: Callable[[], datetime] = _utc_now,
 ) -> ForecastPaths:
     """Retrieve one forecast cycle, retaining raw data and complete provenance.
@@ -395,6 +396,12 @@ def retrieve_forecast(
                 f"{paths.raw_grib}. Preserve it and investigate; it will not be overwritten."
             )
         return paths
+
+    if not allow_retrieve:
+        raise FileNotFoundError(
+            "Offline CAMS forecast input is missing: "
+            f"{paths.raw_grib}"
+        )
 
     if client is None:
         try:

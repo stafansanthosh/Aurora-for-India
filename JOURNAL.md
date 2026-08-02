@@ -664,3 +664,47 @@ inference remains before raw, Component A, and calibrated scorecards can be
 trusted. Public release remains a separate governance decision because the
 private repository has no licence and reachable history contains raw OpenAQ
 archives.
+
+## 2026-08-02 — Credential-free GPU input preparation
+
+Downloaded the complete global CAMS atmospheric initialization archive needed
+by Aurora for all 56 frozen dates. The retained immutable ZIPs total
+13,310,703,591 bytes (12.397 GiB). A deep validation extracted every archive,
+opened both surface and pressure-level NetCDFs, checked all Aurora-required
+variables, coordinates, and dimensions, checked ZIP integrity and stored
+hashes, and confirmed exact date coverage with no missing or extra files.
+
+The final date, 2026-06-26, exposed an operational edge case: Copernicus jobs
+continue server-side after a local client process exits. Several client waits
+were interrupted before the provider finished, creating duplicate remote jobs.
+The provider job ledger showed that the surface results had succeeded and two
+pressure jobs were still running. Recovered one existing surface result and one
+existing pressure result by job ID rather than submitting further work, checked
+both ZIP CRCs, combined them into the canonical two-member archive, and stored
+the provider IDs and component hashes in provenance. No completed date was
+overwritten.
+
+Added guarded acquisition and execution infrastructure:
+
+- atomic CAMS analysis downloads with request/provenance records and SHA-256;
+- safe ZIP extraction and complete NetCDF variable validation;
+- bounded multi-date acquisition, offline validation, and split-request
+  recovery for provider queue failures;
+- fail-closed `--offline-inputs` orchestration that verifies every assigned
+  CAMS forecast and analysis before loading Aurora;
+- deterministic four-worker packaging, 14 dates per worker, with per-file and
+  whole-bundle hashes;
+- a GPU runbook that sends no Copernicus, OpenAQ, GitHub, or private SSH
+  credentials to disposable workers.
+
+Verification before packaging:
+
+- atmospheric inputs: 56/56 dates, 12.397 GiB, deep validation passed;
+- Python tests: 83/83 passed;
+- Python dependency check: clean;
+- integrity audit: 39 checks, 36 pass, two expected stale-pilot warnings, and
+  one expected blocker — no current-registry Aurora pairs yet.
+
+The next irreversible-cost boundary is unchanged: launch one GPU worker as a
+single-date canary from a validated offline bundle, inspect its pair file and
+manifest, then launch the remaining disjoint workers only if the canary passes.

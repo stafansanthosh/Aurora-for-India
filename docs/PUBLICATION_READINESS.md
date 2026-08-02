@@ -26,7 +26,7 @@ current scientific state is tracked in
   independent integration review.
 - GitHub Actions run `30473358275` passed all then-current Python tests and the
   web install/build/render checks on commit `b10d348`.
-- The restored local Python 3.11.9 environment passes the expanded 64-test
+- The restored local Python 3.11.9 environment passes the expanded 83-test
   collection.
 - The local integrity audit now runs against the complete archive. Its only
   failure is the explicit 0/56 current-registry pair completeness gate.

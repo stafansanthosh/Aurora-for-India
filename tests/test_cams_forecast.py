@@ -145,6 +145,13 @@ def test_verified_existing_retrieval_is_resumable_without_network(tmp_path):
     assert paths.raw_grib.read_bytes() == b"synthetic-grib"
 
 
+def test_offline_mode_fails_closed_when_forecast_is_missing(tmp_path):
+    request = ForecastRequest("2025-11-06")
+
+    with pytest.raises(FileNotFoundError, match="Offline CAMS forecast input"):
+        retrieve_forecast(request, tmp_path, allow_retrieve=False)
+
+
 def test_existing_raw_hash_mismatch_fails_instead_of_overwriting(tmp_path):
     request = ForecastRequest("2025-11-06")
     times = iter(

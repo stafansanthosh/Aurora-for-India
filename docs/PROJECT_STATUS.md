@@ -1,6 +1,6 @@
 # IndiaAQBench project status
 
-**Snapshot date:** 2026-07-29
+**Snapshot date:** 2026-08-02
 **Status:** active research; full benchmark execution pending
 **Public-use level:** code and benchmark design only—not a validated forecast
 service
@@ -24,7 +24,7 @@ the [development journal](../JOURNAL.md) preserves the full history.
 | Valid current-registry pair files | **0** |
 | Legacy pair files rejected by the loader | 5 |
 | Integrity audit | 39 checks: 36 pass, 2 legacy warnings, 1 GPU blocker |
-| Unit tests | 64/64 passing locally |
+| Unit tests | 83/83 passing locally |
 | Web preview | CI build/render and owner-only deployment passing |
 
 The expected pair count is 56 dates × 159 stations × 9 rows per station: one
@@ -92,6 +92,10 @@ The temporal cutoff was revised once on 2026-07-24:
   operational forecast baseline with immutable request/provenance records.
 - Downloaded and validated all 56 actual CAMS forecast cycles: 71,232
   station-lead rows with matching raw and extracted-file hashes.
+- Downloaded and deep-validated all 56 CAMS atmospheric initialization
+  archives: 12.397 GiB with exact date coverage and no missing or extra files.
+- Implemented fail-closed offline GPU input checks and deterministic four-way
+  worker bundle packaging; no provider credentials are placed on GPU workers.
 - Implemented PM2.5 concentration, AQI category, and Very Poor+ event metrics.
 - Centralized all temporal and spatial split constants in
   [`src/splits.py`](../src/splits.py).
@@ -99,8 +103,8 @@ The temporal cutoff was revised once on 2026-07-24:
 - Implemented a 39-check integrity audit.
 - Added calibrator guardrails that report event skill beside MAE and refuse to
   save a calibration model that harms Very Poor+ detection.
-- Added regime-shift, seasonal-transfer, anchoring, leakage, and event-count
-  tests; all 64 tests pass locally.
+- Added regime-shift, seasonal-transfer, anchoring, leakage, event-count,
+  acquisition, offline-input, and packaging tests; all 83 tests pass locally.
 - Implemented the reporting package under [`src/report/`](../src/report/).
 - Preserved the first failed calibrator as a documented negative baseline.
 - Implemented a public-interface preview with illustrative data and explicit

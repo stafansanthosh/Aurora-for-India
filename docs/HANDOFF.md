@@ -1,6 +1,6 @@
 # Handoff: IndiaAQBench current state
 
-**Updated:** 2026-07-29
+**Updated:** 2026-08-02
 **Branch:** `master`
 **Scientific blocker:** the 56-date Aurora rollout
 **Product status:** interface preview and specifications exist; no live feed
@@ -25,8 +25,9 @@ results table.
 | Station registry | Complete: 159 stations across 9 cities |
 | Frozen dates | Complete: 56 dates, 32 train and 24 test |
 | Actual CAMS forecasts | Complete: 56 dates, 71,232 station-lead rows |
+| Aurora CAMS analysis inputs | Complete: 56 dates, 12.397 GiB, deep validated |
 | Integrity audit | 39 checks: 36 pass, 2 legacy warnings, 1 expected GPU blocker |
-| Current test collection | 64/64 passing locally |
+| Current test collection | 83/83 passing locally |
 | Web preview | CI build/render pass; private owner-only deployment succeeds |
 | Current-registry pair files | **0** |
 | Valid full benchmark table | **Absent** |
@@ -49,7 +50,7 @@ year-round utility claim.
   isolates station histories, shrinks thin samples toward no correction, clips
   the multiplier, and reports fallback diagnostics.
 - `src/eval/benchmark.py --anchor` adds Component A to the common scoring path.
-- Sixteen Component A tests exist in `tests/test_anchor.py`; the full 64-test
+- Sixteen Component A tests exist in `tests/test_anchor.py`; the full 83-test
   suite passes locally in the restored Python 3.11.9 environment.
 - The public product and live-feed contracts are documented in
   `docs/PRODUCT_SPEC.md` and `docs/LIVE_FEED_SPEC.md`.
@@ -63,6 +64,10 @@ year-round utility claim.
   and its vulnerable transitive dependencies.
 - Additional-data work is documented in `docs/DATA_EXPANSION_PLAN.md` and
   independently checked in `docs/DATA_SOURCE_AUDIT.md`.
+- All 56 CAMS atmospheric initialization archives are stored locally and have
+  passed ZIP CRC, hash, NetCDF, coordinate, dimension, and required-variable
+  validation. GPU workers therefore run in fail-closed offline-input mode and
+  receive no Copernicus or OpenAQ credentials.
 - GitHub Actions run `30473089540` passed the 26-test Python job and the web
   install/build/render job on integration commit `48135cc`.
 
@@ -86,8 +91,8 @@ The bounded official OGD India CPCB Patna/Varanasi live-feed diagnostic is also
 implemented. A live probe needs the owner's `DATA_GOV_IN_API_KEY`; it remains
 optional and is not a frozen-benchmark blocker.
 
-1. Preserve and copy the locally validated 56-date CAMS archive to each GPU
-   worker. Recheck it with `python -m scripts.validate_cams_download`.
+1. Preserve the locally validated CAMS forecast and atmospheric-analysis
+   archives. Copy only the assigned 14-date bundle to each GPU worker.
 2. Run the implemented official OGD India CPCB live probe only when the owner
    supplies an API key. It probably overlaps OpenAQ and is not independent
    truth.
@@ -115,13 +120,13 @@ requires explicit owner approval. See `docs/PUBLICATION_READINESS.md`.
 ## Exact next scientific action
 
 Run the 56 frozen dates on four temporary 48 GB GPU workers, each with a
-disjoint date slice. Copy the validated local `data/cams_forecast/` directory
-to every worker first. The orchestrator verifies and re-extracts those CAMS
-files, runs Aurora, and writes both methods into each current-registry pair
-file. On each configured worker, the command is:
+disjoint 14-date input bundle. The orchestrator hash-checks every assigned CAMS
+forecast and analysis file before loading Aurora, runs without provider
+credentials, and writes both methods into each current-registry pair file. On
+each configured worker, the command is:
 
 ```bash
-python -m src.pipeline.orchestrate --dates-file slice_0N --device cuda
+python -m src.pipeline.orchestrate --dates-file slice_0N --device cuda --offline-inputs
 ```
 
 Replace `N` with that worker's slice number (`0` through `3`). Follow
@@ -141,7 +146,7 @@ or publish a calibration result before the audit passes.
 ## Local environment
 
 The Windows Python 3.11.9 base runtime was restored and the project `.venv`
-is healthy. The complete 64-test suite and local data-dependent audit run.
+is healthy. The complete 83-test suite and local data-dependent audit run.
 A checksum-verified portable Node.js 24 runtime is available locally; the web
 build/render tests, production dependency audit, browser interactions, and
 owner-only Sites deployment all pass.

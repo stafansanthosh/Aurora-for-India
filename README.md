@@ -86,7 +86,7 @@ evaluation path.
 
 ## Verified repository state
 
-As of the July 2026 status snapshot:
+As of the 2 August 2026 status snapshot:
 
 | Item | Verified state |
 |---|---|
@@ -94,10 +94,11 @@ As of the July 2026 status snapshot:
 | Station registry | 159 stations |
 | Frozen forecast initializations | 56 dates: 32 train, 24 test |
 | Actual CAMS forecast archive | Complete: 56 dates, 71,232 station-lead rows |
+| CAMS atmospheric inputs for Aurora | Complete: 56 dates, 12.397 GiB, deep validated |
 | Forecast horizon | +12 to +96 hours in 12-hour steps |
 | Spatial transfer design | 20% hashed station holdout plus 3 fully held-out cities |
 | Integrity audit | 39 checks: 36 pass, 2 legacy warnings, 1 GPU blocker |
-| Test suite | 64/64 passing locally |
+| Test suite | 83/83 passing locally |
 | Valid 159-station forecast pairs | **0 of 56 dates** |
 | Final full-registry metrics | **Not available** |
 
@@ -233,13 +234,16 @@ python -m src.eval.audit
 python -m pytest -q
 ```
 
-Data acquisition and Aurora rollout additionally require:
+Local data acquisition requires:
 
 - an `OPENAQ_API_KEY` in `.env`;
 - a Copernicus credential in `~/.cdsapirc`;
 - acceptance of the relevant CAMS dataset licence;
-- enough memory for Aurora inference. The project uses a 48 GB GPU for the
-  batch rollout, although a single step has been demonstrated on a 32 GB CPU.
+
+The GPU rollout uses prevalidated offline bundles and receives none of those
+credentials. It requires enough memory for Aurora inference: the project uses
+a 48 GB GPU for the batch rollout, although a single step has been demonstrated
+on a 32 GB CPU.
 
 Do not trust a generated results table unless `python -m src.eval.audit` passes.
 See the [GPU runbook](scripts/setup_gpu.md) for the controlled rollout.

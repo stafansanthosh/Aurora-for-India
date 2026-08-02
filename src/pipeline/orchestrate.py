@@ -215,8 +215,27 @@ def _log(rec: dict) -> None:
         f.write(json.dumps(rec) + "\n")
 
 
-def process_date(date: str, model, reg: pd.DataFrame, steps: int, device: str,
-                 cleanup: bool) -> int:
+def _preflight_offline_inputs(dates: list[str]) -> None:
+    """Verify every assigned raw CAMS input before loading the GPU model."""
+    for index, date in enumerate(dates, start=1):
+        request = cams_forecast.ForecastRequest(date)
+        cams_forecast.retrieve_forecast(request, allow_retrieve=False)
+        cams_composition.retrieve(date, allow_retrieve=False)
+        print(
+            f"[offline-preflight] {index}/{len(dates)} {date} verified",
+            flush=True,
+        )
+
+
+def process_date(
+    date: str,
+    model,
+    reg: pd.DataFrame,
+    steps: int,
+    device: str,
+    cleanup: bool,
+    offline_inputs: bool = False,
+) -> int:
     """Run one init date end-to-end; returns number of pair rows written."""
     if steps != len(cams_forecast.DEFAULT_LEADS):
         raise ValueError(
@@ -231,7 +250,10 @@ def process_date(date: str, model, reg: pd.DataFrame, steps: int, device: str,
     # when a date is marked done, its pair file contains both Aurora and the
     # operational global forecast baseline on identical station/lead support.
     forecast_request = cams_forecast.ForecastRequest(date)
-    forecast_paths = cams_forecast.retrieve_forecast(forecast_request)
+    forecast_paths = cams_forecast.retrieve_forecast(
+        forecast_request,
+        allow_retrieve=not offline_inputs,
+    )
     forecast_samples = cams_forecast.extract_and_record(
         forecast_request,
         forecast_paths,
@@ -239,7 +261,10 @@ def process_date(date: str, model, reg: pd.DataFrame, steps: int, device: str,
         registry_version=registry_version,
     )
 
-    sfc_path, plev_path = cams_composition.download(date)
+    sfc_path, plev_path = cams_composition.download(
+        date,
+        allow_retrieve=not offline_inputs,
+    )
 
     batch = aurora_runner.assemble_inputs(sfc_path, plev_path)
     init_time = pd.Timestamp(batch.metadata.time[-1], tz="UTC")
@@ -306,6 +331,14 @@ def main() -> None:
     p.add_argument("--device", default="cpu")
     p.add_argument("--no-cleanup", action="store_true",
                    help="Keep the global CAMS files after processing.")
+    p.add_argument(
+        "--offline-inputs",
+        action="store_true",
+        help=(
+            "Require pre-downloaded CAMS forecast and analysis files; never "
+            "contact Copernicus. Use this on credential-free GPU workers."
+        ),
+    )
     args = p.parse_args()
 
     dates = list(args.dates)
@@ -340,13 +373,22 @@ def main() -> None:
     if not todo:
         return
 
+    if args.offline_inputs:
+        print(
+            f"Verifying all local CAMS inputs for {len(todo)} date(s) before "
+            "loading Aurora...",
+            flush=True,
+        )
+        _preflight_offline_inputs(todo)
+
     print(f"Loading model on {args.device}...", flush=True)
     model = aurora_runner.load_model(args.device)
 
     for date in todo:
         try:
             n = process_date(date, model, reg, args.steps, args.device,
-                             cleanup=not args.no_cleanup)
+                             cleanup=not args.no_cleanup,
+                             offline_inputs=args.offline_inputs)
             print(f"[{date}] OK - {n} pair rows.", flush=True)
         except Exception as e:  # log + continue: one bad date must not kill a batch
             _log({"date": date, "status": "error", "error": repr(e),

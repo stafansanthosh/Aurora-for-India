@@ -1,6 +1,6 @@
 # Current session starters
 
-**Updated:** 2026-07-29
+**Updated:** 2026-08-02
 
 The earlier archive, guardrail, reporting, Component A, product-design,
 additional-data, and public-documentation sessions are complete. Do not restart
@@ -13,12 +13,12 @@ the relevant section of `docs/WORKSTREAMS.md`. The owner requested work on
 
 ## GPU rollout — user/cloud action
 
-This is not a local agent task. Provision four temporary 48 GB GPU workers,
-split `docs/benchmark_dates.csv` into four disjoint slices, and run one slice
-per worker:
+This is not a local agent task. The local atmospheric and forecast inputs are
+complete and deep validated. Build the four bundles as documented, provision
+four temporary 48 GB GPU workers, and run the bundle-provided slice per worker:
 
 ```bash
-python -m src.pipeline.orchestrate --dates-file slice_0N --device cuda
+python -m src.pipeline.orchestrate --dates-file slice_0N --device cuda --offline-inputs
 ```
 
 Replace `N` with `0`, `1`, `2`, or `3`. Bring all pair files back before
