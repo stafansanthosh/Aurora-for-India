@@ -1,8 +1,8 @@
 # Handoff: IndiaAQBench current state
 
-**Updated:** 2026-08-02
+**Updated:** 2026-08-03
 **Branch:** `master`
-**Scientific blocker:** the 56-date Aurora rollout
+**Scientific blocker:** the remaining 42 dates of the Aurora rollout
 **Product status:** interface preview and specifications exist; no live feed
 
 ## Objective and non-negotiables
@@ -26,16 +26,17 @@ results table.
 | Frozen dates | Complete: 56 dates, 32 train and 24 test |
 | Actual CAMS forecasts | Complete: 56 dates, 71,232 station-lead rows |
 | Aurora CAMS analysis inputs | Complete: 56 dates, 12.397 GiB, deep validated |
-| Integrity audit | 39 checks: 36 pass, 2 legacy warnings, 1 expected GPU blocker |
-| Current test collection | 83/83 passing locally |
+| Integrity audit | Not rerun after worker 0; last run was 39 checks: 36 pass, 2 legacy warnings, 1 GPU blocker |
+| Current test collection | 84/84 passed on the exact RunPod environment; local launcher currently broken |
 | Web preview | CI build/render pass; private owner-only deployment succeeds |
-| Current-registry pair files | **0** |
+| Current-registry pair files | **14/56: 20,034 rows, worker 0 validated and copied locally** |
 | Valid full benchmark table | **Absent** |
 | Public live forecast | **Absent** |
 
-The five pair files under `results/pairs/` are legacy pilot artifacts. They use
-superseded 33- or 127-station registries; two dates are also outside the frozen
-schedule. The strict loader correctly rejects all five.
+Worker 0 (`slice_00`) now supplies 14 valid current-registry pair files. The
+three remaining pilot-only pair files use superseded 33- or 127-station
+registries; two dates are also outside the frozen schedule. The strict loader
+must continue to reject those three.
 
 The temporal cutoff changed once from 2025-07-01 to 2025-12-01 under the
 pre-registered data-coverage contingency, before adaptation was fitted on the
@@ -68,6 +69,18 @@ year-round utility claim.
   passed ZIP CRC, hash, NetCDF, coordinate, dimension, and required-variable
   validation. GPU workers therefore run in fail-closed offline-input mode and
   receive no Copernicus or OpenAQ credentials.
+- The RunPod RTX A6000 canary and all of `slice_00` completed at commit
+  `181487e3de886cd9919c52a47dd7fac6fdc191e6`: 14 dates, 20,034 unique
+  date-station-lead rows, 159 stations, nine leads, 14 current-registry success
+  records, and zero current-registry errors. All 15 retrieved artifacts (14
+  pairs plus the original worker manifest) matched the remote copies by
+  SHA-256. The curated `manifest_worker_0.jsonl` retains only the 14 valid
+  current-registry successes.
+- The canary exposed a missing runtime dependency: Pandas could compute all
+  eight steps but could not write Parquet because no engine was declared.
+  `pyarrow` is now in `requirements.txt`. The runbook also starts disposable
+  workers with an empty output ledger so tracked pilot manifests cannot leak
+  into per-worker provenance.
 - GitHub Actions run `30473089540` passed the 26-test Python job and the web
   install/build/render job on integration commit `48135cc`.
 
@@ -119,18 +132,19 @@ requires explicit owner approval. See `docs/PUBLICATION_READINESS.md`.
 
 ## Exact next scientific action
 
-Run the 56 frozen dates on four temporary 48 GB GPU workers, each with a
-disjoint 14-date input bundle. The orchestrator hash-checks every assigned CAMS
-forecast and analysis file before loading Aurora, runs without provider
-credentials, and writes both methods into each current-registry pair file. On
-each configured worker, the command is:
+Stop the completed worker-00 Pod after confirming `/workspace` is retained.
+Then run the remaining three disjoint bundles on temporary 48 GB workers using
+the updated source snapshot and runbook. Each worker starts with a clean output
+ledger, verifies the assigned offline inputs before loading Aurora, and receives
+no provider credentials. On workers 1 through 3, run:
 
 ```bash
 python -m src.pipeline.orchestrate --dates-file slice_0N --device cuda --offline-inputs
 ```
 
-Replace `N` with that worker's slice number (`0` through `3`). Follow
-`scripts/setup_gpu.md`; do not run all 56 dates on every worker.
+Replace `N` with that worker's slice number (`1` through `3`). Follow
+`scripts/setup_gpu.md`; do not rerun slice 00 or send all bundles to one worker.
+Each remaining worker must produce 20,034 rows; together they add 60,102 rows.
 
 After copying all pair files back, verify:
 
@@ -145,8 +159,13 @@ or publish a calibration result before the audit passes.
 
 ## Local environment
 
-The Windows Python 3.11.9 base runtime was restored and the project `.venv`
-is healthy. The complete 83-test suite and local data-dependent audit run.
+The project `.venv` is not currently executable from the Codex shell: its
+launcher targets a missing Python 3.11 base executable, and neither `python`
+nor `py` is on `PATH`. This does not affect the SHA-verified worker-00 outputs,
+which passed structural validation remotely, but it blocks the required local
+audit and benchmark until the base runtime is repaired again. The exact RunPod
+environment passed all 84 tests, CUDA execution, Aurora/GRIB imports, and `pip
+check`.
 A checksum-verified portable Node.js 24 runtime is available locally; the web
 build/render tests, production dependency audit, browser interactions, and
 owner-only Sites deployment all pass.

@@ -22,7 +22,7 @@ exact source-by-source paths are assigned in `docs/DATA_EXPANSION_PLAN.md`.
 | WS-3 | Calibrator guardrails and tests | **Complete; local suite green** | `src/model/calibrator.py`, guardrail tests | Score after valid pairs |
 | WS-4 | Reporting package | **Complete; real table blocked** | `src/report/**`, diagnostic figures | Render only after valid audit and metrics |
 | WS-5 | Fine-tuning design | **Not started** | planned `docs/FINETUNE_DESIGN.md` | Start after cheap baselines are scored |
-| WS-6 | 56-date Aurora rollout | **Offline inputs complete; user/cloud action required** | `results/pairs/**` | Four disjoint GPU slices, 80,136 rows, audit pass |
+| WS-6 | 56-date Aurora rollout | **Worker 0 complete: 14/56 dates, 20,034 rows** | `results/pairs/**` | Run slices 01–03, reach 80,136 rows, audit pass |
 | WS-7 | Public product and interface | **Private preview deployed; live system absent** | `docs/PRODUCT_SPEC.md`, `docs/LIVE_FEED_SPEC.md`, `web/**` | Shadow runner |
 | WS-8 | Additional data and baselines | **Both CAMS archives complete; OGD probe optional** | `src/data/cams_forecast.py`, `src/data/cams_composition.py`, `src/data/ogd_aqi.py` | Package four offline worker bundles; optional keyed OGD probe |
 | WS-9 | Repository publication | **Blocked** | README, status, portfolio and readiness docs, CI | Tests/build, licence, clean-history decision |
@@ -101,8 +101,9 @@ Component A, and the guarded calibrator.
 
 ## WS-6 — GPU rollout
 
-The only required cloud execution is the 56-date Aurora inference pass. Use
-four temporary 48 GB workers with disjoint date slices and follow
+The only required cloud execution is the 56-date Aurora inference pass. Worker
+0 (`slice_00`) is complete and locally preserved at 14 dates and 20,034 rows.
+Use three temporary 48 GB workers for slices 01–03 and follow
 `scripts/setup_gpu.md`. The pass is complete only at 1,431 rows per date and
 80,136 rows total for the current registry.
 

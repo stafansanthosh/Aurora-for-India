@@ -708,3 +708,59 @@ Verification before packaging:
 The next irreversible-cost boundary is unchanged: launch one GPU worker as a
 single-date canary from a validated offline bundle, inspect its pair file and
 manifest, then launch the remaining disjoint workers only if the canary passes.
+
+## 2026-08-03 — RunPod canary and worker-00 completion
+
+Provisioned one on-demand RunPod RTX A6000 (46,068 MiB VRAM) and connected by
+passphrase-protected SSH. No provider, OpenAQ, GitHub, or RunPod account
+credential was copied to the worker. The source snapshot and worker-00 bundle
+passed whole-file SHA-256 verification before extraction; the bundle contained
+exactly 14 dates and 98 manifest-listed input files from source commit
+`181487e3de886cd9919c52a47dd7fac6fdc191e6`. Deep validation opened all 14 real
+CAMS NetCDF inputs. That validator legitimately refreshed each analysis
+provenance `extraction` block; comparison with the TAR proved no other field
+changed, after which the verified originals were restored and all 98 manifest
+hashes passed.
+
+The official RunPod PyTorch template already provided PyTorch 2.8.0 + CUDA
+12.8. Reusing it through a local-container-disk venv avoided a severe network
+volume installation stall and dependency drift to a newer CUDA stack. Runtime
+gates passed: a real CUDA tensor operation, RTX A6000 detection, Aurora 2.0.0,
+`cfgrib`, `eccodes`, `pip check`, and the then-current 83-test suite. The
+official 5.10 GB Aurora air-pollution checkpoint was cached under persistent
+`/workspace`; model loading used about 4.86 GB for parameters.
+
+The first 2025-02-19 canary completed all eight GPU steps but failed while
+writing Parquet because `requirements.txt` did not declare a Parquet engine.
+This was a valuable fail-before-scale result: added `pyarrow`, installed it on
+the worker, and reran the canary. The corrected canary produced exactly 1,431
+rows (159 stations × nine leads) in 59 seconds, with current registry
+`159:4c0b55ad238f`, unique station-lead keys, exact valid-time alignment,
+finite non-negative Aurora PM2.5, and finite non-negative CAMS PM2.5 at all
+positive leads.
+
+After that gate passed, resume skipped the accepted canary and ran the other 13
+dates in `slice_00`. Every date completed in 59–66 seconds at 29.2 GB peak VRAM;
+worker 0 finished with 14 dates, 20,034 unique date-station-lead rows, 14
+current-registry success records, and zero current-registry errors. Aurora
+PM2.5 spans 2.79–237.56 µg/m³ across the slice. Copied only those 14 pair files
+and a distinct worker manifest home; all 15 copies matched the remotely
+validated originals byte-for-byte by SHA-256.
+
+Two more automation defects were caught before workers 1–3. First, the source
+archive carried tracked pilot pairs and its legacy manifest, so a copied worker
+manifest would contain stale records. Curated `manifest_worker_0.jsonl` to its
+14 valid records and updated the runbook to clean disposable output ledgers
+before launch. Second, the orchestrator caught per-date exceptions and exited
+zero after a failed batch, while error records omitted `registry_version`.
+It now continues through later dates but exits non-zero after the loop if any
+date failed, and stamps every error with the current registry. The focused
+regression test plus the full remote suite pass: 84/84 tests and `pip check`
+clean.
+
+The local pair files are preserved, but the Windows project `.venv` is not
+currently executable: its launcher points at a missing Python 3.11 base and no
+`python`/`py` command is on `PATH`. Therefore the data-dependent local audit was
+not rerun. Next: stop worker 0, run only bundles 01–03 on three clean temporary
+workers using the updated source/runbook, retrieve 60,102 additional rows, then
+repair local Python and require the audit before scoring or adaptation.

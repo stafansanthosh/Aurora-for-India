@@ -384,6 +384,7 @@ def main() -> None:
     print(f"Loading model on {args.device}...", flush=True)
     model = aurora_runner.load_model(args.device)
 
+    failed_dates: list[str] = []
     for date in todo:
         try:
             n = process_date(date, model, reg, args.steps, args.device,
@@ -391,10 +392,17 @@ def main() -> None:
                              offline_inputs=args.offline_inputs)
             print(f"[{date}] OK - {n} pair rows.", flush=True)
         except Exception as e:  # log + continue: one bad date must not kill a batch
+            failed_dates.append(date)
             _log({"date": date, "status": "error", "error": repr(e),
+                  "registry_version": version,
                   "written_at": datetime.utcnow().isoformat()})
             traceback.print_exc()
             print(f"[{date}] FAILED - logged, continuing.", flush=True)
+
+    if failed_dates:
+        raise RuntimeError(
+            f"{len(failed_dates)} rollout date(s) failed: {failed_dates}"
+        )
 
 
 if __name__ == "__main__":

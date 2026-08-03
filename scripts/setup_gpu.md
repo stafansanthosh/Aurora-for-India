@@ -89,15 +89,27 @@ cd /workspace
 tar -xzf indiaaqbench-source.tar.gz
 tar -xf worker_00_cams_inputs.tar -C indiaaqbench
 cd indiaaqbench
+
+# Source snapshots may contain tracked legacy pilot artifacts. A disposable
+# worker must start with an empty output ledger so its manifest contains only
+# records produced by this worker.
+rm -f results/pairs/pairs_*.parquet results/pairs/manifest.jsonl
 ```
 
 ```bash
-python -m venv .venv && source .venv/bin/activate
+# The official RunPod PyTorch template already contains a tested CUDA build.
+# Verify it first, then expose those system packages to a disposable venv on
+# fast container storage. Keep inputs, checkpoints, and outputs in /workspace.
+python -c "import torch; assert torch.cuda.is_available(); print(torch.__version__, torch.version.cuda, torch.cuda.get_device_name(0))"
+python -m venv --system-site-packages /opt/indiaaqbench-venv
+source /opt/indiaaqbench-venv/bin/activate
 
-pip install torch --index-url https://download.pytorch.org/whl/cu124   # CUDA build
-pip install -r requirements.txt                                        # aurora, xarray, cdsapi, sklearn, ...
+pip install --upgrade pip
+pip install --upgrade-strategy only-if-needed -r requirements.txt
+pip check
 
-python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"
+python -c "import torch, pyarrow; assert torch.cuda.is_available(); x=torch.ones(1, device='cuda'); print(torch.__version__, torch.version.cuda, torch.cuda.get_device_name(0), float(x.item()), pyarrow.__version__)"
+export HF_HOME=/workspace/huggingface
 ```
 
 ## 3. Credentials
@@ -117,7 +129,7 @@ python -c "import cfgrib, eccodes; print(cfgrib.__version__, eccodes.__version__
 ## 4. Checkpoint
 
 ```bash
-python -c "from src.model.aurora_runner import load_model; load_model('cuda')"
+HF_HOME=/workspace/huggingface python -c "from src.model.aurora_runner import load_model; load_model('cuda')"
 # pulls microsoft/aurora :: aurora-0.4-air-pollution.ckpt into the HF cache
 ```
 
@@ -133,9 +145,9 @@ python -m src.pipeline.orchestrate \
   --dates-file slice_00 --device cuda --offline-inputs
 ```
 
-Rough budget on an A6000: ~5–10 min/date for the eight-step rollout. The large
-network requests are already complete. Serially that is still several hours,
-so split across four boxes for roughly 1.5–2.5 hours wall time — dates are
+Observed on the RunPod RTX A6000 canary on 2026-08-03: 59–66 seconds/date for
+the eight-step rollout after model load, with 29.2 GB peak VRAM. Budget roughly
+20–30 minutes per 14-date worker including setup and validation. Dates remain
 independent and the manifest makes each box resumable:
 
 ```bash
@@ -163,7 +175,9 @@ scp <worker-0>:/workspace/indiaaqbench/results/pairs/manifest.jsonl \
 
 Never copy `results/pairs/*` wholesale: every worker uses the same
 `manifest.jsonl` name, so later copies would overwrite earlier workers'
-provenance. After all four transfers, append their distinct records safely:
+provenance. Confirm the disposable-worker cleanup above happened before using
+the wildcard; otherwise inherited pilot pairs and manifest records will be
+copied too. After all four transfers, append their distinct records safely:
 
 ```bash
 python scripts/merge_worker_manifests.py \

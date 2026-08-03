@@ -1,6 +1,7 @@
 """Resume and fixed-support contracts for the integrated GPU orchestrator."""
 
 import json
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -106,6 +107,49 @@ def test_offline_preflight_requires_both_cams_inputs(
         ("forecast", "2025-02-20", False),
         ("analysis", "2025-02-20", False),
     ]
+
+
+def test_batch_continues_after_date_error_then_exits_nonzero(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    attempted: list[str] = []
+    logged: list[dict] = []
+
+    def fake_process(date: str, *args, **kwargs) -> int:
+        attempted.append(date)
+        if date == "2025-02-19":
+            raise ValueError("synthetic failure")
+        return 1431
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "orchestrate",
+            "--dates",
+            "2025-02-19",
+            "2025-02-20",
+            "--device",
+            "cpu",
+        ],
+    )
+    monkeypatch.setattr(
+        orchestrate,
+        "_load_registry",
+        lambda: pd.DataFrame({"station_id": [1]}),
+    )
+    monkeypatch.setattr(orchestrate, "_registry_version", lambda _: "1:test")
+    monkeypatch.setattr(orchestrate, "_manifest_done", lambda *args, **kwargs: set())
+    monkeypatch.setattr(orchestrate.aurora_runner, "load_model", lambda _: object())
+    monkeypatch.setattr(orchestrate, "process_date", fake_process)
+    monkeypatch.setattr(orchestrate, "_log", logged.append)
+
+    with pytest.raises(RuntimeError, match="1 rollout date.*2025-02-19"):
+        orchestrate.main()
+
+    assert attempted == ["2025-02-19", "2025-02-20"]
+    assert logged[0]["status"] == "error"
+    assert logged[0]["registry_version"] == "1:test"
 
 
 def test_worker_manifests_append_without_overwriting_or_duplicate_records(

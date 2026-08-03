@@ -8,6 +8,7 @@ eccodes
 requests
 python-dotenv
 pandas
+pyarrow
 numpy
 scikit-learn
 matplotlib
