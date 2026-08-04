@@ -17,10 +17,22 @@ from src.model.calibrator import (
     save_if_event_safe,
     split_frame,
 )
+from src.model import calibrator
 from src.splits import HELDOUT_CITIES, l1_is_holdout
 
 
 class CalibratorTests(unittest.TestCase):
+    def test_inconsistent_auxiliary_particulate_bins_are_not_features(self) -> None:
+        self.assertNotIn("aurora_pm1", calibrator.RAW_FEATURES)
+        self.assertNotIn("aurora_pm10", calibrator.RAW_FEATURES)
+
+        frame = _synthetic_frame()
+        baseline = calibrator.make_features(frame)
+        changed = frame.copy()
+        changed["aurora_pm1"] = changed["aurora_pm2p5"] + 1000.0
+        changed["aurora_pm10"] = 0.0
+        self.assertTrue(baseline.equals(calibrator.make_features(changed)))
+
     def test_split_contract_and_same_regime_correction(self) -> None:
         frame = _synthetic_frame()
         parts = split_frame(frame)

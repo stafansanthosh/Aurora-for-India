@@ -3,35 +3,34 @@
 **Updated:** 2026-08-04
 
 The earlier archive, guardrail, reporting, Component A, product-design,
-additional-data, public-documentation, and GPU-rollout sessions are complete.
-Do not restart them. The scientific blocker is now local manifest integration
-and the post-rollout audit.
+additional-data, public-documentation, GPU-rollout, manifest-integration, and
+first-scorecard and 24-hour-headline sessions are complete. Do not restart
+them. The next bounded task is freezing report artifacts and connecting the
+validated tables to the reporting package.
 
 Every new agent must first read `docs/AGENT_BRIEF.md`, `docs/HANDOFF.md`, and
 the relevant section of `docs/WORKSTREAMS.md`. The owner requested work on
 `master` for this phase; do not create or switch branches.
 
-## Post-rollout audit and baseline scoring — next local session
+## Versioned reporting artifacts — next local session
 
-The GPU phase is complete: 56 dates, 80,136 rows, 159 stations, four validated
-worker manifests, zero worker errors, and checksum-matched transfers. Do not
-provision another Pod or rerun any slice. Use this assignment:
+The GPU phase and separate 24-hour/hourly scorecards are complete. Do not
+provision another Pod, rerun a slice, re-merge manifests, tune Component A on
+test outcomes, or refit the rejected calibrator. Use this assignment:
 
 ```text
 Read docs/AGENT_BRIEF.md, docs/HANDOFF.md, docs/BENCHMARK_SPEC.md, and
 docs/WORKSTREAMS.md. Work on master as requested by the owner.
 
-First inspect and repair or recreate the local Python 3.11 environment without
-deleting data. Merge manifest_worker_0.jsonl through manifest_worker_3.jsonl
-with scripts/merge_worker_manifests.py, then run python -m src.eval.audit.
-Stop if the audit fails and diagnose it without fitting models or publishing
-metrics. If it passes, run the raw benchmark, Component A benchmark, guarded
-calibrator, and calibrated benchmark in that order. Report per-city, pooled,
-L1, and L2 results with Very Poor+ event counts and POD/FAR/CSI. Preserve the
-two out-of-schedule pilot files as rejected historical artifacts.
+Freeze deterministic report artifacts from the existing hourly and 24-hour
+metric files. Preserve separate labels and never pool their counts. Include
+per-city, per-window, pooled train-city, L1, and L2 results with exact Very
+Poor+ event counts and POD/FAR/CSI. Clearly label Component A uncertified and
+raw Aurora as the safe fallback. Connect the versioned artifacts to
+src/report/** without altering model outputs or split constants.
 
-Before stopping, update docs/HANDOFF.md and JOURNAL.md and commit only reviewed
-files. Do not push or change repository visibility without owner approval.
+Before stopping, run the full suite, update docs/HANDOFF.md and JOURNAL.md, and
+commit only reviewed files. Do not push or change visibility without approval.
 ```
 
 ## Actual CAMS forecast baseline — completed

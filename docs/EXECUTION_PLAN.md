@@ -15,11 +15,13 @@ illustrative design, retrospective evidence, and prospective live forecasts.
 | 159-station registry | Complete |
 | 56-date schedule | Complete |
 | Calibrator guardrails | Complete; 84-test suite passes on RunPod |
-| Component A implementation | Complete; evaluation pending |
+| Component A | Scored; pooled gains, one L1 lead-specific POD regression |
 | Reporting code | Complete |
 | Product/live-feed specification | Complete |
 | UI preview | Complete; CI build/render and private deployment pass |
-| Aurora rollout artifacts | **56 dates and 80,136 rows present; audit pending** |
+| Aurora rollout and manifest | **Complete: 56 dates and 80,136 rows** |
+| Hourly-threshold scorecard | Complete; preliminary sensitivity result |
+| 24-hour headline scorecard | Generated; preliminary and not yet released |
 | Actual CAMS forecast baseline | Complete: 56 dates, 71,232 station-lead rows |
 | Aurora CAMS analysis inputs | Complete: 56 dates, 12.397 GiB, deep validated |
 | Live runner/ledger | **Absent** |
@@ -28,11 +30,9 @@ illustrative design, retrospective evidence, and prospective live forecasts.
 ## 2. Scientific critical path
 
 ```text
-repair local Python and merge worker manifests
-  -> integrity audit
-  -> raw baseline scorecards
-  -> Component A scorecard
-  -> guarded calibrator scorecard
+freeze/version headline scorecards
+  -> retain raw Aurora fallback
+  -> live shadow runner
   -> fine-tuning decision
 ```
 
@@ -53,18 +53,21 @@ python -m src.pipeline.orchestrate --dates-file slice_00 --device cuda --offline
 Use one distinct slice (`slice_00` through `slice_03`) per worker. See
 `scripts/setup_gpu.md`.
 
-For the current run, first repair the local Python 3.11 environment and merge
-the four preserved manifests. Then:
+The current run has completed these commands. They remain here for
+reproduction; the calibrator command is expected to refuse saving when its
+event-safety gate fails:
 
 ```bash
 python -m src.eval.audit
 python -m src.eval.benchmark
 python -m src.eval.benchmark --anchor
 python -m src.model.calibrator
-python -m src.eval.benchmark --calibrator results/models/pooled_calibrator.joblib
+python -m src.eval.benchmark --calibrator results/models/accepted_pooled_calibrator.joblib
 ```
 
-Do not trust or publish any table if the audit fails.
+The known PM-bin audit failure remains blocking for any claim about all Aurora
+channels. PM2.5-only scoring follows the explicit scoped decision in
+`docs/BENCHMARK_SPEC.md`; it does not convert that failure into a pass.
 
 ## 3. Product path
 
@@ -116,8 +119,8 @@ The current repository remains private. Before sharing a GitHub link publicly:
 6. set the GitHub description/topics;
 7. verify README links anonymously.
 
-A portfolio soft launch can happen once those software/publication gates pass,
-even while audit and scoring are pending. The main technical post should wait
+A portfolio soft launch can happen once those software/publication gates pass.
+The main technical post should wait
 for a versioned 159-station scorecard. The product launch should wait for
 shadow-mode evidence.
 

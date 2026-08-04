@@ -1,10 +1,12 @@
-"""Append distinct GPU-worker manifest records without overwriting provenance."""
+"""Build one canonical manifest from distinct GPU-worker records."""
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
+import tempfile
 
 
 def _records(path: Path) -> list[dict]:
@@ -25,26 +27,51 @@ def _records(path: Path) -> list[dict]:
 
 
 def merge_manifests(inputs: list[Path], output: Path) -> tuple[int, int]:
-    """Append new canonical JSON records and return (added, duplicates)."""
+    """Atomically replace ``output`` with deduplicated worker records.
+
+    The canonical manifest represents the accepted rollout, not an append-only
+    history. Superseded pilot records in an existing output must therefore not
+    survive a worker merge. Exact duplicate input records are ignored, while
+    two different records for the same date are rejected as ambiguous.
+
+    Returns ``(written, exact_duplicates)``.
+    """
     output.parent.mkdir(parents=True, exist_ok=True)
-    existing_records = _records(output) if output.exists() else []
-    canonical = {
-        json.dumps(record, sort_keys=True, separators=(",", ":"))
-        for record in existing_records
-    }
-    added = 0
+    canonical: dict[str, tuple[str, dict]] = {}
     duplicates = 0
-    with output.open("a", encoding="utf-8", newline="\n") as handle:
-        for path in inputs:
-            for record in _records(path):
-                key = json.dumps(record, sort_keys=True, separators=(",", ":"))
-                if key in canonical:
-                    duplicates += 1
-                    continue
+    for path in inputs:
+        for record in _records(path):
+            date = str(record["date"])
+            key = json.dumps(record, sort_keys=True, separators=(",", ":"))
+            prior = canonical.get(date)
+            if prior is None:
+                canonical[date] = (key, record)
+            elif prior[0] == key:
+                duplicates += 1
+            else:
+                raise ValueError(
+                    f"Conflicting worker records for {date}; refusing to "
+                    "choose provenance implicitly."
+                )
+
+    records = [canonical[date][1] for date in sorted(canonical)]
+    fd, temp_name = tempfile.mkstemp(
+        prefix=f".{output.name}.", suffix=".tmp", dir=output.parent
+    )
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="\n") as handle:
+            for record in records:
                 handle.write(json.dumps(record, sort_keys=True) + "\n")
-                canonical.add(key)
-                added += 1
-    return added, duplicates
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temp_name, output)
+    except BaseException:
+        try:
+            os.unlink(temp_name)
+        except FileNotFoundError:
+            pass
+        raise
+    return len(records), duplicates
 
 
 def main() -> None:
@@ -59,7 +86,7 @@ def main() -> None:
     )
     args = parser.parse_args()
     added, duplicates = merge_manifests(args.inputs, args.output)
-    print(f"Appended {added} records; skipped {duplicates} exact duplicates.")
+    print(f"Wrote {added} records; skipped {duplicates} exact duplicates.")
 
 
 if __name__ == "__main__":

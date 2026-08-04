@@ -18,11 +18,11 @@ exact source-by-source paths are assigned in `docs/DATA_EXPANSION_PLAN.md`.
 | ID | Workstream | State | Main outputs | Next gate |
 |---|---|---|---|---|
 | WS-1 | OpenAQ archive and station registry | **Complete** | `src/data/**`, `data/stations.csv`, frozen dates | Preserve provenance; no new bulk source without licence review |
-| WS-2 | Component A local anchoring | **Implementation complete; evaluation pending audit** | `src/model/anchor.py`, `tests/test_anchor.py`, benchmark hook | Score after the post-rollout audit passes |
-| WS-3 | Calibrator guardrails and tests | **Complete; remote suite green** | `src/model/calibrator.py`, guardrail tests | Score after audited raw and anchored baselines |
-| WS-4 | Reporting package | **Complete; real table blocked** | `src/report/**`, diagnostic figures | Render only after valid audit and metrics |
+| WS-2 | Component A local anchoring | **Scored; promising but not certified** | `src/model/anchor.py`, tests, preliminary scorecard | Resolve +84 h L1 POD regression or retain raw Aurora |
+| WS-3 | Calibrator guardrails and tests | **Full-registry model rejected safely** | `src/model/calibrator.py`, guardrail tests | Preserve negative result; do not score stale binary |
+| WS-4 | Reporting package | **24-hour and hourly tables available** | `src/report/**`, `docs/PRELIMINARY_RESULTS.md` | Freeze/version report artifacts |
 | WS-5 | Fine-tuning design | **Not started** | planned `docs/FINETUNE_DESIGN.md` | Start after cheap baselines are scored |
-| WS-6 | 56-date Aurora rollout | **Artifact generation complete: 56/56 dates, 80,136 rows** | `results/pairs/**` | Merge manifests and pass the full local audit |
+| WS-6 | 56-date Aurora rollout | **Complete: 56/56 dates, 80,136 rows, clean manifest** | `results/pairs/**` | Preserve artifacts and provenance |
 | WS-7 | Public product and interface | **Private preview deployed; live system absent** | `docs/PRODUCT_SPEC.md`, `docs/LIVE_FEED_SPEC.md`, `web/**` | Shadow runner |
 | WS-8 | Additional data and baselines | **Both CAMS archives and worker bundles complete; OGD probe optional** | `src/data/cams_forecast.py`, `src/data/cams_composition.py`, `src/data/ogd_aqi.py` | Preserve provenance; optional keyed OGD probe |
 | WS-9 | Repository publication | **Blocked** | README, status, portfolio and readiness docs, CI | Tests/build, licence, clean-history decision |
@@ -30,12 +30,10 @@ exact source-by-source paths are assigned in `docs/DATA_EXPANSION_PLAN.md`.
 ## Critical path
 
 ```text
-repair the local Python launcher
-  -> merge four worker manifests
-  -> integrity audit
-  -> raw baseline scorecards
-  -> Component A scorecard and event-safety decision
-  -> calibrator comparison
+24-hour and hourly scorecards complete
+  -> freeze/version report artifacts
+  -> keep raw fallback; Component A uncertified
+  -> freeze versioned scorecards
   -> decide whether fine-tuning is justified
 ```
 
@@ -83,9 +81,9 @@ zero-shot city transfer. Its implementation exists, but acceptance requires:
 The v1 direct-target calibrator remains a documented negative baseline. Its
 save path reports event metrics beside MAE and refuses a model that reduces
 Very Poor+ POD relative to raw Aurora. Regime-shift and seasonal-transfer tests
-exist. The complete 84-test suite passed in the exact RunPod environment. The
-local Python launcher is currently broken, so this is not described as a fresh
-local pass.
+exist. The complete 86-test suite passes locally. The full-registry fit again
+improved MAE while sharply reducing L1 and L2 POD, so the save guard rejected
+it. No accepted calibrator artifact exists.
 
 ## WS-4 — Reporting
 
@@ -115,8 +113,8 @@ provider credentials belong on a worker.
 
 The rollout created model/station pairs without receiving the untracked OpenAQ
 archive or provider credentials. All outputs are back on the machine holding
-the archive. The remaining WS-6 work is CPU-side: merge the four worker
-manifests, run the integrity audit, and only then hand the pairs to evaluation.
+the archive, and the four worker manifests were atomically rebuilt into a
+canonical 56-record ledger.
 
 ## WS-7 — Product and interface
 

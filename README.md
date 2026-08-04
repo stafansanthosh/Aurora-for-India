@@ -12,10 +12,10 @@ from **+12 to +96 hours** and tests inexpensive local adaptation before
 considering costly fine-tuning.
 
 **Current status:** the frozen 56-date Aurora rollout is complete and all
-**80,136 expected forecast-pair rows** are back on the local machine. The four
-worker outputs passed per-worker structure and transfer-checksum validation,
-but the combined manifest and full local integrity audit are still pending.
-Therefore this repository does **not** yet claim final model skill or
+**80,136 expected forecast-pair rows** are back on the local machine, and the
+canonical manifest is clean at 56 dates. The first PM2.5-only scorecards now
+exist. One audit check remains failed for inconsistent auxiliary PM1/PM10 size
+ordering, so this repository does **not** claim fully clean model output or
 operational readiness. See the
 [live project scoreboard](docs/PROJECT_STATUS.md).
 
@@ -100,10 +100,11 @@ As of the 4 August 2026 status snapshot:
 | Forecast horizon | +12 to +96 hours in 12-hour steps |
 | Spatial transfer design | 20% hashed station holdout plus 3 fully held-out cities |
 | Aurora rollout artifacts | 56/56 dates, 80,136 rows, 159 stations; worker and transfer checks passed |
-| Integrity audit | **Pending after the completed rollout**; last pre-completion run was 36 pass, 2 warnings, 1 completeness failure |
-| Test suite | 84/84 passing on the exact RunPod environment; local Python launcher currently broken |
-| Current-registry forecast pairs | **56 of 56 dates present; final audit pending** |
-| Final full-registry metrics | **Not available** |
+| Canonical rollout manifest | 56 records, 56 unique dates, zero errors |
+| Integrity audit | 39 checks: 36 pass, 2 expected legacy warnings, 1 auxiliary size-bin failure |
+| Test suite | 91/91 passing locally |
+| Current-registry forecast pairs | **56 of 56 dates; 80,136 rows** |
+| PM2.5-only retrospective metrics | Available as hourly-threshold sensitivity; not the 24-hour headline |
 
 Two additional files under `results/pairs/` are legacy pilot-only artifacts
 for dates outside the frozen schedule. The current 56 scheduled files replaced
@@ -166,9 +167,9 @@ hide.
 
 ## What has not been built or validated
 
-- the merged canonical four-worker manifest and passing post-rollout audit;
-- a valid full-registry evaluation of Component A;
-- a valid full-registry results table;
+- a fully clean audit across auxiliary PM1/PM10 outputs;
+- a certified public correction (Component A has one lead-specific POD regression);
+- the 24-hour/rolling-mean headline results table;
 - the latest-cycle live runner and immutable forecast ledger;
 - a deployed public experimental feed;
 - year-round prospective evidence, including an untouched post-monsoon test;
@@ -180,10 +181,10 @@ forecast service.
 
 ## Roadmap to a public experimental feed
 
-1. Merge the four worker manifests and run the full local integrity audit.
-2. Publish raw baseline scorecards only after that audit passes.
-3. Evaluate the implemented trailing local anchor and retain it only if event
-   skill is protected.
+1. Implement the 24-hour/rolling-mean headline evaluation separately from the
+   current hourly-threshold sensitivity analysis.
+2. Resolve Component A's +84-hour L1 POD regression or retain raw Aurora.
+3. Freeze versioned per-city, per-lead, L1, and L2 scorecards.
 4. Score the real CAMS forecasts already attached by the integrated rollout.
 5. Build a latest-cycle runner that stores immutable, versioned forecasts.
 6. Run privately in shadow mode to measure failures and data latency.

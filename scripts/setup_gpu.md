@@ -9,7 +9,8 @@ and scoring happen there after the integrity audit.
 56 dates, 80,136 rows, 159 stations, and zero worker errors. Every returned pair
 and worker manifest matched its remote SHA-256. This document is now a
 reproduction runbook; do not provision another Pod for the current benchmark.
-The remaining work is to merge the four manifests and pass the local audit.
+The canonical manifest has been rebuilt at 56 clean records. The remaining
+scientific work is local evaluation; no new Pod is required.
 
 ## You do NOT need an A100
 
@@ -207,7 +208,7 @@ python -m src.eval.audit
 python -m src.eval.benchmark
 python -m src.eval.benchmark --anchor
 python -m src.model.calibrator
-python -m src.eval.benchmark --calibrator results/models/pooled_calibrator.joblib
+python -m src.eval.benchmark --calibrator results/models/accepted_pooled_calibrator.joblib
 ```
 
 The evaluator writes `results/metrics/indiaaqbench.csv` and the corresponding

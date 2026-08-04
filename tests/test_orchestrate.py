@@ -152,7 +152,7 @@ def test_batch_continues_after_date_error_then_exits_nonzero(
     assert logged[0]["registry_version"] == "1:test"
 
 
-def test_worker_manifests_append_without_overwriting_or_duplicate_records(
+def test_worker_manifests_replace_stale_output_without_duplicate_records(
     tmp_path: Path,
 ) -> None:
     worker_a = tmp_path / "worker_a.jsonl"
@@ -166,10 +166,35 @@ def test_worker_manifests_append_without_overwriting_or_duplicate_records(
         encoding="utf-8",
     )
 
+    stale = {"date": "2025-11-15", "status": "done", "rows": 297}
+    output.write_text(f"{json.dumps(stale)}\n", encoding="utf-8")
+
     assert merge_manifests([worker_a, worker_b], output) == (2, 1)
-    assert merge_manifests([worker_a, worker_b], output) == (0, 3)
+    assert merge_manifests([worker_a, worker_b], output) == (2, 1)
     records = [
         json.loads(line)
         for line in output.read_text(encoding="utf-8").splitlines()
     ]
     assert records == [first, second]
+
+
+def test_worker_manifest_merge_rejects_conflicting_date_records(
+    tmp_path: Path,
+) -> None:
+    worker_a = tmp_path / "worker_a.jsonl"
+    worker_b = tmp_path / "worker_b.jsonl"
+    output = tmp_path / "manifest.jsonl"
+    worker_a.write_text(
+        f'{json.dumps({"date": "2025-02-19", "status": "done", "rows": 1431})}\n',
+        encoding="utf-8",
+    )
+    worker_b.write_text(
+        f'{json.dumps({"date": "2025-02-19", "status": "done", "rows": 1143})}\n',
+        encoding="utf-8",
+    )
+    output.write_text("preserve me\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Conflicting worker records"):
+        merge_manifests([worker_a, worker_b], output)
+
+    assert output.read_text(encoding="utf-8") == "preserve me\n"

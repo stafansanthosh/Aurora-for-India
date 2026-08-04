@@ -1,7 +1,7 @@
 # IndiaAQBench project status
 
 **Snapshot date:** 2026-08-04
-**Status:** active research; rollout complete, audit and scoring pending
+**Status:** active research; first retrospective scorecards complete
 **Public-use level:** code and benchmark design only—not a validated forecast
 service
 
@@ -21,11 +21,12 @@ the [development journal](../JOURNAL.md) preserves the full history.
 | Test dates | 24 |
 | Leads per initialization | 8 (+12 to +96 hours) |
 | Expected full pair rows | 80,136 |
-| Current-registry pair files present | **56/56; final audit pending** |
+| Current-registry pair files present | **56/56** |
 | Current-registry pair rows | **80,136** |
 | Pilot-only pair files rejected by the loader | 2 |
-| Integrity audit | **Pending after rollout completion** |
-| Unit tests | 84/84 passing in the exact RunPod environment; local launcher broken |
+| Canonical manifest | 56 unique done records; zero errors |
+| Integrity audit | 36 pass, 2 expected legacy warnings, 1 PM-bin ordering failure |
+| Unit tests | 91/91 passing locally |
 | Web preview | CI build/render and owner-only deployment passing |
 
 The expected pair count is 56 dates × 159 stations × 9 rows per station: one
@@ -120,8 +121,8 @@ The temporal cutoff was revised once on 2026-07-24:
 
 ## In progress
 
-- Repairing the local Python environment, merging the four worker manifests,
-  and preparing the required post-rollout integrity audit.
+- Freezing the generated 24-hour and hourly tables and connecting them to the
+  reporting package.
 - Resolving repository licensing and historical raw-data publication before a
   public launch.
 
@@ -129,11 +130,10 @@ The temporal cutoff was revised once on 2026-07-24:
 
 These are not complete and must not be implied in public claims:
 
-- **Post-rollout integrity audit:** not yet run.
-- **Canonical manifest:** four worker manifests exist but are not yet merged.
-- **Valid full-registry results table:** absent.
-- **Valid full-registry Component A score:** absent; the implementation exists
-  but has not been evaluated on the completed, audited pair set.
+- **Fully clean audit:** one auxiliary PM-bin ordering check remains failed.
+- **Published/versioned 24-hour table:** generated locally but not released.
+- **Certified Component A:** absent; pooled metrics improve, but L1 +84-hour
+  POD regresses relative to raw Aurora.
 - **Fine-tuning design:** absent.
 - **Scoped Aurora fine-tune:** not run.
 - **Latest-cycle forecast runner:** absent.
@@ -158,12 +158,10 @@ benchmark results.
 
 The critical scientific sequence is:
 
-1. Repair or recreate the local Python 3.11 environment.
-2. Merge `manifest_worker_0.jsonl` through `manifest_worker_3.jsonl`.
-3. Run `python -m src.eval.audit` and require it to pass.
-4. Produce raw baseline tables by city, lead, L1 holdout, and L2 holdout.
-5. Evaluate the implemented Component A without future-data leakage.
-6. Apply the guarded calibrator only if it protects event detection.
+1. Implement the separate 24-hour/rolling-mean category evaluation.
+2. Freeze per-city, per-lead, pooled, L1, and L2 result tables.
+3. Resolve Component A's lead-specific event regression or retain raw Aurora.
+4. Preserve the rejected calibrator result and do not use its stale binary.
 7. Compare Aurora against the actual CAMS forecasts already attached by the
    integrated rollout.
 8. Publish versioned tables and figures with the cutoff revision disclosed.

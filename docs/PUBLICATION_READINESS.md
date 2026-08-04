@@ -63,19 +63,18 @@ The owner must select the software licence. Data and third-party model
 artefacts must retain their own terms and attribution rather than being
 implicitly covered by the software licence.
 
-### 3. The completed rollout still needs a local integrity audit
+### 3. One integrity check remains failed
 
-GPU artifact generation is complete. The four worker manifests still need to
-be merged, and the full audit must be rerun on the machine holding the OpenAQ
-archive. The local `.venv` currently points to a missing Python 3.11 base
-runtime, so the audit has not yet been rerun. Structural and checksum checks do
-not substitute for that data-dependent audit.
+The rollout and canonical 56-record manifest are complete. The audit runs
+locally but reports 463 rows with inconsistent PM1/PM2.5/PM10 size ordering.
+The PM2.5-only scoring carve-out is documented, but the repository must disclose
+the failed auxiliary-channel check rather than claim a fully clean audit.
 
 ### 4. Scientific outputs are not final
 
-The repository has all 56 current-registry forecast-pair files, but no audited
-full-registry metrics table. The two out-of-schedule legacy pilot files must
-remain excluded and must not appear in the current benchmark result.
+Preliminary hourly-threshold and 24-hour PM2.5 scorecards now exist. They are
+not yet frozen as release artifacts, Component A is not certified, and the two
+out-of-schedule pilot files must remain excluded.
 
 The repository may be shared as an active research project after the software
 publication gates pass. It must not be presented as a validated forecast
@@ -89,8 +88,7 @@ service until the scientific and operational gates in
 3. Commit only reviewed source and documentation; exclude local configuration.
 4. Push while the repository remains private.
 5. Require the Python and web CI jobs to pass. **Passed on `48135cc`.**
-6. Merge the four worker manifests and require the post-rollout local integrity
-   audit to pass.
+6. Complete the 24-hour headline table and disclose the remaining audit failure.
 7. Resolve the software licence.
 8. Resolve the historical raw-data choice: rights confirmation, history
    rewrite, or clean public mirror.
@@ -105,6 +103,6 @@ service until the scientific and operational gates in
   privately with accurate status language.
 - **Public building-in-progress post:** after the repository publication gates
   above pass.
-- **Main technical post:** after the completed 56-date rollout passes audit and
-  a versioned 159-station scorecard exists.
+- **Main technical post:** after a versioned 24-hour 159-station scorecard
+  exists with the audit limitation disclosed.
 - **Product launch post:** after the live feed completes shadow-mode gates.

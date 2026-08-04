@@ -36,10 +36,14 @@ Use three to five, adjusted to the role:
   stale-artifact rejection, and a 39-check integrity audit.
 - Completed a credential-free, four-slice Aurora rollout on modest rented GPU
   compute, producing 80,136 station-time rows across all 56 frozen dates with
-  checksum-verified transfers. The post-rollout scientific audit is pending.
+  checksum-verified transfers and a deterministic 56-record manifest.
+- Built the first full-registry PM2.5 sensitivity scorecard and demonstrated
+  that a cheap trailing-observation anchor improves pooled event CSI while a
+  direct-target calibrator remains unsafe. Disclose the remaining audit and
+  lead-specific limitations whenever using this bullet.
 
-Do not add an accuracy-improvement percentage until the 159-station rollout
-passes its full audit and a versioned benchmark table exists.
+Do not use a single accuracy-improvement headline until the 24-hour table is
+versioned and the audit and Component A lead-specific limitations are explicit.
 
 ## Evidence to link
 

@@ -7,7 +7,7 @@ India AQ-forecasting benchmark with fixed public splits, shared code, and
 standard baselines currently exists* — the literature is city-fragmented and
 method-fragmented (reviews explicitly call for standardized evaluation).
 
-Status: v0.1 (dates/splits provisional until the coverage audit; see §6).
+Status: v0.1 (dates and splits frozen; see §6).
 Supersedes the May 2026 scaffold spec (see git history).
 
 ---
@@ -90,6 +90,20 @@ subset (the regime where global models fail).
 4. **Raw AuroraAirPollution**: uncalibrated rollout — the foundation-model
    baseline this benchmark exists to measure.
 5. (Adaptation ladder, evaluated identically: pooled calibrator; fine-tune.)
+
+### 5.1 Particulate-channel integrity decision (2026-08-04)
+
+The completed rollout contains 463 of 80,730 stored rows where Aurora's
+independently predicted particulate channels violate nested size-bin ordering.
+The integrity audit retains this as a failure. It is not silently repaired,
+clipped, or waived.
+
+The PM2.5 benchmark path is nevertheless separable and may be scored because
+persistence, CAMS, raw Aurora, and Component A consume only PM2.5; source review
+and regression tests verify that PM1 and PM10 cannot influence those methods.
+PM1 and PM10 are excluded from the pooled calibrator. Results produced under
+this carve-out must disclose the outstanding audit failure and must not imply
+that all Aurora output channels passed physical-consistency checks.
 
 ## 6. Benchmark period, dates, splits
 

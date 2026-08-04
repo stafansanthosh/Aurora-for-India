@@ -11,10 +11,12 @@ Design choices that matter:
     (Good ~15 to Severe >250), so we fit log1p(pm2.5) and expm1 back. This
     stops the severe tail from dominating the loss and keeps predictions
     positive.
-  * **Aurora value is the dominant feature**, kept alongside pm1/pm10, the
-    near-surface met (2t, 10u/10v -> wind speed, msl), lead time, and cyclical
-    season/hour encodings. The point is to correct level/timing, not relearn
-    chemistry.
+  * **Aurora PM2.5 is the dominant feature**, kept alongside near-surface met
+    (2t, 10u/10v -> wind speed, msl), lead time, and cyclical season/hour
+    encodings. PM1/PM10 are deliberately excluded: Aurora predicts those
+    channels independently and the full rollout contains small violations of
+    nested size-bin ordering. The point is to correct PM2.5 level/timing, not
+    learn from physically inconsistent auxiliary bins.
   * **Split discipline is enforced here, not assumed.** fit() must be handed
     train-only rows; the CLI builds L1 (held-out stations in train cities) and
     L2 (held-out cities) exactly as spec §3 requires, and never lets a test
@@ -41,11 +43,11 @@ from ..splits import HELDOUT_CITIES, l1_is_holdout
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MODEL_DIR = PROJECT_ROOT / "results" / "models"
-DEFAULT_MODEL = MODEL_DIR / "pooled_calibrator.joblib"
+DEFAULT_MODEL = MODEL_DIR / "accepted_pooled_calibrator.joblib"
 
 # Raw model/met inputs the calibrator is allowed to see (all present in pairs).
-RAW_FEATURES = ["aurora_pm2p5", "aurora_pm1", "aurora_pm10",
-                "aurora_2t", "aurora_10u", "aurora_10v", "aurora_msl"]
+RAW_FEATURES = ["aurora_pm2p5", "aurora_2t", "aurora_10u", "aurora_10v",
+                "aurora_msl"]
 
 
 # --------------------------------------------------------------------------- #

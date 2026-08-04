@@ -793,3 +793,153 @@ metrics were published. The exact RunPod environment passed 84/84 tests.
 Next: repair or recreate local Python 3.11, merge manifests 0–3, run
 `python -m src.eval.audit`, and proceed to raw, Component A, and guarded
 calibrator scorecards only if the audit passes.
+
+## 2026-08-04 — Post-rollout validation: environment recovered, audit run, gates split
+
+Re-derived the post-GPU state from the artifacts rather than from the
+documentation. Every figure below was reproduced independently before being
+recorded.
+
+The recorded environment blocker was wrong. The project `.venv` is executable:
+Python 3.11.9, 84/84 tests passing locally, and `python -m src.eval.audit`
+running to completion. The earlier failure was a restricted-sandbox path to the
+base Python executable, not a missing runtime or a broken interpreter. The
+entries above and `docs/HANDOFF.md` overstated it as a repository-level
+blocker; that claim is retracted here.
+
+The four-slice rollout reconciles exactly. Each worker manifest holds 14 `done`
+records at 20,034 rows, all stamped `159:4c0b55ad238f`. Across the four: 56
+unique dates, 80,136 rows, no date claimed by two workers, no frozen date
+uncovered, no worker date outside the frozen schedule, and every referenced
+pair file present on disk. The nine OpenAQ archive CSVs sum to 1,489,534
+observations, matching the audit's independent count exactly. The three frozen
+dates that previously held pilot artifacts — 2025-02-19, 2025-03-03 and
+2025-06-03 — now each carry 1,431 rows over 159 stations with the actual CAMS
+forecast column. The two legacy pilot files remain at 297 rows over 33 stations
+with no CAMS column, and both audit warnings trace entirely to them.
+
+The integrity audit was run on the completed rollout: 39 checks, 36 pass, two
+expected legacy-pair warnings, one failure. The failure is the particulate
+size-fraction ordering check, now characterised rather than assumed:
+
+- 463 of 80,730 examined rows violate an inequality (0.5735%);
+- 411 rows have `pm1 > pm2p5`, 64 have `pm2p5 > pm10`, 12 violate both;
+- median excess 0.265 µg/m³, maximum 6.269 µg/m³, against a median Aurora
+  PM2.5 of 54.09 µg/m³;
+- 23 dates and every positive lead from +12 to +96 are affected;
+- zero violations come from the two legacy pilot files — all 463 belong to the
+  current 159-station rollout.
+
+The likely cause is Aurora emitting its particulate channels without a
+monotonicity constraint across size bins. **That remains an inference.** It has
+not been proven as a model property and must not be written up as one until it
+is tested.
+
+Blast radius, checked in source rather than assumed. `src/eval/benchmark.py`
+never reads `aurora_pm1` or `aurora_pm10`; it scores `aurora_pm2p5` against
+observations, so the raw Aurora and Component A paths do not consume the
+inconsistent channels. `src/model/calibrator.py` does: `RAW_FEATURES` includes
+both `aurora_pm1` and `aurora_pm10`, so the affected rows enter the calibrator
+as feature noise. There is no evidence that the PM2.5 forecast itself is
+corrupted.
+
+`scripts/merge_worker_manifests.py` must not run unchanged. It appends, and the
+canonical `results/pairs/manifest.jsonl` already carries repeated dates from the
+pilot era: 2025-02-19 twice, 2025-03-03 three times, 2025-06-03 twice, plus the
+two November legacy records. Appending the 56 worker records would yield 65
+records over 58 unique dates, with those three frozen dates at three, four and
+three copies respectively. Resume stays correct because the stale records lack a
+`registry_version` and `_completed_dates` filters on it, but the provenance
+would be needlessly ambiguous. The merger should atomically rebuild a clean
+56-record canonical manifest, or explicitly retire superseded records, before it
+is run.
+
+Decision — the scoring gate is split rather than waived:
+
+- the failed audit check is **not** waived and `src/eval/audit.py` is not
+  edited to downgrade it;
+- raw Aurora and Component A scorecards may proceed **only after** the
+  PM1/PM10-independence of their PM2.5 path is formally documented;
+- the v1 calibrator stays **blocked** until `aurora_pm1` and `aurora_pm10` are
+  removed from `RAW_FEATURES`, repaired, or their effect is measured;
+- no scorecard is published before that decision is recorded in the repository.
+
+Next: fix the manifest merger to rebuild rather than append, then merge, then
+document the PM2.5-path independence before any scoring run. No repository state
+other than these notes and `docs/HANDOFF.md` changed in this pass; the 42 pair
+artifacts and three worker manifests remain uncommitted.
+
+## 2026-08-04 — Canonical merge and first full-registry scorecards
+
+Implemented the previously recorded gate decision without erasing the negative
+signal. `scripts/merge_worker_manifests.py` now ignores an existing pilot-era
+output, rejects conflicting records for one date, writes a deterministic
+date-sorted manifest through a temporary file, fsyncs it, and atomically
+replaces the canonical path. Two regression tests cover stale-output removal
+and conflict refusal. The real merge produced exactly 56 `done` records, 56
+unique dates, zero duplicates, zero errors, 80,136 total rows, and one registry
+version (`159:4c0b55ad238f`).
+
+The PM1/PM10 size-ordering audit remains a failure. It was not downgraded and
+the model outputs were not clipped or rewritten. The PM2.5 scoring carve-out is
+now explicit in `docs/BENCHMARK_SPEC.md`: persistence, both CAMS comparators,
+raw Aurora, and Component A consume only PM2.5. PM1 and PM10 were removed from
+the calibrator feature set, with a regression test proving that arbitrarily
+changing those columns cannot change its feature matrix.
+
+The full suite now passes 86/86 locally. The audit remains 39 checks: 36 pass,
+two expected warnings from the two excluded legacy dates, and the one retained
+size-bin failure.
+
+Generated separate raw and Component A metric files locally. These are hourly
+nearest-observation threshold results, not the 24-hour CPCB headline. Across
+the pooled temporal test, raw Aurora scores MAE 32.76, POD 0.483, FAR 0.721,
+CSI 0.215 on 2,113 events; Component A scores MAE 26.52, POD 0.566, FAR 0.585,
+CSI 0.315 on the same support. Pooled L1 and L2 also improve, but L1 +84-hour
+POD falls from 0.750 to 0.688 across 64 events. Component A is therefore
+promising but not certified for public selection.
+
+Refit the direct-target calibrator without PM1/PM10. It still improved MAE and
+destroyed event detection: L1 POD 0.474 to 0.125 and L2 POD 0.748 to 0.299. The
+guardrail refused to save it. This shows that auxiliary-bin noise was not the
+cause of the calibrator's fundamental severe-tail failure. Renamed the old
+tracked binary to `rejected_pilot_calibrator.joblib` and changed the accepted
+default path to `accepted_pooled_calibrator.joblib`; no accepted artifact
+exists.
+
+Next: implement a separate 24-hour/rolling-mean evaluation with coverage tests,
+then freeze versioned per-city/per-lead/L1/L2 tables. Do not tune Component A on
+the observed test regression; either predeclare a safety fallback or retain raw
+Aurora.
+
+## 2026-08-04 — Separate forward-24-hour headline evaluator
+
+Implemented `src/eval/rolling24.py` from the already documented product
+contract. Each forward 24-hour forecast uses trapezoidal integration of the
+three 12-hour snapshots at `s`, `s+12`, and `s+24`. Observation targets use the
+24 hourly values in `[start, end)`, require at least 12 reporting hours, and
+exclude any window crossing the temporal cutoff. The actual CAMS forecast uses
+the CAMS initialization field at lead zero, as specified. Five tests cover the
+formula, CAMS lead-zero bridge, observation coverage, cutoff crossing, invalid
+coverage, and pooled scope generation. The full suite passes 91/91 locally.
+
+The evaluator generated 62,010 station windows; 51,566 meet observation
+coverage. It reports per-city plus pooled temporal, train-city, L1, and L2
+scopes without mixing them with the instantaneous sensitivity results.
+
+Headline pooled-test results across all window starts: persistence MAE 21.59,
+POD 0.466, FAR 0.371, CSI 0.365 (1,682 events); actual CAMS forecast MAE 31.85,
+POD 0.154, FAR 0.911, CSI 0.060; raw Aurora MAE 28.22, POD 0.471, FAR 0.672,
+CSI 0.239; Component A MAE 21.26, POD 0.582, FAR 0.441, CSI 0.399 (the latter
+three methods share 1,704 events).
+
+L1 improves from raw POD/CSI 0.400/0.262 to Component A 0.578/0.491, with every
+window start improving POD. L2 improves MAE 30.22 to 21.31 and CSI 0.122 to
+0.187, but POD falls from 0.798 to 0.755 across 94 events. That is enough to
+keep Component A uncertified under the no-harm rule. Raw Aurora remains the
+safe public fallback unless a new adaptation is evaluated under a newly
+predeclared design; these test outcomes must not be used to tune Component A.
+
+Next: freeze deterministic report artifacts and connect them to the reporting
+package, then proceed with the immutable live-runner path and a fine-tuning
+design that must clear the raw/Component A event-skill bar.
