@@ -1,7 +1,7 @@
 # IndiaAQBench project status
 
-**Snapshot date:** 2026-08-02
-**Status:** active research; full benchmark execution pending
+**Snapshot date:** 2026-08-04
+**Status:** active research; rollout complete, audit and scoring pending
 **Public-use level:** code and benchmark design only—not a validated forecast
 service
 
@@ -21,10 +21,11 @@ the [development journal](../JOURNAL.md) preserves the full history.
 | Test dates | 24 |
 | Leads per initialization | 8 (+12 to +96 hours) |
 | Expected full pair rows | 80,136 |
-| Valid current-registry pair files | **0** |
-| Legacy pair files rejected by the loader | 5 |
-| Integrity audit | 39 checks: 36 pass, 2 legacy warnings, 1 GPU blocker |
-| Unit tests | 83/83 passing locally |
+| Current-registry pair files present | **56/56; final audit pending** |
+| Current-registry pair rows | **80,136** |
+| Pilot-only pair files rejected by the loader | 2 |
+| Integrity audit | **Pending after rollout completion** |
+| Unit tests | 84/84 passing in the exact RunPod environment; local launcher broken |
 | Web preview | CI build/render and owner-only deployment passing |
 
 The expected pair count is 56 dates × 159 stations × 9 rows per station: one
@@ -113,10 +114,14 @@ The temporal cutoff was revised once on 2026-07-24:
   additional-data experiments.
 - Implemented the bounded official OGD India CPCB Patna/Varanasi live-feed
   diagnostic; it remains optional and is not claimed as independent truth.
+- Completed the four-slice Aurora GPU rollout: 56 dates, 80,136 rows, 159
+  stations, and zero worker errors. All returned pairs and worker manifests
+  matched their remote SHA-256 hashes.
 
 ## In progress
 
-- Preparing the four-worker GPU rollout for all 56 frozen dates.
+- Repairing the local Python environment, merging the four worker manifests,
+  and preparing the required post-rollout integrity audit.
 - Resolving repository licensing and historical raw-data publication before a
   public launch.
 
@@ -124,11 +129,11 @@ The temporal cutoff was revised once on 2026-07-24:
 
 These are not complete and must not be implied in public claims:
 
-- **Valid full-registry pair files:** zero.
-- **Full 56-date rollout:** not run.
+- **Post-rollout integrity audit:** not yet run.
+- **Canonical manifest:** four worker manifests exist but are not yet merged.
 - **Valid full-registry results table:** absent.
 - **Valid full-registry Component A score:** absent; the implementation exists
-  but has no valid current-registry pairs to evaluate.
+  but has not been evaluated on the completed, audited pair set.
 - **Fine-tuning design:** absent.
 - **Scoped Aurora fine-tune:** not run.
 - **Latest-cycle forecast runner:** absent.
@@ -136,36 +141,26 @@ These are not complete and must not be implied in public claims:
 - **Public experimental forecast feed:** absent.
 - **Independent post-monsoon test:** absent.
 
-The scientific results are blocked first by the 56-date rollout. Product work
-can proceed in parallel using clearly labeled synthetic or historical example
-data, but it cannot display final metrics yet.
+The scientific results are now blocked by local validation and scoring, not by
+GPU inference. Product work can proceed in parallel using clearly labeled
+synthetic or historical example data, but it cannot display final metrics yet.
 
-## Why the five pair files do not count
+## Legacy pilot files
 
-`results/pairs/` contains pilot files for:
-
-- 2025-02-19;
-- 2025-03-03;
-- 2025-06-03;
-- 2025-11-15;
-- 2025-11-20.
-
-They were generated against superseded 33- or 127-station registries. The
-current registry has 159 stations. Pooling those files would silently compare
-different station populations and, in two cases, add dates that are not part of
-the current frozen schedule.
-
-The evaluator therefore rejects all five by registry version and date. This is
-intentional safety behavior, not missing-data cleanup. Historical pilot metrics
-may explain engineering decisions, but they are not valid benchmark results.
+The current rollout replaced the scheduled pilot dates 2025-02-19, 2025-03-03,
+and 2025-06-03 with 159-station outputs. Two pilot-only files remain:
+2025-11-15 and 2025-11-20. Neither belongs to the frozen schedule. The strict
+evaluator rejects them by date, which prevents silent contamination. Historical
+pilot metrics may explain engineering decisions, but they are not valid
+benchmark results.
 
 ## Next
 
 The critical scientific sequence is:
 
-1. Run all 56 dates against the 159-station registry.
-2. Verify 1,431 rows per date and 80,136 rows in total.
-3. Run `python -m src.eval.audit`.
+1. Repair or recreate the local Python 3.11 environment.
+2. Merge `manifest_worker_0.jsonl` through `manifest_worker_3.jsonl`.
+3. Run `python -m src.eval.audit` and require it to pass.
 4. Produce raw baseline tables by city, lead, L1 holdout, and L2 holdout.
 5. Evaluate the implemented Component A without future-data leakage.
 6. Apply the guarded calibrator only if it protects event detection.

@@ -11,10 +11,12 @@ CAMS atmospheric data, and OpenAQ station observations. It evaluates forecasts
 from **+12 to +96 hours** and tests inexpensive local adaptation before
 considering costly fine-tuning.
 
-**Current status:** the data and evaluation infrastructure are ready, but the
-full benchmark rollout has not been completed. There are currently **zero valid
-forecast-pair files for the 159-station registry**, so this repository does
-**not** claim final model skill or operational readiness. See the
+**Current status:** the frozen 56-date Aurora rollout is complete and all
+**80,136 expected forecast-pair rows** are back on the local machine. The four
+worker outputs passed per-worker structure and transfer-checksum validation,
+but the combined manifest and full local integrity audit are still pending.
+Therefore this repository does **not** yet claim final model skill or
+operational readiness. See the
 [live project scoreboard](docs/PROJECT_STATUS.md).
 
 > **Research-use disclaimer:** this is an experimental research system, not an
@@ -86,7 +88,7 @@ evaluation path.
 
 ## Verified repository state
 
-As of the 2 August 2026 status snapshot:
+As of the 4 August 2026 status snapshot:
 
 | Item | Verified state |
 |---|---|
@@ -97,14 +99,16 @@ As of the 2 August 2026 status snapshot:
 | CAMS atmospheric inputs for Aurora | Complete: 56 dates, 12.397 GiB, deep validated |
 | Forecast horizon | +12 to +96 hours in 12-hour steps |
 | Spatial transfer design | 20% hashed station holdout plus 3 fully held-out cities |
-| Integrity audit | 39 checks: 36 pass, 2 legacy warnings, 1 GPU blocker |
-| Test suite | 83/83 passing locally |
-| Valid 159-station forecast pairs | **0 of 56 dates** |
+| Aurora rollout artifacts | 56/56 dates, 80,136 rows, 159 stations; worker and transfer checks passed |
+| Integrity audit | **Pending after the completed rollout**; last pre-completion run was 36 pass, 2 warnings, 1 completeness failure |
+| Test suite | 84/84 passing on the exact RunPod environment; local Python launcher currently broken |
+| Current-registry forecast pairs | **56 of 56 dates present; final audit pending** |
 | Final full-registry metrics | **Not available** |
 
-The five files currently under `results/pairs/` are legacy pilot artifacts
-generated with 33- or 127-station registries. The strict evaluator rejects all
-five rather than silently mixing them with the 159-station benchmark.
+Two additional files under `results/pairs/` are legacy pilot-only artifacts
+for dates outside the frozen schedule. The current 56 scheduled files replaced
+the three overlapping pilot dates. The strict evaluator rejects the two
+out-of-schedule files rather than silently mixing them into the benchmark.
 
 The temporal cutoff was revised once, from **2025-07-01 to 2025-12-01**, under a
 pre-registered contingency and before adaptation was trained on the revised
@@ -162,7 +166,7 @@ hide.
 
 ## What has not been built or validated
 
-- the valid 56-date, 159-station Aurora rollout;
+- the merged canonical four-worker manifest and passing post-rollout audit;
 - a valid full-registry evaluation of Component A;
 - a valid full-registry results table;
 - the latest-cycle live runner and immutable forecast ledger;
@@ -176,8 +180,8 @@ forecast service.
 
 ## Roadmap to a public experimental feed
 
-1. Regenerate all 56 forecast dates against the 159-station registry.
-2. Run the integrity audit and publish raw baseline scorecards.
+1. Merge the four worker manifests and run the full local integrity audit.
+2. Publish raw baseline scorecards only after that audit passes.
 3. Evaluate the implemented trailing local anchor and retain it only if event
    skill is protected.
 4. Score the real CAMS forecasts already attached by the integrated rollout.

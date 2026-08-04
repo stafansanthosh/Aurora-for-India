@@ -1,6 +1,6 @@
 # Publication readiness
 
-**Snapshot:** 2026-07-29
+**Snapshot:** 2026-08-04
 **Decision:** keep the repository private until every blocking item below is
 resolved.
 
@@ -26,10 +26,9 @@ current scientific state is tracked in
   independent integration review.
 - GitHub Actions run `30473358275` passed all then-current Python tests and the
   web install/build/render checks on commit `b10d348`.
-- The restored local Python 3.11.9 environment passes the expanded 83-test
-  collection.
-- The local integrity audit now runs against the complete archive. Its only
-  failure is the explicit 0/56 current-registry pair completeness gate.
+- The exact RunPod environment passed the expanded 84-test collection.
+- The four-slice Aurora rollout is complete at 56 dates, 80,136 rows, and 159
+  stations; every returned pair and worker manifest matched its remote SHA-256.
 - An owner-only Sites deployment of the illustrative UI succeeded.
 - Local browser interaction checks passed, and `npm audit --omit=dev` reports
   zero known production vulnerabilities on the patched lockfile.
@@ -64,19 +63,19 @@ The owner must select the software licence. Data and third-party model
 artefacts must retain their own terms and attribution rather than being
 implicitly covered by the software licence.
 
-### 3. The full benchmark still needs the GPU rollout
+### 3. The completed rollout still needs a local integrity audit
 
-The local audit now verifies the 1,489,534-row observation archive,
-159-station registry, grid matching, split logic, and event metrics. It reports
-36 passes, two expected warnings about legacy pilot files, and one failure:
-zero of 56 current-registry rollout dates exist. That is the intended
-scientific blocker, not an environment problem.
+GPU artifact generation is complete. The four worker manifests still need to
+be merged, and the full audit must be rerun on the machine holding the OpenAQ
+archive. The local `.venv` currently points to a missing Python 3.11 base
+runtime, so the audit has not yet been rerun. Structural and checksum checks do
+not substitute for that data-dependent audit.
 
 ### 4. Scientific outputs are not final
 
-The repository has zero valid current-registry forecast-pair files. The five
-legacy pilot pair files must remain clearly labeled and must not appear as the
-current benchmark result.
+The repository has all 56 current-registry forecast-pair files, but no audited
+full-registry metrics table. The two out-of-schedule legacy pilot files must
+remain excluded and must not appear in the current benchmark result.
 
 The repository may be shared as an active research project after the software
 publication gates pass. It must not be presented as a validated forecast
@@ -90,8 +89,8 @@ service until the scientific and operational gates in
 3. Commit only reviewed source and documentation; exclude local configuration.
 4. Push while the repository remains private.
 5. Require the Python and web CI jobs to pass. **Passed on `48135cc`.**
-6. Run the 56-date GPU rollout and require the local integrity audit to clear
-   the exact-completeness gate.
+6. Merge the four worker manifests and require the post-rollout local integrity
+   audit to pass.
 7. Resolve the software licence.
 8. Resolve the historical raw-data choice: rights confirmation, history
    rewrite, or clean public mirror.
@@ -106,6 +105,6 @@ service until the scientific and operational gates in
   privately with accurate status language.
 - **Public building-in-progress post:** after the repository publication gates
   above pass.
-- **Main technical post:** after the 56-date, 159-station benchmark and a
-  versioned scorecard exist.
+- **Main technical post:** after the completed 56-date rollout passes audit and
+  a versioned 159-station scorecard exists.
 - **Product launch post:** after the live feed completes shadow-mode gates.

@@ -1,6 +1,6 @@
 # IndiaAQBench execution plan
 
-**Updated:** 2026-08-02
+**Updated:** 2026-08-04
 
 The goal is a publicly understandable experimental forecast feed backed by a
 credible benchmark. The product can become useful before year-round scientific
@@ -14,12 +14,12 @@ illustrative design, retrospective evidence, and prospective live forecasts.
 | Nine-city observation archive | Complete |
 | 159-station registry | Complete |
 | 56-date schedule | Complete |
-| Calibrator guardrails | Complete; 83-test suite passes |
+| Calibrator guardrails | Complete; 84-test suite passes on RunPod |
 | Component A implementation | Complete; evaluation pending |
 | Reporting code | Complete |
 | Product/live-feed specification | Complete |
 | UI preview | Complete; CI build/render and private deployment pass |
-| Valid 159-station pairs | **0** |
+| Aurora rollout artifacts | **56 dates and 80,136 rows present; audit pending** |
 | Actual CAMS forecast baseline | Complete: 56 dates, 71,232 station-lead rows |
 | Aurora CAMS analysis inputs | Complete: 56 dates, 12.397 GiB, deep validated |
 | Live runner/ledger | **Absent** |
@@ -28,9 +28,7 @@ illustrative design, retrospective evidence, and prospective live forecasts.
 ## 2. Scientific critical path
 
 ```text
-four-worker Aurora rollout
-  -> copy 56 current-registry pair files home
-  -> verify 1,431 rows/date and 80,136 total
+repair local Python and merge worker manifests
   -> integrity audit
   -> raw baseline scorecards
   -> Component A scorecard
@@ -38,15 +36,14 @@ four-worker Aurora rollout
   -> fine-tuning decision
 ```
 
-Both CAMS archives have been downloaded and validated locally. Build four
-disjoint input bundles with `python -m scripts.package_gpu_inputs`; each worker
-receives only its 14 dates. The orchestrator verifies every retained request
-and raw-file checksum before loading Aurora and fails closed if any local input
-is absent. Workers need no Copernicus, OpenAQ, GitHub, or SSH credentials. Only
-Aurora inference requires the GPU. Pair generation does not need the untracked
-OpenAQ archive; scoring does, so copy the pairs back before evaluation.
+The four-worker Aurora rollout is complete. Each isolated 14-date slice
+produced 20,034 rows with 159 stations and zero errors; the combined local
+inventory is 56 dates and 80,136 rows. All transferred pair files and worker
+manifests matched the remote SHA-256 hashes. No provider credentials or OpenAQ
+archive were placed on the workers. No more GPU compute is required for this
+retrospective pass.
 
-On each configured worker:
+For reproduction, use one distinct slice on each configured worker:
 
 ```bash
 tail -n +2 docs/benchmark_dates.csv | cut -d, -f1 | split -n l/4 -d - slice_
@@ -56,7 +53,8 @@ python -m src.pipeline.orchestrate --dates-file slice_00 --device cuda --offline
 Use one distinct slice (`slice_00` through `slice_03`) per worker. See
 `scripts/setup_gpu.md`.
 
-After retrieval:
+For the current run, first repair the local Python 3.11 environment and merge
+the four preserved manifests. Then:
 
 ```bash
 python -m src.eval.audit
@@ -70,7 +68,7 @@ Do not trust or publish any table if the audit fails.
 
 ## 3. Product path
 
-This path can proceed while the retrospective rollout runs:
+This path can proceed while retrospective audit and scoring run:
 
 1. Pass the web build and source tests in a clean CI environment.
 2. Replace interface fixtures with the versioned public JSON contract.
@@ -119,7 +117,7 @@ The current repository remains private. Before sharing a GitHub link publicly:
 7. verify README links anonymously.
 
 A portfolio soft launch can happen once those software/publication gates pass,
-even while the full benchmark is running. The main technical post should wait
+even while audit and scoring are pending. The main technical post should wait
 for a versioned 159-station scorecard. The product launch should wait for
 shadow-mode evidence.
 

@@ -34,9 +34,12 @@ Use three to five, adjusted to the role:
 - Implemented reproducibility controls including a versioned station registry,
   frozen dates, centralized split constants, registry-aware resumption, strict
   stale-artifact rejection, and a 39-check integrity audit.
+- Completed a credential-free, four-slice Aurora rollout on modest rented GPU
+  compute, producing 80,136 station-time rows across all 56 frozen dates with
+  checksum-verified transfers. The post-rollout scientific audit is pending.
 
-Do not add an accuracy-improvement percentage until the valid 159-station
-rollout and full benchmark table exist.
+Do not add an accuracy-improvement percentage until the 159-station rollout
+passes its full audit and a versioned benchmark table exists.
 
 ## Evidence to link
 
@@ -162,8 +165,8 @@ Appropriate channels:
 - direct sharing with researchers or potential collaborators.
 
 Lead with the problem, benchmark design, negative calibration lesson, and
-low-compute thesis. Say that the valid full benchmark is running; do not lead
-with pilot accuracy.
+low-compute thesis. Say that the full inference pass is complete and audit and
+scoring are pending; do not lead with pilot accuracy.
 
 ### Stage 2 — first substantial technical post
 

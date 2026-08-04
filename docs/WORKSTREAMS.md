@@ -1,6 +1,6 @@
 # IndiaAQBench workstreams
 
-**Updated:** 2026-08-02
+**Updated:** 2026-08-04
 **Integration policy for this phase:** the owner requested work directly on
 `master`. Do not create or switch branches unless that instruction changes.
 
@@ -18,20 +18,20 @@ exact source-by-source paths are assigned in `docs/DATA_EXPANSION_PLAN.md`.
 | ID | Workstream | State | Main outputs | Next gate |
 |---|---|---|---|---|
 | WS-1 | OpenAQ archive and station registry | **Complete** | `src/data/**`, `data/stations.csv`, frozen dates | Preserve provenance; no new bulk source without licence review |
-| WS-2 | Component A local anchoring | **Implementation complete; evaluation blocked** | `src/model/anchor.py`, `tests/test_anchor.py`, benchmark hook | Pass tests, then score valid 159-station pairs |
-| WS-3 | Calibrator guardrails and tests | **Complete; local suite green** | `src/model/calibrator.py`, guardrail tests | Score after valid pairs |
+| WS-2 | Component A local anchoring | **Implementation complete; evaluation pending audit** | `src/model/anchor.py`, `tests/test_anchor.py`, benchmark hook | Score after the post-rollout audit passes |
+| WS-3 | Calibrator guardrails and tests | **Complete; remote suite green** | `src/model/calibrator.py`, guardrail tests | Score after audited raw and anchored baselines |
 | WS-4 | Reporting package | **Complete; real table blocked** | `src/report/**`, diagnostic figures | Render only after valid audit and metrics |
 | WS-5 | Fine-tuning design | **Not started** | planned `docs/FINETUNE_DESIGN.md` | Start after cheap baselines are scored |
-| WS-6 | 56-date Aurora rollout | **Worker 0 complete: 14/56 dates, 20,034 rows** | `results/pairs/**` | Run slices 01–03, reach 80,136 rows, audit pass |
+| WS-6 | 56-date Aurora rollout | **Artifact generation complete: 56/56 dates, 80,136 rows** | `results/pairs/**` | Merge manifests and pass the full local audit |
 | WS-7 | Public product and interface | **Private preview deployed; live system absent** | `docs/PRODUCT_SPEC.md`, `docs/LIVE_FEED_SPEC.md`, `web/**` | Shadow runner |
-| WS-8 | Additional data and baselines | **Both CAMS archives complete; OGD probe optional** | `src/data/cams_forecast.py`, `src/data/cams_composition.py`, `src/data/ogd_aqi.py` | Package four offline worker bundles; optional keyed OGD probe |
+| WS-8 | Additional data and baselines | **Both CAMS archives and worker bundles complete; OGD probe optional** | `src/data/cams_forecast.py`, `src/data/cams_composition.py`, `src/data/ogd_aqi.py` | Preserve provenance; optional keyed OGD probe |
 | WS-9 | Repository publication | **Blocked** | README, status, portfolio and readiness docs, CI | Tests/build, licence, clean-history decision |
 
 ## Critical path
 
 ```text
-56-date rollout
-  -> copy all current-registry pairs home
+repair the local Python launcher
+  -> merge four worker manifests
   -> integrity audit
   -> raw baseline scorecards
   -> Component A scorecard and event-safety decision
@@ -83,7 +83,9 @@ zero-shot city transfer. Its implementation exists, but acceptance requires:
 The v1 direct-target calibrator remains a documented negative baseline. Its
 save path reports event metrics beside MAE and refuses a model that reduces
 Very Poor+ POD relative to raw Aurora. Regime-shift and seasonal-transfer tests
-exist. The restored local environment passes the complete 83-test suite.
+exist. The complete 84-test suite passed in the exact RunPod environment. The
+local Python launcher is currently broken, so this is not described as a fresh
+local pass.
 
 ## WS-4 — Reporting
 
@@ -101,19 +103,20 @@ Component A, and the guarded calibrator.
 
 ## WS-6 — GPU rollout
 
-The only required cloud execution is the 56-date Aurora inference pass. Worker
-0 (`slice_00`) is complete and locally preserved at 14 dates and 20,034 rows.
-Use three temporary 48 GB workers for slices 01–03 and follow
-`scripts/setup_gpu.md`. The pass is complete only at 1,431 rows per date and
-80,136 rows total for the current registry.
+The required cloud inference is complete. Four isolated slices produced 14
+dates and 20,034 rows each, for 56 dates and 80,136 rows total. Each slice has
+159 stations, the expected nine rows per station, a current registry stamp,
+and zero worker errors. All returned pair files and worker manifests matched
+their remote copies by SHA-256.
 
 All 56 atmospheric-analysis and actual-forecast inputs are local and validated.
 Each worker receives one 14-date bundle and runs with `--offline-inputs`; no
 provider credentials belong on a worker.
 
-The rollout creates model/station pairs; it does not require the untracked
-OpenAQ archive. Pull pairs back to the machine that holds the archive before
-running the audit and evaluator.
+The rollout created model/station pairs without receiving the untracked OpenAQ
+archive or provider credentials. All outputs are back on the machine holding
+the archive. The remaining WS-6 work is CPU-side: merge the four worker
+manifests, run the integrity audit, and only then hand the pairs to evaluation.
 
 ## WS-7 — Product and interface
 

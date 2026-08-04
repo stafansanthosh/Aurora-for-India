@@ -37,15 +37,21 @@ Report them only if you find the stated fix is wrong or incomplete.
   events, while MAE improved). Diagnosed, documented, kept as a negative
   baseline. **But do challenge the diagnosis if you think it is wrong.**
 - **Registry-version skew**: the two Nov-2025 pilot dates used a 33-station
-  registry, later dates 127. Pooled metrics mix populations. Being regenerated.
+  registry, and three scheduled pilot dates used older registries. The 56
+  scheduled dates have now been regenerated at 159 stations, while the strict
+  loader still excludes the two out-of-schedule November files. Audit that
+  protection rather than reporting the original skew as new.
 - **OpenAQ serves nothing before ~Feb 2025** — verified at sensor level.
 - **Temporal cutoff revised once** 2025-07-01 → 2025-12-01, under a
   pre-registered contingency, disclosed in spec §6 and `src/splits.py`.
-- **Re-pull is mid-flight**; several cities still incomplete.
-- **207 data files were committed on `ws4-dashboard`** (~3M lines of CSV,
-  `.nc`, `.parquet`) because `.gitignore` has `data/openaq/*.csv`, which does
-  not match subdirectories like `data/openaq/_backup_pre_sensorfix/`. Needs
-  fixing before that branch merges. Flagged; propose the cleanest remedy.
+- **The OpenAQ re-pull is complete** at 1,489,534 observations and 159 stations.
+  Do not report the earlier partial state as current.
+- **Raw OpenAQ files remain reachable in private Git history** even though they
+  are not tracked at `HEAD`. Publication is still blocked on licensing and a
+  clean-mirror or reviewed history decision.
+- **The 56-date GPU artifact generation is complete** at 80,136 rows, but the
+  four manifests are not yet merged and the post-rollout audit has not run.
+  Treat the files as unaudited inputs, not final scientific results.
 
 ## 3. Where the real risk is — probe these hard
 

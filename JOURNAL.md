@@ -764,3 +764,32 @@ currently executable: its launcher points at a missing Python 3.11 base and no
 not rerun. Next: stop worker 0, run only bundles 01–03 on three clean temporary
 workers using the updated source/runbook, retrieve 60,102 additional rows, then
 repair local Python and require the audit before scoring or adaptation.
+
+## 2026-08-04 — Full four-slice Aurora rollout returned and verified
+
+Completed slices 01, 02, and 03 concurrently on a RunPod machine with three
+RTX A6000 GPUs, using isolated `/workspace/workers/01`, `/02`, and `/03` trees
+and `CUDA_VISIBLE_DEVICES=0`, `1`, and `2`. Each worker received only its exact
+14-date offline bundle. Before extraction, every outer archive matched its
+documented byte size and SHA-256; after extraction, all 98 inner-file hashes
+and all 14 deep CAMS date checks passed per bundle. Original inputs were
+restored after the deep validator's provenance mutation and rechecked.
+
+Each of the four slices now has 14 dates, 20,034 unique
+date-station-lead rows, 159 stations, a current registry stamp, and zero
+errors. The combined inventory is 56 unique frozen dates and 80,136 rows. The
+14 pair files and distinct manifest from each new worker were copied locally;
+every local artifact matched its remote source by SHA-256. Worker 0's earlier
+14 files and curated manifest remain preserved and verified the same way.
+
+No provider credentials, SSH private key, or OpenAQ observation archive were
+placed on a GPU worker. The GPU phase is complete; further work is local and
+CPU-side. The four manifests remain deliberately separate until
+`scripts/merge_worker_manifests.py` runs. The full data-dependent integrity
+audit has not yet been rerun because the local `.venv` launcher points to a
+missing Python 3.11 base runtime. Therefore no calibration was fitted and no
+metrics were published. The exact RunPod environment passed 84/84 tests.
+
+Next: repair or recreate local Python 3.11, merge manifests 0–3, run
+`python -m src.eval.audit`, and proceed to raw, Component A, and guarded
+calibrator scorecards only if the audit passes.

@@ -5,6 +5,12 @@ AuroraAirPollution at every frozen init date and bring the small forecast-pair
 files back to the machine that holds the untracked OpenAQ archive. Calibration
 and scoring happen there after the integrity audit.
 
+**Observed project run (2026-08-04):** all four slices are complete and local:
+56 dates, 80,136 rows, 159 stations, and zero worker errors. Every returned pair
+and worker manifest matched its remote SHA-256. This document is now a
+reproduction runbook; do not provision another Pod for the current benchmark.
+The remaining work is to merge the four manifests and pass the local audit.
+
 ## You do NOT need an A100
 
 Aurora's official docs (microsoft.github.io/aurora/usage.html) state the memory

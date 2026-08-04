@@ -1,28 +1,38 @@
 # Current session starters
 
-**Updated:** 2026-08-02
+**Updated:** 2026-08-04
 
 The earlier archive, guardrail, reporting, Component A, product-design,
-additional-data, and public-documentation sessions are complete. Do not restart
-them. The scientific blocker is the user-run GPU rollout in
-`scripts/setup_gpu.md`.
+additional-data, public-documentation, and GPU-rollout sessions are complete.
+Do not restart them. The scientific blocker is now local manifest integration
+and the post-rollout audit.
 
 Every new agent must first read `docs/AGENT_BRIEF.md`, `docs/HANDOFF.md`, and
 the relevant section of `docs/WORKSTREAMS.md`. The owner requested work on
 `master` for this phase; do not create or switch branches.
 
-## GPU rollout — user/cloud action
+## Post-rollout audit and baseline scoring — next local session
 
-This is not a local agent task. The local atmospheric and forecast inputs are
-complete and deep validated. Build the four bundles as documented, provision
-four temporary 48 GB GPU workers, and run the bundle-provided slice per worker:
+The GPU phase is complete: 56 dates, 80,136 rows, 159 stations, four validated
+worker manifests, zero worker errors, and checksum-matched transfers. Do not
+provision another Pod or rerun any slice. Use this assignment:
 
-```bash
-python -m src.pipeline.orchestrate --dates-file slice_0N --device cuda --offline-inputs
+```text
+Read docs/AGENT_BRIEF.md, docs/HANDOFF.md, docs/BENCHMARK_SPEC.md, and
+docs/WORKSTREAMS.md. Work on master as requested by the owner.
+
+First inspect and repair or recreate the local Python 3.11 environment without
+deleting data. Merge manifest_worker_0.jsonl through manifest_worker_3.jsonl
+with scripts/merge_worker_manifests.py, then run python -m src.eval.audit.
+Stop if the audit fails and diagnose it without fitting models or publishing
+metrics. If it passes, run the raw benchmark, Component A benchmark, guarded
+calibrator, and calibrated benchmark in that order. Report per-city, pooled,
+L1, and L2 results with Very Poor+ event counts and POD/FAR/CSI. Preserve the
+two out-of-schedule pilot files as rejected historical artifacts.
+
+Before stopping, update docs/HANDOFF.md and JOURNAL.md and commit only reviewed
+files. Do not push or change repository visibility without owner approval.
 ```
-
-Replace `N` with `0`, `1`, `2`, or `3`. Bring all pair files back before
-scoring. Exact setup and verification are in `scripts/setup_gpu.md`.
 
 ## Actual CAMS forecast baseline — completed
 
