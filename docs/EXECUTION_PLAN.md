@@ -14,7 +14,7 @@ illustrative design, retrospective evidence, and prospective live forecasts.
 | Nine-city observation archive | Complete |
 | 159-station registry | Complete |
 | 56-date schedule | Complete |
-| Calibrator guardrails | Complete; 84-test suite passes on RunPod |
+| Calibrator guardrails | Complete; 91-test suite passes locally (84 tests passed on RunPod at that time) |
 | Component A | Scored; pooled gains, one L1 lead-specific POD regression |
 | Reporting code | Complete |
 | Product/live-feed specification | Complete |

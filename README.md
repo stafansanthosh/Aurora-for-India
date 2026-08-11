@@ -88,7 +88,7 @@ evaluation path.
 
 ## Verified repository state
 
-As of the 4 August 2026 status snapshot:
+As of the 11 August 2026 status snapshot:
 
 | Item | Verified state |
 |---|---|
@@ -104,7 +104,8 @@ As of the 4 August 2026 status snapshot:
 | Integrity audit | 39 checks: 36 pass, 2 expected legacy warnings, 1 auxiliary size-bin failure |
 | Test suite | 91/91 passing locally |
 | Current-registry forecast pairs | **56 of 56 dates; 80,136 rows** |
-| PM2.5-only retrospective metrics | Available as hourly-threshold sensitivity; not the 24-hour headline |
+| Forward-24-hour headline metrics | Generated (`src/eval/rolling24.py`); not yet frozen, versioned, or wired into `src/report/` |
+| Hourly-threshold sensitivity metrics | Generated; reported separately and never pooled with the 24-hour headline |
 
 Two additional files under `results/pairs/` are legacy pilot-only artifacts
 for dates outside the frozen schedule. The current 56 scheduled files replaced
@@ -151,6 +152,9 @@ counts.
 - station-grid matching and forecast-pair generation;
 - persistence, climatology, CAMS-start-held-constant, and raw Aurora baselines;
 - concentration, category, and Very Poor+ event metrics;
+- a separate forward-24-hour headline evaluator
+  ([`src/eval/rolling24.py`](src/eval/rolling24.py)) whose windows are never
+  pooled with the hourly-threshold sensitivity path;
 - chronological and spatial holdouts;
 - a 39-check integrity audit;
 - calibrator no-harm guardrails and regime-shift tests;
@@ -169,7 +173,9 @@ hide.
 
 - a fully clean audit across auxiliary PM1/PM10 outputs;
 - a certified public correction (Component A has one lead-specific POD regression);
-- the 24-hour/rolling-mean headline results table;
+- a frozen, versioned 24-hour headline table connected to the reporting
+  package (the table is generated, but `src/report/` still reads the hourly
+  metrics file);
 - the latest-cycle live runner and immutable forecast ledger;
 - a deployed public experimental feed;
 - year-round prospective evidence, including an untouched post-monsoon test;
@@ -181,16 +187,14 @@ forecast service.
 
 ## Roadmap to a public experimental feed
 
-1. Implement the 24-hour/rolling-mean headline evaluation separately from the
-   current hourly-threshold sensitivity analysis.
+1. Freeze and version the generated per-city, per-window, pooled, L1, and L2
+   scorecards, and connect the 24-hour table to the reporting package.
 2. Resolve Component A's +84-hour L1 POD regression or retain raw Aurora.
-3. Freeze versioned per-city, per-lead, L1, and L2 scorecards.
-4. Score the real CAMS forecasts already attached by the integrated rollout.
-5. Build a latest-cycle runner that stores immutable, versioned forecasts.
-6. Run privately in shadow mode to measure failures and data latency.
-7. Publish an interactive nine-city feed with raw and corrected forecasts,
+3. Build a latest-cycle runner that stores immutable, versioned forecasts.
+4. Run privately in shadow mode to measure failures and data latency.
+5. Publish an interactive nine-city feed with raw and corrected forecasts,
    data-freshness indicators, and a rolling public scorecard.
-8. Expand carefully while accumulating prospective seasonal evidence.
+6. Expand carefully while accumulating prospective seasonal evidence.
 
 The intended product is transparent: visitors should be able to see what was
 predicted, which model version produced it, which observations later occurred,

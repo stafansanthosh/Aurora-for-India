@@ -1,9 +1,12 @@
 # Handoff: IndiaAQBench current state
 
-**Updated:** 2026-08-04
+**Updated:** 2026-08-11
 **Branch:** `master`
 **Scientific state:** 24-hour and hourly scorecards complete; one audit failure remains
 **Product status:** illustrative preview only; no live feed
+**Documentation state:** README, `PRODUCT_SPEC`, `PROJECT_STATUS`,
+`PUBLICATION_READINESS`, `EXECUTION_PLAN` and `WORKSTREAMS` reconciled with the
+completed rollout on 2026-08-11. No scientific result changed.
 
 ## Objective and claim boundary
 
@@ -26,8 +29,8 @@ headline and not evidence of year-round operational utility.
 | Aurora rollout | 56 dates, 80,136 rows, registry `159:4c0b55ad238f` |
 | Canonical manifest | 56 records, 56 unique dates, zero errors, zero duplicates |
 | Legacy pairs | 2025-11-15 and 2025-11-20 remain on disk and are strictly excluded |
-| Tests | 91/91 pass locally |
-| Audit | 39 checks: 36 pass, 2 expected legacy warnings, 1 size-bin failure |
+| Tests | 91/91 pass locally (re-verified 2026-08-11) |
+| Audit | 39 checks: 36 pass, 2 expected legacy warnings, 1 size-bin failure (re-verified 2026-08-11) |
 | Raw/Component A scorecards | 24-hour headline and hourly sensitivity generated separately |
 | Accepted calibrator | Absent; full-registry fit failed the POD no-harm gate |
 | Public live forecast | Absent |
@@ -70,7 +73,11 @@ The guardrail refused to save an accepted model. The prior binary was renamed
 ## Exact next scientific action
 
 1. Freeze/version the generated per-city, per-window, pooled train-city, L1,
-   and L2 table and connect it to the reporting package.
+   and L2 table and connect it to the reporting package. Concretely:
+   `src/eval/rolling24.py` writes `results/metrics/indiaaqbench_24h.csv` (and
+   `indiaaqbench_24h_anchor.csv`), but `src/report/scorecard.py` still defaults
+   to the hourly `results/metrics/indiaaqbench.csv`, so the reporting package
+   does not yet render the 24-hour headline.
 2. Keep raw Aurora as the public fallback; do not tune Component A on observed
    test outcomes. Any new policy needs a newly predeclared validation design.
 3. Start `docs/FINETUNE_DESIGN.md` only after the cheap-baseline findings are

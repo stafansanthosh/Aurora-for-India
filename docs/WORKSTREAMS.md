@@ -1,6 +1,6 @@
 # IndiaAQBench workstreams
 
-**Updated:** 2026-08-04
+**Updated:** 2026-08-11
 **Integration policy for this phase:** the owner requested work directly on
 `master`. Do not create or switch branches unless that instruction changes.
 
@@ -81,7 +81,7 @@ zero-shot city transfer. Its implementation exists, but acceptance requires:
 The v1 direct-target calibrator remains a documented negative baseline. Its
 save path reports event metrics beside MAE and refuses a model that reduces
 Very Poor+ POD relative to raw Aurora. Regime-shift and seasonal-transfer tests
-exist. The complete 86-test suite passes locally. The full-registry fit again
+exist. The complete 91-test suite passes locally. The full-registry fit again
 improved MAE while sharply reducing L1 and L2 POD, so the save guard rejected
 it. No accepted calibrator artifact exists.
 

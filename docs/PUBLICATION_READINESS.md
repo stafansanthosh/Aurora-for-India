@@ -1,6 +1,6 @@
 # Publication readiness
 
-**Snapshot:** 2026-08-04
+**Snapshot:** 2026-08-11
 **Decision:** keep the repository private until every blocking item below is
 resolved.
 
@@ -32,6 +32,9 @@ current scientific state is tracked in
 - An owner-only Sites deployment of the illustrative UI succeeded.
 - Local browser interaction checks passed, and `npm audit --omit=dev` reports
   zero known production vulnerabilities on the patched lockfile.
+- Re-verified locally on 2026-08-11: `python -m pytest -q` reports 91 passed,
+  and `python -m src.eval.audit` reports 39 checks with 36 passed, 2 expected
+  legacy warnings, and the 1 unresolved PM-bin ordering failure below.
 
 ## Publication blockers
 
@@ -88,7 +91,8 @@ service until the scientific and operational gates in
 3. Commit only reviewed source and documentation; exclude local configuration.
 4. Push while the repository remains private.
 5. Require the Python and web CI jobs to pass. **Passed on `48135cc`.**
-6. Complete the 24-hour headline table and disclose the remaining audit failure.
+6. Freeze and version the already-generated 24-hour headline table, connect it
+   to the reporting package, and disclose the remaining audit failure.
 7. Resolve the software licence.
 8. Resolve the historical raw-data choice: rights confirmation, history
    rewrite, or clean public mirror.

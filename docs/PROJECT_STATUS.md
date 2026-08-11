@@ -1,6 +1,6 @@
 # IndiaAQBench project status
 
-**Snapshot date:** 2026-08-04
+**Snapshot date:** 2026-08-11
 **Status:** active research; first retrospective scorecards complete
 **Public-use level:** code and benchmark design only—not a validated forecast
 service
@@ -99,6 +99,9 @@ The temporal cutoff was revised once on 2026-07-24:
 - Implemented fail-closed offline GPU input checks and deterministic four-way
   worker bundle packaging; no provider credentials are placed on GPU workers.
 - Implemented PM2.5 concentration, AQI category, and Very Poor+ event metrics.
+- Implemented the separate forward-24-hour headline evaluation in
+  [`src/eval/rolling24.py`](../src/eval/rolling24.py) and generated both the
+  24-hour headline and the hourly-threshold sensitivity scorecards.
 - Centralized all temporal and spatial split constants in
   [`src/splits.py`](../src/splits.py).
 - Implemented registry-aware rollout resumption and strict pair-file loading.
@@ -106,7 +109,7 @@ The temporal cutoff was revised once on 2026-07-24:
 - Added calibrator guardrails that report event skill beside MAE and refuse to
   save a calibration model that harms Very Poor+ detection.
 - Added regime-shift, seasonal-transfer, anchoring, leakage, event-count,
-  acquisition, offline-input, and packaging tests; all 83 tests pass locally.
+  acquisition, offline-input, and packaging tests; all 91 tests pass locally.
 - Implemented the reporting package under [`src/report/`](../src/report/).
 - Preserved the first failed calibrator as a documented negative baseline.
 - Implemented a public-interface preview with illustrative data and explicit
@@ -158,13 +161,13 @@ benchmark results.
 
 The critical scientific sequence is:
 
-1. Implement the separate 24-hour/rolling-mean category evaluation.
-2. Freeze per-city, per-lead, pooled, L1, and L2 result tables.
-3. Resolve Component A's lead-specific event regression or retain raw Aurora.
-4. Preserve the rejected calibrator result and do not use its stale binary.
-7. Compare Aurora against the actual CAMS forecasts already attached by the
-   integrated rollout.
-8. Publish versioned tables and figures with the cutoff revision disclosed.
+1. Freeze per-city, per-window, pooled, L1, and L2 result tables, and connect
+   the generated 24-hour table to the reporting package, which still defaults
+   to the hourly metrics file.
+2. Resolve Component A's lead-specific event regression or retain raw Aurora.
+3. Preserve the rejected calibrator result and do not use its stale binary.
+4. Publish versioned tables and figures with the cutoff revision and the
+   remaining PM-bin audit failure both disclosed.
 
 The public-product sequence can run beside it:
 

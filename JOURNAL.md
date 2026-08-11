@@ -943,3 +943,45 @@ predeclared design; these test outcomes must not be used to tune Component A.
 Next: freeze deterministic report artifacts and connect them to the reporting
 package, then proceed with the immutable live-runner path and a fine-tuning
 design that must clear the raw/Component A event-skill bar.
+
+## 2026-08-11 — Documentation reconciliation after the completed rollout
+
+No code, metric, or result changed in this session. The purpose was to remove
+stale current-state claims that contradicted the verified repository.
+
+Re-verified first, before editing anything:
+
+- `python -m pytest -q` → 91 passed;
+- `python -m src.eval.audit` → 39 checks, 36 passed, 2 expected legacy
+  warnings, 1 FAILED (`pairs: pm1 <= pm2p5 <= pm10`);
+- `results/metrics/indiaaqbench_24h.csv` and `indiaaqbench_24h_anchor.csv`
+  exist; `results/models/` contains only `rejected_pilot_calibrator.joblib`.
+
+Four documents asserted work that is in fact done:
+
+- `README.md` claimed only hourly sensitivity metrics existed and listed
+  "implement the 24-hour evaluation" as roadmap step 1;
+- `docs/PRODUCT_SPEC.md` claimed no complete 56-date current-registry rollout
+  existed and that neither CAMS method had a complete 56-date score;
+- `docs/PROJECT_STATUS.md` listed implementing the 24-hour evaluation as the
+  next scientific step, and still said 83 tests;
+- `docs/PUBLICATION_READINESS.md` step 6 said "complete the 24-hour table".
+
+Each was rewritten to the accurate remaining task, which is narrower: the
+24-hour table is **generated but not frozen, versioned, or connected**.
+`src/report/scorecard.py` still defaults to the hourly
+`results/metrics/indiaaqbench.csv`, so the reporting package does not render
+the 24-hour headline. That gap is now stated explicitly in `docs/HANDOFF.md`
+rather than being described as unimplemented evaluation code.
+
+Also corrected two stale test counts that were current-state claims:
+`docs/WORKSTREAMS.md` (86 → 91) and `docs/EXECUTION_PLAN.md` (84 → 91, while
+preserving the historical RunPod figure).
+
+The PM-bin audit failure was deliberately left visible and was not waived,
+downgraded, or reworded in any document. No scientific result, event metric, or
+claim boundary was altered, and Component A remains uncertified with raw Aurora
+as the public fallback.
+
+Next: unchanged from the previous entry — freeze deterministic report artifacts
+and connect them to the reporting package.

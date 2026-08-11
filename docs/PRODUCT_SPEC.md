@@ -21,16 +21,19 @@ What exists in the repository:
 - The official Indian PM2.5 category thresholds refer to a 24-hour averaging
   period. Applying those thresholds to instantaneous values is a sensitivity
   analysis, not the public headline.
-- No live scheduler, public endpoint, immutable forecast ledger, validated
-  forecast feed, or complete 56-date current-registry rollout exists. The
-  actual lead-dependent CAMS baseline code is implemented and integrated, and
-  an owner-only illustrative website is deployed.
+- The 56-date current-registry rollout is complete (80,136 rows, 159 stations,
+  clean canonical manifest), and both the forward-24-hour headline and the
+  hourly-threshold sensitivity scorecards have been generated.
+- No live scheduler, public endpoint, immutable forecast ledger, or validated
+  forecast feed exists. The actual lead-dependent CAMS baseline code is
+  implemented, integrated, and scored, and an owner-only illustrative website
+  is deployed.
 
 Assumptions this product contract makes:
 
 - The separate operational `cams_forecast` method is implemented. The
-  lead-zero fixed-field evaluator method is named `cams_lead0_fixed`; neither
-  has a complete 56-date score until the pending rollout finishes.
+  lead-zero fixed-field evaluator method is named `cams_lead0_fixed`. Both now
+  carry complete 56-date scores; see `docs/PRELIMINARY_RESULTS.md`.
 - The first live release covers the existing nine-city registry. Expansion is a
   later, separately validated step.
 - The live pipeline will be generalized from one 12:00 UTC initialization per
@@ -466,7 +469,6 @@ the full text. The full text must not be hidden behind acceptance.
 
 ### Later
 
-- Complete 56-date CAMS forecast data and scorecards if not ready for MVP.
 - Additional cities in monitored/intermittent/unmonitored tiers.
 - Fire, dust, satellite, boundary-layer, and wind context.
 - Probabilistic Very Poor+ forecasts and reliability diagrams.
