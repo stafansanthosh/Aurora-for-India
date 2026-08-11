@@ -985,3 +985,60 @@ as the public fallback.
 
 Next: unchanged from the previous entry — freeze deterministic report artifacts
 and connect them to the reporting package.
+
+## 2026-08-11 — Diagnosis: why event skill is low, and what the real constraint is
+
+Added `src/eval/diagnose_events.py` and `docs/EPISODE_SKILL_DIAGNOSIS.md`. All
+method-performance numbers are train split, train_pool tier, out-of-fold by
+init date. No test row was scored, so the held-out evidence is intact.
+
+**The calibrator's documented failure explanation was incomplete.** "Trees
+cannot extrapolate" is true but invites the wrong fix. The binding reason is
+the loss, not the model family: a regressor minimizing MAE/MSE predicts near
+the conditional mean, which for a heavy-tailed target sits below the upper
+tail. So the MAE-optimal prediction falls below 121 even when exceedance is
+likely. Improving MAE and destroying POD are the same act. Any concentration
+regressor reproduces this, so no further concentration-regression calibrator
+should be attempted.
+
+Sweeping the decision threshold bounds what re-thresholding alone can win:
+raw Aurora CSI 0.220 at 121 -> 0.284 at its best threshold; Component A 0.277
+-> 0.355; persistence 0.251 -> 0.376. That best-CSI column is the ceiling for
+any concentration post-processor.
+
+**Aurora has a hard dynamic-range cap.** Across 20,008 train windows its
+maximum is 196.1 ug/m3 while observations reach 571.8. It emits zero values
+>=250 anywhere, against 281 observed in Delhi. In Lucknow and Mumbai it never
+reaches 121 at all. POD in those categories is capped at zero by construction.
+
+**The discrimination is largely between-city.** Pooled AUC 0.835 falls to 0.710
+within-station. Per city: Delhi 0.767, Patna 0.640, Lucknow 0.722, Mumbai 0.422
+(worse than chance). Ablation is worse news still: persistence + month + lead
+gives AUC 0.908 / best CSI 0.480, and adding Aurora moves AUC to 0.919 while
+lowering CSI to 0.469. On this benchmark Aurora does not clearly beat
+yesterday's reading plus the month.
+
+**The benchmark cannot answer the project's question.** 89.1% of all Very Poor+
+windows are Delhi. The L2 held-out-city result is 92 Kolkata + 2 Kanpur + 0
+Varanasi, so it is a Kolkata finding, not a Gangetic-city finding. Patna has 5
+test events, Kanpur 2. Varanasi has zero events in 1,516 windows.
+
+**Open data question, not a proven bug:** Varanasi's archive mean is 29.9
+ug/m3, below Bangalore's 33.3, with a 4.3% exact-zero rate (~5x any other
+city). The four stations are the genuine UPPCB sites at correct coordinates and
+the hourly series is a coherent diurnal curve, so this is not the earlier class
+of geo-matching failure. It must be settled against an independent CPCB source
+before any Varanasi claim. Either way the benchmark has no Varanasi episodes.
+
+**Direction that survives the diagnosis:** predict P(24h mean >= 121) directly
+and publish an operating point. Out-of-fold ceiling estimate: AUC 0.927, best
+CSI 0.476, versus raw Aurora 0.284 and Component A 0.355, with a usable
+operating curve (POD 0.70 at FAR 0.40; POD 0.80 at FAR 0.49). This is a ceiling
+estimate justifying a predeclared design, NOT a validated result, and it is
+Delhi-dominated: per city it is Patna 0.159 and Lucknow 0.065.
+
+Next: fix the evaluation before the model — re-freeze dates to oversample
+Gangetic winter, settle the Varanasi level, and make per-target-city event
+skill the headline. Fine-tuning remains the wrong next step; the limiting
+factor is missing emissions/source information and station-scale
+representativeness, which fine-tuning on 32 dates does not supply.

@@ -70,6 +70,33 @@ The guardrail refused to save an accepted model. The prior binary was renamed
 `results/models/rejected_pilot_calibrator.joblib`; the accepted default path is
 `results/models/accepted_pooled_calibrator.joblib` and does not exist.
 
+## Diagnosis of the event-skill ceiling (2026-08-11)
+
+`docs/EPISODE_SKILL_DIAGNOSIS.md` (reproduce with
+`python -m src.eval.diagnose_events`) establishes, on train-split data only:
+
+- the calibrator failed because **MAE-optimal regression and threshold
+  exceedance are mathematically opposed**, not because of the model family — so
+  no further concentration-regression calibrator should be attempted;
+- **re-thresholding alone is capped**: raw Aurora best CSI 0.284, Component A
+  0.355, persistence 0.376;
+- **Aurora's dynamic range is capped** at 196.1 µg/m³ against observations
+  reaching 571.8, emitting zero values ≥250 anywhere;
+- Aurora's discrimination is **largely between-city** (pooled AUC 0.835 →
+  within-station 0.710; Patna 0.640, Mumbai 0.422) and **does not clearly beat
+  persistence** in ablation;
+- **89.1% of all Very Poor+ windows are Delhi**; the L2 result is 92 Kolkata +
+  2 Kanpur + 0 Varanasi; **Varanasi has zero events in 1,516 windows**;
+- Varanasi's archive mean (29.9 µg/m³, below Bangalore's 33.3, 4.3% exact
+  zeros) is an **open data question** requiring an independent CPCB cross-check
+  before any Varanasi claim. The stations and coordinates are correct, so this
+  is not the earlier geo-matching failure.
+
+The direction that survives is **predicting P(exceedance) and publishing an
+operating point**, not predicting µg/m³ and thresholding. The ceiling estimate
+(AUC 0.927, best CSI 0.476) is train-only, Delhi-dominated, and **not a
+validated result**.
+
 ## Exact next scientific action
 
 1. Freeze/version the generated per-city, per-window, pooled train-city, L1,
