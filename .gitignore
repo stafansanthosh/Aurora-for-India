@@ -40,3 +40,12 @@ results/*.nc
 
 # Resumable GFS forecast-BLH acquisition cache (assembled samples/provenance are tracked)
 data/gfs_blh/by_init/
+
+# ERA5 boundary-layer + SILAM incumbent capture (derived/bulk, NOT version-controlled).
+# 348 MB of these was committed in e0a3487 by a `git add -A`; untracked in the
+# follow-up commit. The blobs remain reachable in history -- folded into the
+# existing clean-mirror / history-rewrite decision in PUBLICATION_READINESS.md.
+data/era5_blh/*.nc
+data/era5_blh/*.csv
+data/silam/**/*.csv
+data/silam/**/*.nc
