@@ -13,8 +13,10 @@ cannot drift apart.
    A model with great MAE that misses pollution episodes is worthless here. A
    calibrator that improved MAE while catching 0 of 99 events has already been
    built and rejected.
-2. **Delhi is not the target.** It has AQEWS (PI 87). The target is the ~465
-   Indian cities with no forecast system (Patna, Varanasi, Kanpur, Lucknow…).
+2. **Do not reinstate the falsified “unserved cities” premise.** Patna,
+   Varanasi, Kanpur, and Lucknow have national/regional forecast products.
+   Delhi is a diagnostic environment and supplies most benchmark events; read
+   `docs/TARGET_REEVALUATION.md` before making a target claim.
 3. **Split constants are defined only in `src/splits.py`.** Never redefine the
    cutoff, held-out cities, or L1 hash anywhere else.
 4. **Run `python -m src.eval.audit` before trusting any results table.**
@@ -27,6 +29,8 @@ cannot drift apart.
 - No A100 needed (0.4° inference fits a 48 GB spot GPU).
 - OpenAQ serves no data before ~Feb 2025; backfill is impossible.
 - Temporal cutoff is 2025-12-01 (revised once, disclosed — see the brief).
+- Current direction is the train-only Option B ERA5 boundary-layer kill-test;
+  no Aurora 1.5 GPU rollout before its pre-declared gate is evaluated.
 
 Environment: Windows, `.venv/Scripts/python.exe`. Credentials in `.env` and
 `~/.cdsapirc`.

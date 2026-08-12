@@ -2,21 +2,25 @@
 
 IndiaAQBench asks a practical question:
 
-> Can a global atmospheric foundation model, public observations, and modest
-> compute produce useful multi-day PM2.5 forecasts for Indian cities that lack
-> a strong local forecasting system?
+> Can a global atmospheric forecast plus public observations and modest
+> compute detect dangerous PM2.5 episodes better than the global forecast
+> alone—and when does that low-cost approach stop working?
 
 The project combines [Microsoft Aurora](https://github.com/microsoft/aurora),
 CAMS atmospheric data, and OpenAQ station observations. It evaluates forecasts
-from **+12 to +96 hours** and tests inexpensive local adaptation before
-considering costly fine-tuning.
+from **+12 to +96 hours** and tests inexpensive local and meteorological
+adaptation before considering any costly model change.
 
 **Current status:** the frozen 56-date Aurora rollout is complete and all
 **80,136 expected forecast-pair rows** are back on the local machine, and the
-canonical manifest is clean at 56 dates. The first PM2.5-only scorecards now
-exist. One audit check remains failed for inconsistent auxiliary PM1/PM10 size
-ordering, so this repository does **not** claim fully clean model output or
-operational readiness. See the
+canonical manifest is clean at 56 dates. The retrospective scorecards and an
+event-skill diagnosis now exist. That diagnosis showed that 89.1% of Very Poor+
+windows come from Delhi and that the original “unserved Patna/Varanasi” framing
+was wrong. The current Option B research question is whether boundary-layer
+meteorology adds enough train-only exceedance skill to justify another model
+rollout. One audit check remains failed for inconsistent auxiliary PM1/PM10
+size ordering, so this repository does **not** claim fully clean model output,
+transferable target-city skill, or operational readiness. See the
 [live project scoreboard](docs/PROJECT_STATUS.md).
 
 > **Research-use disclaimer:** this is an experimental research system, not an
@@ -25,11 +29,18 @@ operational readiness. See the
 
 ## Why this exists
 
-India has sophisticated forecasting efforts in major metros, but comparable
-public infrastructure is not evenly available across the country. The intended
-beneficiaries of this research are under-served cities such as Patna, Varanasi,
-Kanpur, and Lucknow—not Delhi, which is included because its dense monitoring
-network makes it a useful diagnostic environment.
+The project originally assumed Patna, Varanasi, Kanpur, and Lucknow lacked a
+public multi-day forecast. That premise was falsified: the 400 m AQEWS figure
+describes the Delhi nest, while national/regional AQEWS, SILAM, and bulletin
+products cover a much broader Indian domain. Direct portal coverage must still
+be confirmed before making precise city-level incumbent claims.
+
+The useful question that survives is narrower and more defensible. Global-tier
+CAMS performed poorly on episode detection in this benchmark, while a trivial
+local anchor substantially improved it. IndiaAQBench now tests when cheap local
+and boundary-layer adaptation can turn that global tier into a useful warning
+input. Delhi remains a data-rich development environment, not evidence of
+transfer to other cities.
 
 The research thesis is deliberately constrained:
 
@@ -38,7 +49,8 @@ The research thesis is deliberately constrained:
 - test whether the correction transfers to stations and cities excluded from
   fitting;
 - publish failures, uncertainty, and compute cost alongside successes;
-- turn the benchmark into a transparent experimental forecast feed.
+- publish an operating point and every miss before considering a transparent
+  experimental forecast feed.
 
 The goal is not to claim that a low-cost system replaces high-resolution
 regional chemistry models. The goal is to measure how far a reproducible,
@@ -106,6 +118,8 @@ As of the 11 August 2026 status snapshot:
 | Current-registry forecast pairs | **56 of 56 dates; 80,136 rows** |
 | Forward-24-hour headline metrics | Generated (`src/eval/rolling24.py`); not yet frozen, versioned, or wired into `src/report/` |
 | Hourly-threshold sensitivity metrics | Generated; reported separately and never pooled with the 24-hour headline |
+| Event-skill diagnosis | Complete on train-only/out-of-fold data; pooled evidence is Delhi-dominated |
+| Current experiment | Option B perfect-prognosis ERA5 boundary-layer kill-test; no Aurora 1.5 GPU run authorized |
 
 Two additional files under `results/pairs/` are legacy pilot-only artifacts
 for dates outside the frozen schedule. The current 56 scheduled files replaced
@@ -140,9 +154,11 @@ The benchmark also uses a chronological split at 2025-12-01: fitting uses only
 earlier data and testing uses later data. Split constants live only in
 [`src/splits.py`](src/splits.py).
 
-Delhi is never intended to carry the headline conclusion. Every credible result
-table must show per-city performance and the L1/L2 transfer results, with event
-counts.
+Delhi is never transferable headline evidence. It supplies 89.1% of Very Poor+
+windows; the current L2 event result is overwhelmingly Kolkata, and Varanasi
+has zero benchmark events. Every credible result table must therefore show
+per-city performance and exact event counts rather than relying on pooled L1/L2
+labels.
 
 ## What has been built
 
@@ -161,6 +177,10 @@ counts.
 - Component A, a chronological trailing local-observation anchor, with
   leakage and fallback tests;
 - per-city/per-lead reporting and plotting code;
+- a train-only diagnosis showing the dynamic-range, between-city, event-scarcity,
+  and concentration-loss limits of the current approach;
+- a pre-declared Option B kill-test contract using perfect-prognosis ERA5
+  boundary-layer fields before any Aurora 1.5 GPU spend;
 - an interactive public-interface preview using explicitly illustrative data.
 - the complete lead-dependent CAMS operational baseline for all 56 dates,
   retained with raw files, checksums, requests, and extraction provenance.
@@ -180,6 +200,8 @@ hide.
 - a deployed public experimental feed;
 - year-round prospective evidence, including an untouched post-monsoon test;
 - an Aurora fine-tune justified against the cheap-adaptation baseline.
+- a verified city-level incumbent comparison and transferable non-Delhi event
+  evidence.
 
 Until those milestones exist, this repository should be presented as a
 benchmark and system under active development—not as a validated public
@@ -187,14 +209,17 @@ forecast service.
 
 ## Roadmap to a public experimental feed
 
-1. Freeze and version the generated per-city, per-window, pooled, L1, and L2
-   scorecards, and connect the 24-hour table to the reporting package.
-2. Resolve Component A's +84-hour L1 POD regression or retain raw Aurora.
-3. Build a latest-cycle runner that stores immutable, versioned forecasts.
-4. Run privately in shadow mode to measure failures and data latency.
-5. Publish an interactive nine-city feed with raw and corrected forecasts,
-   data-freshness indicators, and a rolling public scorecard.
-6. Expand carefully while accumulating prospective seasonal evidence.
+1. Run the pre-declared train-only Option B ERA5 kill-test and report the
+   perfect-prognosis result per city.
+2. Stop without GPU spend if the gate says no headroom; otherwise verify the
+   Aurora 1.5 checkpoint and design a forecast-time experiment.
+3. Freeze and version the retrospective scorecards and connect the 24-hour
+   table to the reporting package.
+4. Resolve the Varanasi observation anomaly and verify incumbent coverage
+   before making city-specific product claims.
+5. Build an immutable latest-cycle runner and run it privately in shadow mode.
+6. Publish only after the target, operating point, data freshness, and rolling
+   verification are supported by prospective evidence.
 
 The intended product is transparent: visitors should be able to see what was
 predicted, which model version produced it, which observations later occurred,
@@ -205,6 +230,9 @@ and where the system failed.
 | Start here | Purpose |
 |---|---|
 | [Project status](docs/PROJECT_STATUS.md) | Plain-language scoreboard and immediate next steps |
+| [Option B working brief](docs/CODEX_BRIEF_OPTION_B.md) | Pre-declared boundary-layer kill-test and decision rule |
+| [Episode-skill diagnosis](docs/EPISODE_SKILL_DIAGNOSIS.md) | Why the first calibrator and pooled benchmark are insufficient |
+| [Target re-evaluation](docs/TARGET_REEVALUATION.md) | Why the original “unserved cities” framing was retired |
 | [Benchmark specification](docs/BENCHMARK_SPEC.md) | Task, metrics, baselines, cities, and split design |
 | [Canonical agent brief](docs/AGENT_BRIEF.md) | Research decisions and non-negotiable constraints |
 | [Execution plan](docs/EXECUTION_PLAN.md) | Dependencies, risks, and research gates |

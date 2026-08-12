@@ -16,8 +16,9 @@ and this file cannot drift apart.
    MAE.** A calibrator that improved MAE while catching 0 of 99 pollution events
    has already been built and rejected. Do not propose MAE-minimizing
    post-processing.
-2. **Delhi is not the target** (it has AQEWS, PI 87). The target is the ~465
-   Indian cities with no forecast system.
+2. **Do not reinstate the falsified “unserved cities” premise.** Patna,
+   Varanasi, Kanpur, and Lucknow have national/regional forecast products;
+   Delhi is a diagnostic environment. Read `docs/TARGET_REEVALUATION.md`.
 3. **Split constants are defined only in `src/splits.py`** — never redefine the
    temporal cutoff, held-out cities, or the L1 station hash elsewhere.
 4. **Run `python -m src.eval.audit` before trusting any results table.**

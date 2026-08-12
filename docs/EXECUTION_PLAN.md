@@ -1,6 +1,6 @@
 # IndiaAQBench execution plan
 
-**Updated:** 2026-08-04
+**Updated:** 2026-08-12
 
 The goal is a publicly understandable experimental forecast feed backed by a
 credible benchmark. The product can become useful before year-round scientific
@@ -26,14 +26,20 @@ illustrative design, retrospective evidence, and prospective live forecasts.
 | Aurora CAMS analysis inputs | Complete: 56 dates, 12.397 GiB, deep validated |
 | Live runner/ledger | **Absent** |
 | Public repository | **Blocked by licence/history/checks** |
+| Event-skill diagnosis | Complete; train-only/out-of-fold, pooled result is Delhi-dominated |
+| Target re-evaluation | Complete; “Patna/Varanasi are unserved” premise retired |
+| Option B | Kill-test **passed**: dAUC +0.046, dCSI +0.206; Patna +0.183/+0.296 |
+| SILAM incumbent archive | Prospective rolling capture in progress |
 
 ## 2. Scientific critical path
 
 ```text
-freeze/version headline scorecards
-  -> retain raw Aurora fallback
-  -> live shadow runner
-  -> fine-tuning decision
+Option B perfect-prognosis kill-test PASSED
+  -> quantify forecast-vs-analysis BLH degradation (no GPU)
+  -> verify Aurora 1.5 exposes BLH; check free NWP BLH first
+  -> freeze/version retrospective scorecards
+  -> verify incumbent and target-city evidence
+  -> private live shadow runner
 ```
 
 The four-worker Aurora rollout is complete. Each isolated 14-date slice
@@ -41,7 +47,8 @@ produced 20,034 rows with 159 stations and zero errors; the combined local
 inventory is 56 dates and 80,136 rows. All transferred pair files and worker
 manifests matched the remote SHA-256 hashes. No provider credentials or OpenAQ
 archive were placed on the workers. No more GPU compute is required for this
-retrospective pass.
+retrospective pass. No Aurora 1.5 rollout is justified until the train-only ERA5
+ceiling test passes its pre-declared event-skill gate.
 
 For reproduction, use one distinct slice on each configured worker:
 
@@ -88,13 +95,19 @@ year-round reliability claim or an official health service.
 
 ## 4. Additional-data path
 
-The first addition is the actual lead-dependent CAMS forecast:
+The actual lead-dependent CAMS forecast addition is complete and scored. The
+active data work is now deliberately bounded:
 
-1. Retrieve CAMS PM2.5 at +12 through +96 hours from the same initialization.
-2. Store it separately from Aurora's lead-zero CAMS inputs.
-3. Sample it at the same stations and match it to the same observations.
-4. Label the existing comparator “CAMS starting field held constant.”
-5. Report whether Aurora adds skill over the forecast CAMS actually issued.
+1. Complete and validate the train-only ERA5 boundary-layer acquisition used
+   only for the perfect-prognosis Option B ceiling test.
+2. Aggregate BLH, ventilation, and dew-point depression over exactly the same
+   forward-24-hour windows as the target.
+3. Preserve the test split; use GroupKFold by initialization date and report
+   results per city.
+4. Continue prospective SILAM capture while its rolling public cycles remain
+   online, then design an initialization-aligned comparison.
+5. Resolve the Varanasi level anomaly against an independent CPCB/UPPCB source
+   before making any Varanasi claim.
 
 A tiny official OGD India CPCB live-feed pilot for Patna and Varanasi is
 implemented. It writes immutable private snapshots, preserves provider fields,
@@ -124,10 +137,16 @@ The main technical post should wait
 for a versioned 159-station scorecard. The product launch should wait for
 shadow-mode evidence.
 
-## 6. Fine-tuning decision
+## 6. Model-spend decision
 
-Do not buy substantially more training compute until the cheap ladder is
-scored. A fine-tuning design must define:
+Do not buy additional training or rollout compute until the Option B kill-test
+is scored. Proceed only if adding perfect-prognosis ERA5 raises out-of-fold AUC
+by at least 0.02 and best CSI by at least 0.03 over the current feature set,
+with a qualifying non-Delhi-city gain. Less than 0.01 AUC means no headroom;
+the intermediate range is ambiguous. These thresholds are frozen in
+`CODEX_BRIEF_OPTION_B.md` §3.3.
+
+Only after a proceed verdict should an Aurora 1.5 or fine-tuning design define:
 
 1. which parameters are trainable;
 2. a loss that protects severe-event detection;
@@ -154,3 +173,6 @@ baseline ladder identifies which case applies.
 | Illustrative UI values are mistaken for results | Persistent demo labeling and source tests |
 | Raw data leak during repository publication | Clean mirror/history decision and audit |
 | One season drives public claims | Prospective immutable scorecard and untouched post-monsoon evidence |
+| Pooled skill is mistaken for target-city skill | Always report per-city counts; 89.1% of current events are Delhi |
+| Perfect-prognosis ERA5 is presented as achievable | Label it as a ceiling test, never an operational forecast |
+| Falsified “unserved city” story returns | Cite target re-evaluation and verify incumbent coverage directly |

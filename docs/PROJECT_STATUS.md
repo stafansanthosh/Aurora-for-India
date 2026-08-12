@@ -1,7 +1,7 @@
 # IndiaAQBench project status
 
 **Snapshot date:** 2026-08-11
-**Status:** active research; first retrospective scorecards complete
+**Status:** active research; retrospective diagnosed, Option B kill-test in progress
 **Public-use level:** code and benchmark design only—not a validated forecast
 service
 
@@ -28,6 +28,8 @@ the [development journal](../JOURNAL.md) preserves the full history.
 | Integrity audit | 36 pass, 2 expected legacy warnings, 1 PM-bin ordering failure |
 | Unit tests | 91/91 passing locally |
 | Web preview | CI build/render and owner-only deployment passing |
+| Event-skill diagnosis | Complete on train-only/out-of-fold data; 89.1% of events are Delhi |
+| Current direction | Option B kill-test **PASSED** (perfect-prognosis); see `BLH_CEILING_RESULT.md` |
 
 The expected pair count is 56 dates × 159 stations × 9 rows per station: one
 lead-zero CAMS row plus eight Aurora forecast leads.
@@ -121,11 +123,22 @@ The temporal cutoff was revised once on 2026-07-24:
 - Completed the four-slice Aurora GPU rollout: 56 dates, 80,136 rows, 159
   stations, and zero worker errors. All returned pairs and worker manifests
   matched their remote SHA-256 hashes.
+- Diagnosed the concentration-calibration failure, Aurora dynamic-range cap,
+  between-city discrimination, and Delhi-dominated event support using only
+  train-split out-of-fold predictions.
+- Re-evaluated and retired the false claim that Patna and Varanasi have no
+  forecast service; recorded the broader AQEWS/SILAM incumbent context and its
+  remaining direct-portal verification caveat.
+- Pre-declared the Option B ERA5 perfect-prognosis decision rule before viewing
+  its result and implemented the train-only ERA5 acquisition path.
 
 ## In progress
 
+- Quantifying forecast-vs-analysis boundary-layer degradation, the number that
+  converts the Option B ceiling into an expectation. No GPU required.
+- Capturing the rolling SILAM operational archive while cycles remain online.
 - Freezing the generated 24-hour and hourly tables and connecting them to the
-  reporting package.
+  reporting package after the current scientific gate.
 - Resolving repository licensing and historical raw-data publication before a
   public launch.
 
@@ -143,10 +156,17 @@ These are not complete and must not be implied in public claims:
 - **Immutable live forecast ledger:** absent.
 - **Public experimental forecast feed:** absent.
 - **Independent post-monsoon test:** absent.
+- **Transferable non-Delhi episode evidence:** absent; 89.1% of benchmark
+  events are Delhi, L2 is mostly Kolkata, and Varanasi has zero events.
+- **Resolved Varanasi observation level:** absent; independent CPCB/UPPCB
+  cross-check remains required before any Varanasi claim.
+- **Verified city-level incumbent comparison:** absent; AQEWS portal coverage
+  and initialization-aligned SILAM comparison remain unresolved.
 
-The scientific results are now blocked by local validation and scoring, not by
-GPU inference. Product work can proceed in parallel using clearly labeled
-synthetic or historical example data, but it cannot display final metrics yet.
+The immediate scientific gate is now a CPU ceiling test, not GPU inference.
+Product work may continue with clearly labeled illustrative data, but the
+public target and default city must not preserve the falsified “unserved city”
+story or imply Varanasi episode evidence that does not exist.
 
 ## Legacy pilot files
 
@@ -161,13 +181,16 @@ benchmark results.
 
 The critical scientific sequence is:
 
-1. Freeze per-city, per-window, pooled, L1, and L2 result tables, and connect
-   the generated 24-hour table to the reporting package, which still defaults
-   to the hourly metrics file.
-2. Resolve Component A's lead-specific event regression or retain raw Aurora.
-3. Preserve the rejected calibrator result and do not use its stale binary.
-4. Publish versioned tables and figures with the cutoff revision and the
-   remaining PM-bin audit failure both disclosed.
+1. Run the pre-declared Option B perfect-prognosis ERA5 kill-test on train-only
+   out-of-fold data and report pooled and per-city AUC/CSI.
+2. Honour the decision rule: stop if there is no headroom, report ambiguity as
+   ambiguity, or verify Aurora 1.5 before any GPU rollout if the gate passes.
+3. Preserve the rejected concentration calibrator and do not replace it with
+   another concentration-regression-plus-threshold pipeline.
+4. Freeze per-city, per-window, pooled, L1, and L2 retrospective artifacts and
+   connect the generated 24-hour table to the reporting package.
+5. Resolve the Varanasi data anomaly and incumbent comparison before a
+   city-specific public claim.
 
 The public-product sequence can run beside it:
 
@@ -182,13 +205,18 @@ The public-product sequence can run beside it:
 
 It is accurate today to say:
 
-> IndiaAQBench is an open benchmark under active development for testing
-> low-compute adaptation of Aurora for multi-day PM2.5 forecasting across nine
-> Indian cities.
+> IndiaAQBench is an event-focused benchmark that completed a 56-date,
+> 159-station comparison of Aurora, CAMS, persistence, and cheap local
+> adaptation, exposed where pooled and average-error evaluation fail, and is
+> now testing whether boundary-layer meteorology adds episode-prediction
+> headroom before spending more compute.
 
 It is not yet accurate to say:
 
-- the adapted model is better than persistence, CAMS, or raw Aurora;
+- Aurora or an adapted method is generally better than persistence or a
+  verified Indian incumbent;
+- the benchmark demonstrates Patna, Kanpur, Lucknow, or Varanasi episode skill;
+- Patna or Varanasi lacks an existing forecast product;
 - the system has been validated across the full year;
 - the system provides reliable forecasts for unmonitored cities;
 - a public real-time forecast feed is operational;

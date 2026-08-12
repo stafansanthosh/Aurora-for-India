@@ -20,21 +20,22 @@ exact source-by-source paths are assigned in `docs/DATA_EXPANSION_PLAN.md`.
 | WS-1 | OpenAQ archive and station registry | **Complete** | `src/data/**`, `data/stations.csv`, frozen dates | Preserve provenance; no new bulk source without licence review |
 | WS-2 | Component A local anchoring | **Scored; promising but not certified** | `src/model/anchor.py`, tests, preliminary scorecard | Resolve +84 h L1 POD regression or retain raw Aurora |
 | WS-3 | Calibrator guardrails and tests | **Full-registry model rejected safely** | `src/model/calibrator.py`, guardrail tests | Preserve negative result; do not score stale binary |
-| WS-4 | Reporting package | **24-hour and hourly tables available** | `src/report/**`, `docs/PRELIMINARY_RESULTS.md` | Freeze/version report artifacts |
-| WS-5 | Fine-tuning design | **Not started** | planned `docs/FINETUNE_DESIGN.md` | Start after cheap baselines are scored |
+| WS-4 | Reporting package | **24-hour and hourly tables available** | `src/report/**`, `docs/PRELIMINARY_RESULTS.md` | Freeze/version report artifacts after current kill-test |
+| WS-5 | Fine-tuning design | **Deferred; not the next experiment** | planned `docs/FINETUNE_DESIGN.md` | Only after Option B passes and Aurora 1.5 is verified |
 | WS-6 | 56-date Aurora rollout | **Complete: 56/56 dates, 80,136 rows, clean manifest** | `results/pairs/**` | Preserve artifacts and provenance |
 | WS-7 | Public product and interface | **Private preview deployed; live system absent** | `docs/PRODUCT_SPEC.md`, `docs/LIVE_FEED_SPEC.md`, `web/**` | Shadow runner |
-| WS-8 | Additional data and baselines | **Both CAMS archives and worker bundles complete; OGD probe optional** | `src/data/cams_forecast.py`, `src/data/cams_composition.py`, `src/data/ogd_aqi.py` | Preserve provenance; optional keyed OGD probe |
+| WS-8 | Additional data and baselines | **CAMS complete; ERA5 kill-test and SILAM capture active** | `src/data/era5_boundary_layer.py`, `src/data/silam_forecast.py` | Finish perfect-prognosis input review; retain expiring SILAM cycles |
 | WS-9 | Repository publication | **Blocked** | README, status, portfolio and readiness docs, CI | Tests/build, licence, clean-history decision |
+| WS-10 | Option B event classifier | **Pre-declared kill-test in progress** | `docs/CODEX_BRIEF_OPTION_B.md`, planned train-only evaluator/tests | Honour AUC/CSI gate before any GPU spend |
 
 ## Critical path
 
 ```text
-24-hour and hourly scorecards complete
-  -> freeze/version report artifacts
-  -> keep raw fallback; Component A uncertified
-  -> freeze versioned scorecards
-  -> decide whether fine-tuning is justified
+retrospective diagnosis and target re-evaluation complete
+  -> Option B ERA5 perfect-prognosis kill-test
+  -> honour proceed / no-headroom / ambiguous decision
+  -> freeze/version retrospective report artifacts
+  -> verify incumbent and target-city evidence
 ```
 
 The product path can proceed beside that scientific path:
@@ -93,7 +94,8 @@ results. Every event score must carry its event count and split label.
 
 ## WS-5 — Fine-tuning design
 
-Fine-tuning is deliberately downstream of the cheap baselines. The design
+Fine-tuning is deliberately downstream of the Option B ceiling test and cheap
+baselines. The design
 document must define what is trainable, loss weighting for severe events,
 rollout length, memory budget, split discipline, catastrophic-forgetting
 checks, and the exact improvement needed over raw Aurora, persistence,
@@ -136,12 +138,26 @@ Implemented foundations:
 3. a minimal official OGD India CPCB live-feed pilot for Patna/Varanasi with
    immutable private snapshots and conservative station matching;
 
-Remaining priorities are:
+Active and remaining priorities are:
 
-4. one-day/manual official historical export tests or formal data requests;
-5. FIRMS and Sentinel-5P as explanatory UI layers;
-6. predictive feature experiments only after availability-time controls and
+4. train-only ERA5 boundary-layer acquisition and the perfect-prognosis Option
+   B ceiling test;
+5. prospective SILAM cycle capture, followed by an initialization-aligned
+   incumbent comparison;
+6. one-day/manual official historical export tests or formal data requests;
+7. FIRMS and Sentinel-5P as explanatory UI layers;
+8. predictive feature experiments only after availability-time controls and
    held-out-city ablations.
+
+## WS-10 — Option B event classifier
+
+The next learned method predicts 24-hour Very Poor+ exceedance probability,
+not concentration. Development is train-only and out-of-fold by initialization
+date. ERA5 valid-time boundary-layer fields are intentionally
+perfect-prognosis: they measure a ceiling and must never be presented as an
+operational forecast. The frozen proceed/no-headroom/ambiguous rule is in
+`docs/CODEX_BRIEF_OPTION_B.md` §3.3. Report per city; pooled results are
+Delhi-dominated. Do not start an Aurora 1.5 rollout until this gate passes.
 
 No licence-clear historical Patna/Varanasi hourly archive has yet been
 verified. Aakash data can support northwest-India transport diagnostics, but

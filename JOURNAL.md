@@ -1136,3 +1136,44 @@ the ERA5 train-period download.
 Known issue recorded for the eventual head-to-head: SILAM initialises at 00Z
 and the Aurora rollout at 12Z, so a naive comparison hands one side a 12-hour
 information advantage. Match init times or account for the offset explicitly.
+
+## 2026-08-11 — Option B kill-test PASSED; the boundary layer carries the signal
+
+Ran `python -m src.eval.blh_ceiling_test`. Train split, train_pool tier,
+out-of-fold by init date, n=18,934 windows, 2,167 events, 32 dates. ERA5 covered
+100% of train windows. The decision rule was committed in 2ab1c50 before this
+result existed.
+
+Pooled: current (persistence + Aurora + CAMS + season + lead) AUC 0.927 /
+best CSI 0.476 -> adding ERA5 boundary-layer features 0.973 / 0.682. That is
+dAUC +0.046 against a required +0.020 and dCSI +0.206 against a required +0.030.
+Both criteria cleared, and the gain holds in Patna and Mumbai, the two non-Delhi
+cities with >=50 train events. Verdict: PROCEED.
+
+Two findings matter more than the verdict.
+
+First, the gain is largest exactly where the project needs it. Patna goes from
+AUC 0.745 to 0.928 and CSI 0.159 to 0.455 — the largest improvement of any city,
+against raw Aurora's 0.640 in the earlier diagnosis. Every previous method
+improved Delhi most and the target cities least. This one inverts that, which is
+the first time anything in this project has moved the number that actually
+matters for the stated goal.
+
+Second, boundary-layer meteorology alone beats the current pollution setup:
+ERA5 + season + lead with no Aurora and no CAMS scores AUC 0.960 / CSI 0.637
+versus 0.927 / 0.476. The boundary layer carries more episode information than
+the pollution forecast does. That reframes Option B: the open question is no
+longer whether Aurora can be repaired by adding meteorology, but whether a
+pollution model is needed at all, or whether this is a boundary-layer problem
+with a local-observation anchor.
+
+Caveats recorded in `docs/BLH_CEILING_RESULT.md`. The critical one: ERA5 is
+analysis, so this is a CEILING and not achievable skill. Aurora 1.5's forecast
+boundary layer at +48-96 h will be worse. The Patna result rests on 111 events.
+Varanasi and Kanpur are absent entirely. Nothing has touched the test split.
+
+Next, cheapest first: quantify forecast-vs-analysis BLH degradation by lead (no
+GPU; this converts the ceiling into an expectation); verify Aurora 1.5's open
+checkpoint actually exposes BLH; and check whether a free NWP boundary-layer
+forecast such as GFS already supplies most of the gain, in which case the
+cheapest useful system may involve no Aurora run at all.

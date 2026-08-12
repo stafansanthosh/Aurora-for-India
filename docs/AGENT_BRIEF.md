@@ -12,28 +12,39 @@ to this file — deliberately, so three copies cannot drift apart.
 
 ## What this project is
 
-An open, reproducible benchmark testing whether **cheap adaptation** can lift
-**Microsoft Aurora** (1.3B-parameter atmospheric foundation model) into a
-*practically useful* multi-day PM2.5 forecaster for Indian cities.
+An open, reproducible benchmark testing whether **cheap, observation-grounded
+adaptation** can make global-tier PM2.5 forecasts more useful for pollution
+episode warning. The completed India retrospective compares Microsoft Aurora,
+actual CAMS, persistence, and local anchoring at 159 stations; it is evidence
+about method behaviour, not yet a validated public service.
 
-- **The target is NOT Delhi.** Delhi already runs AQEWS (WRF-Chem 400 m,
-  Performance Index 87). We cannot and should not try to beat it. The target is
-  the **~465 Indian cities with no public forecast system** — Patna, Varanasi,
-  Kanpur, Lucknow and peers.
+- **The original target premise was falsified.** Patna, Varanasi, Kanpur and
+  Lucknow must not be described as having no forecast. The 400 m AQEWS figure is
+  the Delhi nest, not the national domain; India also has national/regional
+  AQEWS, SILAM, and multi-city bulletin products. Direct portal coverage still
+  needs confirmation before making a precise city-by-city incumbent claim.
+- **Delhi is a development and diagnostic environment, not a transferable
+  headline.** It supplies 89.1% of the benchmark's Very Poor+ windows. Any
+  pooled result must travel with per-city counts, and the present L2 result is
+  mostly Kolkata rather than evidence for Varanasi, Kanpur, or Patna.
 - **Success is event skill, not MAE.** Very Poor+ (≥121 µg/m³)
   **POD / FAR / CSI** per lead time, because India's GRAP emergency actions
   trigger on forecast *category*. A model with excellent MAE that misses every
   pollution episode is worthless here — and we have already been burned by
   exactly that (see "Rejected" below).
-- **Adaptation ladder:** calibration first (cheap, CPU), then scoped
-  fine-tuning. Calibration does not replace fine-tuning; it establishes the bar
-  fine-tuning must clear.
+- **Current direction:** predict `P(24 h PM2.5 >= 121)` directly and publish an
+  operating point. The chosen Option B first runs a train-only,
+  perfect-prognosis ERA5 boundary-layer kill-test. Do not spend GPU money on an
+  Aurora 1.5 rollout unless that pre-declared ceiling test shows headroom.
 
 ## Map of the repo
 
 | You need | File |
 |---|---|
 | Current state + the exact next command | **`docs/HANDOFF.md`** |
+| Current Option B experiment contract | **`docs/CODEX_BRIEF_OPTION_B.md`** |
+| Why the founding target changed | `docs/TARGET_REEVALUATION.md` |
+| Why concentration calibration failed | `docs/EPISODE_SKILL_DIAGNOSIS.md` |
 | Who owns which files (parallel work) | `docs/WORKSTREAMS.md` |
 | Copy-paste session prompts | `docs/SESSION_STARTERS.md` |
 | Schedule, risks | `docs/EXECUTION_PLAN.md` |
@@ -76,6 +87,14 @@ rollout +12h…+96h, sampled at station cells) → `src/eval/benchmark.py` (base
   **Disclose this wherever results appear.**
 - **Delhi is a diagnostic instrument, not the goal** (most stations = fastest
   signal), but never the headline claim.
+- **The no-forecast-city premise is retired.** Do not reinstate the claim that
+  Patna or Varanasi is unserved. The defensible question is whether cheap local
+  and meteorological adaptation improves episode skill over the global tier or
+  a verified incumbent.
+- **Option B is gated by a CPU kill-test.** ERA5 valid-time boundary-layer
+  fields are perfect-prognosis inputs and therefore an upper bound, not an
+  operational result. The proceed/no-headroom/ambiguous rule is pre-declared in
+  `docs/CODEX_BRIEF_OPTION_B.md` §3.3 and must not be changed after scoring.
 
 ## Rejected — do not propose again
 
@@ -85,6 +104,12 @@ rollout +12h…+96h, sampled at station cells) → `src/eval/benchmark.py` (base
   structural causes: predicting the target caps output at the training
   distribution, and trees cannot extrapolate. Kept in `src/model/calibrator.py`
   as a documented negative baseline.
+- **Any replacement concentration regressor followed by thresholding.** The
+  binding failure is the average-error objective, not merely the tree family.
+  New adaptation must model exceedance probability under a pre-declared
+  validation design.
+- **Patna/Varanasi as cities with no forecast.** The founding framing is
+  falsified; see `docs/TARGET_REEVALUATION.md`.
 - **Backfilling OpenAQ history** — proven unavailable.
 - **Any A100 / fighting the Azure quota.**
 - **Serial 56-date rollout on one box** (~10 h) — dates are independent, so split

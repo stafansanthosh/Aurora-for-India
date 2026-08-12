@@ -14,8 +14,9 @@ duplication-drift failure `src/splits.py` exists to prevent.
    GRAP emergency actions trigger on forecast category. A calibrator that
    improved MAE while catching 0 of 99 events has already been built and
    rejected; don't rebuild it.
-2. **Delhi is not the target.** It has AQEWS (WRF-Chem 400 m, PI 87). The target
-   is the ~465 Indian cities with no public forecast system.
+2. **Do not reinstate the falsified “unserved cities” premise.** The 400 m
+   AQEWS figure is the Delhi nest, and Patna/Varanasi/Kanpur/Lucknow have
+   national or regional forecast products. Read `docs/TARGET_REEVALUATION.md`.
 3. **Split constants are defined only in `src/splits.py`.**
 4. **Run `python -m src.eval.audit` before trusting any results table.**
 5. **Verify before asserting** — run the check rather than reasoning from memory.
@@ -29,7 +30,8 @@ duplication-drift failure `src/splits.py` exists to prevent.
 - No A100 needed (0.4° inference fits a ~$0.50/hr 48 GB spot GPU).
 - OpenAQ serves no data before ~Feb 2025; backfill is impossible.
 - Temporal cutoff is 2025-12-01 (revised once, disclosed — see the brief).
-- Calibration precedes fine-tuning but does not replace it.
+- No replacement concentration regressor: model exceedance probability. Run
+  the pre-declared Option B ERA5 kill-test before any Aurora 1.5 GPU spend.
 
 Environment: Windows, `.venv/Scripts/python.exe`. Credentials in `.env`
 (`OPENAQ_API_KEY`) and `~/.cdsapirc` (Copernicus ADS).

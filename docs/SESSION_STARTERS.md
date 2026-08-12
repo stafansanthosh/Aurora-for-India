@@ -1,18 +1,45 @@
 # Current session starters
 
-**Updated:** 2026-08-04
+**Updated:** 2026-08-12
 
 The earlier archive, guardrail, reporting, Component A, product-design,
 additional-data, public-documentation, GPU-rollout, manifest-integration, and
 first-scorecard and 24-hour-headline sessions are complete. Do not restart
-them. The next bounded task is freezing report artifacts and connecting the
-validated tables to the reporting package.
+them. A later diagnosis and target re-evaluation retired the “unserved
+Patna/Varanasi” framing. The next bounded scientific task is the pre-declared
+Option B ERA5 perfect-prognosis kill-test, not reporting work or fine-tuning.
 
 Every new agent must first read `docs/AGENT_BRIEF.md`, `docs/HANDOFF.md`, and
 the relevant section of `docs/WORKSTREAMS.md`. The owner requested work on
 `master` for this phase; do not create or switch branches.
 
-## Versioned reporting artifacts — next local session
+## Option B ERA5 kill-test — next scientific session
+
+```text
+Read docs/AGENT_BRIEF.md, docs/CODEX_BRIEF_OPTION_B.md,
+docs/EPISODE_SKILL_DIAGNOSIS.md, docs/TARGET_REEVALUATION.md, and
+docs/HANDOFF.md completely. Work on master; do not create a branch.
+
+First verify that the train-only ERA5 files and sampled station CSV are
+complete without touching the test split. Implement and run only the §3
+perfect-prognosis kill-test from CODEX_BRIEF_OPTION_B.md. Build the same
+forward-24-hour windows as src/eval/rolling24.py, aggregate ERA5 over those
+windows, and compare baseline/current/+ERA5 feature sets using GroupKFold by
+init_date. Reuse the existing AUC, contingency, and threshold helpers. Report
+pooled and per-city AUC and best CSI, with event counts.
+
+The decision thresholds in §3.3 are frozen. Label every ERA5 result
+perfect-prognosis. Do not score the test split, change split constants, tune
+Component A, start Aurora 1.5 inference, provision GPU infrastructure, or
+present ERA5 ceiling skill as achievable forecast skill.
+
+Also verify the state of the prospective SILAM backfill without deleting or
+overwriting captured cycles. Before stopping, run tests and the integrity
+audit, update docs/HANDOFF.md, append JOURNAL.md, and commit only reviewed
+source/documentation. Do not push or publish without approval.
+```
+
+## Versioned reporting artifacts — queued after the current kill-test
 
 The GPU phase and separate 24-hour/hourly scorecards are complete. Do not
 provision another Pod, rerun a slice, re-merge manifests, tune Component A on
@@ -110,8 +137,9 @@ append JOURNAL.md, and commit reviewed files.
 
 ## Fine-tuning design — blocked future research session
 
-Do not start this until raw Aurora, persistence, actual CAMS forecast,
-Component A, and the guarded calibrator have valid current-registry results.
+Do not start this merely because the retrospective baselines exist. It remains
+blocked until Option B passes its pre-declared ceiling gate, Aurora 1.5's open
+checkpoint and inputs are verified, and a stronger experiment is justified.
 
 ```text
 Read docs/AGENT_BRIEF.md, docs/BENCHMARK_SPEC.md, docs/EXECUTION_PLAN.md section
