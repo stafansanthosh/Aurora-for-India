@@ -12,16 +12,16 @@ Supersedes the May 2026 scaffold spec (see git history).
 
 ---
 
-## 1. Landscape context (verified July 2026)
+## 1. Landscape context (July 2026, amended 2026-08-12)
 
-- India's operational forecasting layer: MoES/IITM **AQEWS** in Delhi
-  (WRF-Chem, 400 m, assimilating; Performance Index 87 in Yadav 2025 JGR) and
-  AQEWS-like deployments of **varying maturity and resolution** in 7 more
-  cities (Mumbai's AIRWISE announced at 2 km; Jaipur described as 400 m).
-  Nationally, IMD runs a **SILAM-based forecast driven by WRF meteorology**
-  covering ~140 cities incl. Patna/Varanasi/Lucknow — public documents are
-  inconsistent on grid spacing (3 km vs 5 km) and we could not verify AOD
-  assimilation for the national SILAM product itself.
+- India's operational forecasting layer includes the 400 m Delhi AQEWS nest,
+  broader AQEWS/WRF-Chem products described as a 10 km national domain, and an
+  IMD **SILAM-based forecast driven by WRF meteorology** associated with a
+  roughly 140-city bulletin including Patna/Varanasi/Lucknow. Public documents
+  conflict on exact city access, grid spacing, and product maturity; the AQEWS
+  portal refused connections during the 2026-08-11 review. Do not convert these
+  sources into either “nationwide city service is proven” or “these cities are
+  unserved” without direct verification.
 - In the Yadav 2025 seven-model Delhi eval: global tier PI = 47–60; SILAM 58,
   with "notable discrepancies during high-pollution events".
 - Monitoring network (2026 parliamentary answer): **1,601 stations (566
@@ -33,9 +33,11 @@ Supersedes the May 2026 scaffold spec (see git history).
   underestimation of Delhi's extreme episodes.
 
 **Positioning:** we benchmark the *public/global* tier and test whether cheap
-adaptation lifts it into a practically useful band. Beating Delhi's flagship
-AQEWS is an explicit non-goal; per-city transparency about where the national
-tier is adequate is a goal.
+adaptation lifts its episode skill into a practically useful band. The frozen
+nine-city benchmark does not establish an absence-of-service claim or a win
+over an Indian incumbent. Beating Delhi's flagship AQEWS is an explicit
+non-goal; initialization-aligned incumbent comparison and per-city evidence are
+required before a product claim.
 
 ## 2. Task definition
 

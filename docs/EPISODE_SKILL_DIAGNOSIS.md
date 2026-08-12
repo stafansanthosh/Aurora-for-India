@@ -163,7 +163,8 @@ Three consequences:
    are 92 Kolkata + 2 Kanpur + 0 Varanasi. Kolkata is a coastal megacity, not an
    underserved Gangetic city. The L2 POD 0.798 → 0.755 finding says nothing
    about Patna or Varanasi.
-3. **Varanasi — the product's default landing city — has no episodes at all to
+3. **Varanasi — the product's default landing city at the time of this
+   diagnosis — has no episodes at all to
    evaluate against.**
 
 ### A data red flag that must be resolved before any Varanasi claim
@@ -262,24 +263,18 @@ Fine-tuning Aurora remains the **wrong next step**: it is expensive, and §2–�
 say the limiting factor is missing source information and station-scale
 representativeness, neither of which fine-tuning on 32 dates supplies.
 
-### 5.4 What can honestly be shipped
+### 5.4 Shipping interpretation — superseded in part
 
-The target cities are **monitored but unforecast** — Patna 7 stations,
-Lucknow 6, Varanasi 4, Kanpur 3. "Underserved" here means no forecast, not no
-data. Local observations are therefore available operationally, which makes a
-persistence-anchored exceedance classifier deployable today and makes
-"zero-shot transfer to unmonitored cities" a separate, harder tier that current
-evidence does not support.
+The original version of this section called Patna, Lucknow, Varanasi, and
+Kanpur “monitored but unforecast.” The subsequent target re-evaluation found
+broader AQEWS/SILAM products and retired that claim. See
+`docs/TARGET_REEVALUATION.md`; do not quote the earlier framing.
 
-A defensible first release:
-
-> An experimental 24–72 hour **probability** of Very Poor+ PM2.5 for monitored
-> Indian cities without a public forecast, published with its operating point,
-> its verified hit/miss record, and the explicit statement that skill is
-> currently demonstrated mainly in Delhi.
-
-That is shippable, honest, and useful. Claiming Patna or Varanasi skill is not
-supported by anything currently in this repository.
+The part that survives is methodological: a persistence-anchored exceedance
+classifier is operationally plausible where timely local observations exist,
+but it needs prospective, per-city verification against the forecast actually
+available there. Current evidence is demonstrated mainly in Delhi and does not
+support a Patna or Varanasi skill claim.
 
 ---
 

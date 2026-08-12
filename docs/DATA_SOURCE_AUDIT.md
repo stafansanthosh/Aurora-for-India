@@ -7,6 +7,12 @@ baseline, fire information, satellite aerosol information, and independent
 historical data that could strengthen the benchmark or a public experimental
 forecast feed.
 
+**Strategic scope note (2026-08-12):** access and provenance findings remain
+valid, but later work retired the claim that Patna/Varanasi lack forecast
+products. Their pilots are now data-quality/incumbent diagnostics, not proof of
+an unserved-city target. See `TARGET_REEVALUATION.md` and
+`CODEX_BRIEF_OPTION_B.md`.
+
 This document verifies access routes and defines small pilots. It does **not**
 authorize bulk retrieval, undocumented scraping, credential bypass, or use of a
 source whose licence has not been checked.

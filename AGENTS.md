@@ -29,8 +29,9 @@ cannot drift apart.
 - No A100 needed (0.4° inference fits a 48 GB spot GPU).
 - OpenAQ serves no data before ~Feb 2025; backfill is impossible.
 - Temporal cutoff is 2025-12-01 (revised once, disclosed — see the brief).
-- Current direction is the train-only Option B ERA5 boundary-layer kill-test;
-  no Aurora 1.5 GPU rollout before its pre-declared gate is evaluated.
+- The Option B ERA5 ceiling test passed, but it used perfect-prognosis analysis.
+  Next quantify forecast BLH degradation and check free NWP sources; no Aurora
+  1.5 GPU rollout is authorized yet.
 
 Environment: Windows, `.venv/Scripts/python.exe`. Credentials in `.env` and
 `~/.cdsapirc`.

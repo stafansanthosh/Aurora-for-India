@@ -9,6 +9,13 @@ This project's headline output is a *benchmark*. Its value is entirely destroyed
 by a silent methodological error — a leaked split, a miscomputed metric, a claim
 the data does not support. Those are what you are hunting.
 
+**2026-08-12 priority:** the retrospective is complete, but later diagnosis
+showed that 89.1% of events are Delhi and retired the original “unserved
+Patna/Varanasi” premise. Review current work against
+`EPISODE_SKILL_DIAGNOSIS.md`, `TARGET_REEVALUATION.md`, and the pre-declared
+Option B contract in `CODEX_BRIEF_OPTION_B.md`; do not review against the older
+target story.
+
 ## 1. Get context first (do not skip)
 
 Read in this order, then verify the code matches what they claim:
@@ -18,6 +25,8 @@ Read in this order, then verify the code matches what they claim:
 | `docs/AGENT_BRIEF.md` | Goal, ground rules, settled decisions, rejected paths |
 | `docs/BENCHMARK_SPEC.md` | The benchmark definition — metrics, splits, cities |
 | `docs/HANDOFF.md` | Current state, what is mid-flight |
+| `docs/CODEX_BRIEF_OPTION_B.md` | Current experiment and frozen decision gate |
+| `docs/TARGET_REEVALUATION.md` | Retired target premise and incumbent caveats |
 | `JOURNAL.md` | Why each decision was made, in order |
 | `src/splits.py` | The split contract (single source of truth) |
 | `src/eval/aqi.py`, `src/eval/benchmark.py` | Metrics + scoring harness |

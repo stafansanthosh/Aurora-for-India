@@ -48,7 +48,8 @@ inventory is 56 dates and 80,136 rows. All transferred pair files and worker
 manifests matched the remote SHA-256 hashes. No provider credentials or OpenAQ
 archive were placed on the workers. No more GPU compute is required for this
 retrospective pass. No Aurora 1.5 rollout is justified until the train-only ERA5
-ceiling test passes its pre-declared event-skill gate.
+ceiling gain is translated into forecast-time BLH skill and the open checkpoint
+is shown to add value beyond a cheaper NWP source.
 
 For reproduction, use one distinct slice on each configured worker:
 
@@ -139,14 +140,14 @@ shadow-mode evidence.
 
 ## 6. Model-spend decision
 
-Do not buy additional training or rollout compute until the Option B kill-test
-is scored. Proceed only if adding perfect-prognosis ERA5 raises out-of-fold AUC
-by at least 0.02 and best CSI by at least 0.03 over the current feature set,
-with a qualifying non-Delhi-city gain. Less than 0.01 AUC means no headroom;
-the intermediate range is ambiguous. These thresholds are frozen in
-`CODEX_BRIEF_OPTION_B.md` §3.3.
+The Option B ceiling gate passed: pooled ΔAUC +0.046 and ΔCSI +0.206, with
+Patna +0.183/+0.296. This authorizes the next cheap question, not GPU spend.
+First quantify forecast-vs-analysis BLH degradation by lead and check whether a
+free NWP forecast supplies enough of the signal. Verify Aurora 1.5's released
+variables and input contract in parallel.
 
-Only after a proceed verdict should an Aurora 1.5 or fine-tuning design define:
+Only if those checks show incremental value should an Aurora 1.5 or fine-tuning
+design define:
 
 1. which parameters are trainable;
 2. a loss that protects severe-event detection;

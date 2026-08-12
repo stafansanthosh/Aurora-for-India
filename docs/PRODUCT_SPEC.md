@@ -1,6 +1,7 @@
 # IndiaAQBench public product specification
 
-Status: proposed implementation contract
+Status: proposed implementation contract under strategic revision after the
+2026-08-11 event-skill diagnosis and target re-evaluation
 Audience: product, science, data, live-pipeline, and web workstreams
 
 ## 1. Repository facts and explicit assumptions
@@ -28,14 +29,21 @@ What exists in the repository:
   forecast feed exists. The actual lead-dependent CAMS baseline code is
   implemented, integrated, and scored, and an owner-only illustrative website
   is deployed.
+- The retrospective is not target-city evidence: 89.1% of Very Poor+ windows
+  are Delhi, the L2 event result is mostly Kolkata, and Varanasi has zero
+  benchmark events plus an unresolved observation-level anomaly.
+- The original claim that Patna and Varanasi lack a forecast was retired after
+  identifying broader AQEWS/SILAM products. Exact city-level incumbent coverage
+  still requires direct verification before publication.
 
 Assumptions this product contract makes:
 
 - The separate operational `cams_forecast` method is implemented. The
   lead-zero fixed-field evaluator method is named `cams_lead0_fixed`. Both now
   carry complete 56-date scores; see `docs/PRELIMINARY_RESULTS.md`.
-- The first live release covers the existing nine-city registry. Expansion is a
-  later, separately validated step.
+- The existing nine-city registry may support a retrospective research view,
+  but the first live target and default city remain undecided pending the
+  Option B kill-test, incumbent verification, and adequate per-city events.
 - The live pipeline will be generalized from one 12:00 UTC initialization per
   date to the latest complete 00:00 or 12:00 UTC CAMS cycle.
 - The public product may launch with raw Aurora if no correction method has
@@ -45,17 +53,18 @@ Assumptions this product contract makes:
   `cams_lead0_fixed` evaluator method is the CAMS initial field carried forward
   and is labeled “CAMS starting field held constant.”
 - Product copy asserting that a particular city has no other forecast service
-  requires a source check immediately before publication. The stable claim is
-  that the product is designed for underserved Indian cities and transparent
-  evaluation of the public/global forecasting tier.
+  requires direct source verification immediately before publication. The
+  stable claim is transparent evaluation of the public/global forecasting tier
+  and cheap observation-grounded episode adaptation—not absence of an Indian
+  forecast product.
 
 ## 2. Product promise
 
 ### Single-sentence purpose
 
-**Show whether a global atmospheric foundation model, recent public surface
-observations, and limited compute can produce useful, openly verified PM2.5
-forecasts for underserved Indian cities.**
+**Show whether a global atmospheric forecast, recent public surface
+observations, boundary-layer information, and limited compute can improve
+openly verified PM2.5 episode detection—and disclose where it does not.**
 
 ### Primary audiences
 
@@ -97,14 +106,20 @@ The product must not claim that it:
   implemented and calibrated;
 - is zero-shot in a held-out city when a correction used trailing observations
   from that target station.
+- proves episode skill in Patna, Kanpur, Lucknow, or Varanasi from the current
+  pooled or L2 result;
+- establishes that a named Indian city lacks an existing forecast service;
+- treats perfect-prognosis ERA5 reanalysis skill as an achievable live
+  forecast.
 
 Negative and inconclusive results are part of the product, not hidden defects.
 
 ## 3. Product principles
 
-1. **Underserved cities first.** Varanasi is the default landing city. Patna,
-   Kanpur, and Lucknow are first-level alternatives. Delhi appears under
-   “More cities” as a data-rich diagnostic reference.
+1. **Evidence before city storytelling.** The default landing view is a method
+   and evidence overview, not Varanasi. City pages show exact event support and
+   incumbent status; no city is promoted as underserved or forecast-ready
+   until both are verified. Delhi is explicitly a data-rich diagnostic case.
 2. **Event usefulness before average error.** The first performance view is
    Very Poor+ detection, with counts. MAE is secondary.
 3. **Raw output remains visible.** A correction never replaces the raw Aurora
@@ -126,7 +141,8 @@ The landing and city pages follow this order.
 
 ### Level 1 — “What is expected?”
 
-- City selector, defaulting to Varanasi.
+- City selector beneath an evidence-overview default; no city is preselected as
+  the beneficiary or headline.
 - System status and the age of the atmospheric initialization.
 - Latest available observed PM2.5 and the number of reporting stations.
 - Forward-looking rolling 24-hour PM2.5 estimates for the next available
@@ -238,7 +254,8 @@ If there are no forecast events, FAR is `not available`, not zero.
 ### City
 
 - Search and keyboard-select any supported city.
-- Quick choices: Varanasi, Patna, Kanpur, Lucknow.
+- Searchable choices for every supported research city, with event counts and
+  unresolved-data/incumbent labels where applicable.
 - Preserve the selected city in the URL.
 - Never rank cities as “best” or “worst” on sparse observations without showing
   coverage.
@@ -454,7 +471,9 @@ the full text. The full text must not be hidden behind acceptance.
 
 ### MVP
 
-- Nine existing benchmark cities, with Varanasi as default.
+- Retrospective evidence overview plus the nine existing benchmark cities;
+  no Varanasi default and no implication that the frozen benchmark validates a
+  live city forecast.
 - Static, versioned public JSON consumed by a client-rendered site.
 - Latest cycle plus downloadable history.
 - Current observations and station map.

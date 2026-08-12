@@ -1,19 +1,22 @@
 # Handoff: IndiaAQBench current state
 
-**Updated:** 2026-08-11
+**Updated:** 2026-08-12
 **Branch:** `master`
-**Scientific state:** 24-hour and hourly scorecards complete; one audit failure remains
+**Scientific state:** Option B perfect-prognosis gate passed; forecast-BLH gate next; one audit failure remains
 **Product status:** illustrative preview only; no live feed
-**Documentation state:** README, `PRODUCT_SPEC`, `PROJECT_STATUS`,
-`PUBLICATION_READINESS`, `EXECUTION_PLAN` and `WORKSTREAMS` reconciled with the
-completed rollout on 2026-08-11. No scientific result changed.
+**Documentation state:** canonical/tool instructions and public/current-state
+documents reconciled on 2026-08-12 with the event-skill diagnosis, target
+re-evaluation, and chosen Option B direction. Historical plans carry explicit
+supersession notes. No scientific result changed by that reconciliation.
 
 ## Objective and claim boundary
 
-IndiaAQBench tests whether Microsoft Aurora plus inexpensive adaptation can
-provide useful multi-day PM2.5 forecasts for underserved Indian cities. Delhi
-is a diagnostic environment, not the target. Success means Very Poor+ event
-skill (POD/FAR/CSI and event counts), not MAE alone.
+IndiaAQBench tests whether global-tier atmospheric forecasts plus inexpensive,
+observation-grounded adaptation can improve multi-day PM2.5 episode warning.
+The original “underserved Patna/Varanasi” framing is retired. Delhi is a
+development and diagnostic environment supplying most benchmark events, not
+transferable target-city evidence. Success means Very Poor+ event skill
+(POD/FAR/CSI and event counts), not MAE alone.
 
 The current results use hourly observation matching and hourly application of
 CPCB thresholds. They are a sensitivity analysis, not the official 24-hour
@@ -29,11 +32,14 @@ headline and not evidence of year-round operational utility.
 | Aurora rollout | 56 dates, 80,136 rows, registry `159:4c0b55ad238f` |
 | Canonical manifest | 56 records, 56 unique dates, zero errors, zero duplicates |
 | Legacy pairs | 2025-11-15 and 2025-11-20 remain on disk and are strictly excluded |
-| Tests | 91/91 pass locally (re-verified 2026-08-11) |
-| Audit | 39 checks: 36 pass, 2 expected legacy warnings, 1 size-bin failure (re-verified 2026-08-11) |
+| Tests | 91/91 pass locally (re-verified 2026-08-12) |
+| Audit | 39 checks: 36 pass, 2 expected legacy warnings, 1 size-bin failure (re-verified 2026-08-12) |
 | Raw/Component A scorecards | 24-hour headline and hourly sensitivity generated separately |
 | Accepted calibrator | Absent; full-registry fit failed the POD no-harm gate |
 | Public live forecast | Absent |
+| ERA5 Option B acquisition | 7/7 planned months, 84 train-only days, 320,544 station-hours, 159 stations; hashes/coverage/duplicates/missing values validated 2026-08-12 |
+| Option B kill-test | **PROCEED**: pooled ΔAUC +0.046, ΔCSI +0.206; Patna +0.183/+0.296; train-only perfect prognosis |
+| SILAM prospective capture | Backfill running; completed cycles are immutable and the next cycle remains in progress |
 
 The local `.venv` is healthy: Python 3.11.9. The earlier broken-environment
 claim was caused by a restricted Codex sandbox, not the repository runtime.
@@ -138,33 +144,45 @@ target, add the boundary-layer meteorology the 0.4° pollution checkpoint lacks.
 every diagnostic result, the kill-test design, the pre-declared decision rule,
 and the hard rules. Any agent picking this up should read that file.
 
-The immediate task is a **kill-test, not a build**: use ERA5 boundary-layer
-height as *perfect-prognosis* meteorology and measure how much exceedance skill
-it buys. ERA5 is valid at the target window, so it upper-bounds any forecast of
-the same field. If perfect BLH adds little, Option B has no headroom and no GPU
-should be spent. `src/data/era5_boundary_layer.py` implements the acquisition;
-the decision rule is in the brief §3.3 and must be written down before results
-are viewed.
+The **kill-test is complete and passed**. Train-only, out-of-fold addition of
+perfect-prognosis ERA5 raised pooled AUC from 0.927 to 0.973 and best CSI from
+0.476 to 0.682. Patna rose from AUC/CSI 0.745/0.159 to 0.928/0.455. This says
+boundary-layer information has headroom; it does not say an operational BLH
+forecast will retain it. Full caveats are in `docs/BLH_CEILING_RESULT.md`.
 
-In flight as of 2026-08-11: SILAM `--backfill` (rolling 32-day window, cycles
-lost permanently if uncaptured) and the ERA5 train-period download.
+ERA5 acquisition completed and passed a read-only validation on 2026-08-12:
+seven request-matching monthly files, 84 required train-only days, 320,544
+station-hours, 159 stations, 2,016 timestamps, zero duplicate
+`(station_id, valid_time)` keys, zero missing feature cells, and matching file
+hashes. The validated inputs and ceiling-test implementation are committed in
+`e0a3487`.
+
+SILAM `--backfill` is still running against its rolling public window. As of
+the documentation snapshot, 20260712, 20260713, and 20260811 were complete at
+19,080 rows and 159 stations each. Cycle 20260713 completed while this
+documentation pass was being validated and remains untracked for separate
+data/provenance review. Do not trust or stage a partial next cycle; recheck this
+state before the next handoff.
 
 ## Exact next scientific action
 
-1. Freeze/version the generated per-city, per-window, pooled train-city, L1,
-   and L2 table and connect it to the reporting package. Concretely:
-   `src/eval/rolling24.py` writes `results/metrics/indiaaqbench_24h.csv` (and
-   `indiaaqbench_24h_anchor.csv`), but `src/report/scorecard.py` still defaults
-   to the hourly `results/metrics/indiaaqbench.csv`, so the reporting package
-   does not yet render the 24-hour headline.
-2. Keep raw Aurora as the public fallback; do not tune Component A on observed
-   test outcomes. Any new policy needs a newly predeclared validation design.
-3. Start `docs/FINETUNE_DESIGN.md` only after the cheap-baseline findings are
-   frozen; any learned method must beat raw Aurora and Component A on event
-   skill, not merely MAE.
-4. Continue the live-runner/immutable-ledger path in private shadow mode.
+1. Quantify forecast-vs-analysis BLH degradation at +24/+48/+72/+96 h using
+   the cheapest verified historical forecast source. Write the matching,
+   metrics, missing-data policy, and GPU-decision rule before viewing results.
+2. Check free NWP sources such as GFS first; separately verify from primary
+   documentation whether Aurora 1.5's released checkpoint exposes BLH and what
+   inputs it requires.
+3. Preserve train-only development and per-city reporting. ERA5 remains
+   perfect-prognosis analysis and must not be presented as operational skill.
+   Do not start Aurora 1.5 inference or provision a GPU yet.
+4. Verify the prospective SILAM capture without deleting or overwriting cycles;
+   an eventual head-to-head must align its 00Z initialization with the
+   comparison forecast.
+5. After the current gate, freeze/version the generated retrospective tables
+   and connect the forward-24-hour headline to `src/report/`.
 
-No more GPU compute is required for this retrospective benchmark.
+No additional GPU compute is authorized until the forecast-BLH gate shows
+incremental value beyond the cheapest adequate source. Fine-tuning is deferred.
 
 ## Publication boundary
 
@@ -172,5 +190,6 @@ The repository remains private. Before publication it still needs a software
 licence, a clean-mirror or reviewed-history decision for historical OpenAQ
 blobs, current CI on the eventual publication commit, and anonymous link and
 secret checks. Scientific posts must disclose the cutoff revision, missing
-post-monsoon test, hourly-versus-24-hour distinction, audit failure, and the
-rejected calibrator.
+post-monsoon test, hourly-versus-24-hour distinction, audit failure, rejected
+calibrator, Delhi-dominated event support, target re-evaluation, and the
+perfect-prognosis/operational distinction for Option B.

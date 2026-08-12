@@ -6,15 +6,15 @@ engineering work from scientific results that are still pending.
 
 ## Accurate one-line description
 
-> Building an open, event-focused benchmark and experimental forecasting
-> pipeline that tests whether Microsoft Aurora can be adapted with public
-> observations and modest compute for multi-day PM2.5 forecasting across nine
-> Indian cities.
+> Built an open, event-focused 159-station benchmark comparing Aurora, CAMS,
+> persistence, and cheap local adaptation, then used its negative results to
+> redesign the next experiment around direct episode probability and
+> boundary-layer physics.
 
 Short version:
 
-> An open, low-compute PM2.5 forecasting benchmark for Indian cities, built on
-> Aurora, CAMS, and OpenAQ.
+> An open, low-compute PM2.5 episode-forecasting benchmark built on Aurora,
+> CAMS, OpenAQ, and explicit safety gates.
 
 ## Resume bullets available now
 
@@ -41,6 +41,12 @@ Use three to five, adjusted to the role:
   that a cheap trailing-observation anchor improves pooled event CSI while a
   direct-target calibrator remains unsafe. Disclose the remaining audit and
   lead-specific limitations whenever using this bullet.
+- Showed that pooled air-quality skill can be misleading: 89.1% of the
+  benchmark's Very Poor+ windows came from Delhi, the held-out-city event
+  result was mostly Kolkata, and Varanasi had zero events.
+- Challenged and retired the project's own founding “unserved city” premise
+  after identifying broader AQEWS/SILAM coverage, then pre-declared a cheap
+  boundary-layer ceiling test before authorizing more GPU spend.
 
 Do not use a single accuracy-improvement headline until the 24-hour table is
 versioned and the audit and Component A lead-specific limitations are explicit.
@@ -52,7 +58,10 @@ For an application submitted now, include:
 1. The repository [README](../README.md).
 2. The current [project scoreboard](PROJECT_STATUS.md).
 3. The [benchmark specification](BENCHMARK_SPEC.md).
-4. One code sample appropriate to the role:
+4. The [episode-skill diagnosis](EPISODE_SKILL_DIAGNOSIS.md) and
+   [target re-evaluation](TARGET_REEVALUATION.md) when the audience values
+   scientific judgment and willingness to falsify assumptions.
+5. One code sample appropriate to the role:
    - data engineering: [`src/data/`](../src/data/);
    - ML systems: [`src/pipeline/orchestrate.py`](../src/pipeline/orchestrate.py);
    - evaluation/research:
@@ -63,7 +72,7 @@ For an application submitted now, include:
    - online adaptation:
      [`src/model/anchor.py`](../src/model/anchor.py);
    - reporting: [`src/report/`](../src/report/).
-5. The [development journal](../JOURNAL.md) when the audience values research
+6. The [development journal](../JOURNAL.md) when the audience values research
    reasoning, debugging, and negative results.
 
 Once available, replace secondary code links with:
@@ -92,8 +101,9 @@ The current repository provides evidence of:
 - documenting negative results and redesigning safety gates;
 - coordinating a multi-stage research and product roadmap.
 
-These are already strong engineering and research signals even before the final
-accuracy table exists.
+These are already strong engineering and research signals even though the
+generated scorecards are not yet frozen as release artifacts and no public
+forecast is certified.
 
 ## Claims to avoid for now
 
@@ -106,9 +116,11 @@ Do not say:
 - “Validated year-round performance.”
 - “Proved transfer to cities without observations.”
 - “Fine-tuned Aurora for India.”
-- “Completed a 56-date benchmark.”
 - “The dashboard shows live results.”
 - “The system can replace AQEWS, SILAM, CPCB, or official health guidance.”
+- “Patna or Varanasi has no existing forecast service.”
+- “The held-out-city result proves transfer to Gangetic target cities.”
+- “The ERA5 kill-test is an operational forecast result.”
 
 More precise alternatives are:
 
@@ -118,6 +130,8 @@ More precise alternatives are:
   scalability.”
 - “An early pilot motivated the guardrail” instead of quoting pilot metrics as
   final results.
+- “Completed a 56-date, 159-station retrospective benchmark with one retained
+  auxiliary-channel audit failure” when describing the completed rollout.
 - “Research forecast” instead of “warning” or “advisory.”
 
 Also present the train/test cutoff revision openly. It was made once, under a

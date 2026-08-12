@@ -16,9 +16,12 @@ adaptation before considering any costly model change.
 canonical manifest is clean at 56 dates. The retrospective scorecards and an
 event-skill diagnosis now exist. That diagnosis showed that 89.1% of Very Poor+
 windows come from Delhi and that the original “unserved Patna/Varanasi” framing
-was wrong. The current Option B research question is whether boundary-layer
-meteorology adds enough train-only exceedance skill to justify another model
-rollout. One audit check remains failed for inconsistent auxiliary PM1/PM10
+was wrong. The train-only Option B ceiling test found that perfect-prognosis
+ERA5 boundary-layer features cleared the pre-declared bar: pooled AUC rose by
+0.046 and best CSI by 0.206, with an even larger Patna gain. This is analysis
+skill, not forecast skill. The next question is how much degrades when BLH must
+be forecast, and whether a free NWP source is sufficient; no Aurora 1.5 GPU
+rollout is authorized yet. One audit check remains failed for inconsistent auxiliary PM1/PM10
 size ordering, so this repository does **not** claim fully clean model output,
 transferable target-city skill, or operational readiness. See the
 [live project scoreboard](docs/PROJECT_STATUS.md).
@@ -100,7 +103,7 @@ evaluation path.
 
 ## Verified repository state
 
-As of the 11 August 2026 status snapshot:
+As of the 12 August 2026 status snapshot:
 
 | Item | Verified state |
 |---|---|
@@ -119,7 +122,8 @@ As of the 11 August 2026 status snapshot:
 | Forward-24-hour headline metrics | Generated (`src/eval/rolling24.py`); not yet frozen, versioned, or wired into `src/report/` |
 | Hourly-threshold sensitivity metrics | Generated; reported separately and never pooled with the 24-hour headline |
 | Event-skill diagnosis | Complete on train-only/out-of-fold data; pooled evidence is Delhi-dominated |
-| Current experiment | Option B perfect-prognosis ERA5 boundary-layer kill-test; no Aurora 1.5 GPU run authorized |
+| Option B ceiling result | **Proceed**: pooled ΔAUC +0.046, ΔCSI +0.206; Patna +0.183/+0.296; train-only perfect prognosis |
+| Current experiment | Quantify forecast-vs-analysis BLH degradation and check free NWP BLH; no Aurora 1.5 GPU run authorized |
 
 Two additional files under `results/pairs/` are legacy pilot-only artifacts
 for dates outside the frozen schedule. The current 56 scheduled files replaced
@@ -179,8 +183,8 @@ labels.
 - per-city/per-lead reporting and plotting code;
 - a train-only diagnosis showing the dynamic-range, between-city, event-scarcity,
   and concentration-loss limits of the current approach;
-- a pre-declared Option B kill-test contract using perfect-prognosis ERA5
-  boundary-layer fields before any Aurora 1.5 GPU spend;
+- a pre-declared Option B kill-test using perfect-prognosis ERA5 boundary-layer
+  fields, with a documented proceed verdict and explicit ceiling caveat;
 - an interactive public-interface preview using explicitly illustrative data.
 - the complete lead-dependent CAMS operational baseline for all 56 dates,
   retained with raw files, checksums, requests, and extraction provenance.
@@ -202,6 +206,7 @@ hide.
 - an Aurora fine-tune justified against the cheap-adaptation baseline.
 - a verified city-level incumbent comparison and transferable non-Delhi event
   evidence.
+- an operational BLH forecast shown to retain enough of the ERA5 ceiling gain;
 
 Until those milestones exist, this repository should be presented as a
 benchmark and system under active development—not as a validated public
@@ -209,10 +214,10 @@ forecast service.
 
 ## Roadmap to a public experimental feed
 
-1. Run the pre-declared train-only Option B ERA5 kill-test and report the
-   perfect-prognosis result per city.
-2. Stop without GPU spend if the gate says no headroom; otherwise verify the
-   Aurora 1.5 checkpoint and design a forecast-time experiment.
+1. Quantify how forecast BLH degrades relative to ERA5 analysis at each lead
+   and test whether a free NWP source retains useful episode information.
+2. Verify Aurora 1.5's released checkpoint and inputs, but authorize a rollout
+   only if it offers value beyond the cheapest adequate BLH forecast.
 3. Freeze and version the retrospective scorecards and connect the 24-hour
    table to the reporting package.
 4. Resolve the Varanasi observation anomaly and verify incumbent coverage

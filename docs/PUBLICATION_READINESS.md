@@ -1,6 +1,6 @@
 # Publication readiness
 
-**Snapshot:** 2026-08-11
+**Snapshot:** 2026-08-12
 **Decision:** keep the repository private until every blocking item below is
 resolved.
 
@@ -32,7 +32,7 @@ current scientific state is tracked in
 - An owner-only Sites deployment of the illustrative UI succeeded.
 - Local browser interaction checks passed, and `npm audit --omit=dev` reports
   zero known production vulnerabilities on the patched lockfile.
-- Re-verified locally on 2026-08-11: `python -m pytest -q` reports 91 passed,
+- Re-verified locally on 2026-08-12: `python -m pytest -q` reports 91 passed,
   and `python -m src.eval.audit` reports 39 checks with 36 passed, 2 expected
   legacy warnings, and the 1 unresolved PM-bin ordering failure below.
 
@@ -79,6 +79,13 @@ Preliminary hourly-threshold and 24-hour PM2.5 scorecards now exist. They are
 not yet frozen as release artifacts, Component A is not certified, and the two
 out-of-schedule pilot files must remain excluded.
 
+The public narrative also requires repair before release. The completed
+diagnosis found that 89.1% of event support is Delhi, Varanasi has zero events,
+and the original claim that Patna/Varanasi lack forecast products was false.
+The current Option B ERA5 experiment is a perfect-prognosis ceiling test, not a
+live forecast. README/product copy, screenshots, metadata, and social posts
+must preserve those distinctions.
+
 The repository may be shared as an active research project after the software
 publication gates pass. It must not be presented as a validated forecast
 service until the scientific and operational gates in
@@ -91,15 +98,18 @@ service until the scientific and operational gates in
 3. Commit only reviewed source and documentation; exclude local configuration.
 4. Push while the repository remains private.
 5. Require the Python and web CI jobs to pass. **Passed on `48135cc`.**
-6. Freeze and version the already-generated 24-hour headline table, connect it
-   to the reporting package, and disclose the remaining audit failure.
-7. Resolve the software licence.
-8. Resolve the historical raw-data choice: rights confirmation, history
+6. Complete or clearly label the Option B kill-test state; never present ERA5
+   perfect-prognosis skill as operational.
+7. Freeze and version the already-generated 24-hour headline table, connect it
+   to the reporting package, and disclose the remaining audit failure and
+   Delhi-dominated event support.
+8. Resolve the software licence.
+9. Resolve the historical raw-data choice: rights confirmation, history
    rewrite, or clean public mirror.
-9. Re-run the secret and large-history audits on the exact publication commit.
-10. Set the GitHub description and topics.
-11. Change visibility only after the owner approves the final gate.
-12. Verify the repository and every README link in an unauthenticated browser.
+10. Re-run the secret and large-history audits on the exact publication commit.
+11. Set the GitHub description and topics without an “unserved cities” claim.
+12. Change visibility only after the owner approves the final gate.
+13. Verify the repository and every README link in an unauthenticated browser.
 
 ## Recommended posting sequence
 
@@ -108,5 +118,6 @@ service until the scientific and operational gates in
 - **Public building-in-progress post:** after the repository publication gates
   above pass.
 - **Main technical post:** after a versioned 24-hour 159-station scorecard
-  exists with the audit limitation disclosed.
+  exists with the audit limitation, Delhi event concentration, and target
+  re-evaluation disclosed.
 - **Product launch post:** after the live feed completes shadow-mode gates.

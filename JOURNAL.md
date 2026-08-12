@@ -1177,3 +1177,52 @@ GPU; this converts the ceiling into an expectation); verify Aurora 1.5's open
 checkpoint actually exposes BLH; and check whether a free NWP boundary-layer
 forecast such as GFS already supplies most of the gain, in which case the
 cheapest useful system may involve no Aurora run at all.
+
+## 2026-08-12 — Repository-wide documentation reconciliation after the thesis changed
+
+Reconciled the canonical brief, all three tool instruction files, README,
+status/execution/workstream/session documents, product/live-feed contracts,
+publication and portfolio guidance, benchmark context, data plans, and review
+brief with the two changes that superseded the August 4 narrative:
+
+1. the “Patna/Varanasi are unserved” premise is falsified and must not return;
+2. the Option B perfect-prognosis ERA5 ceiling test passed its pre-declared
+   gate, so the next scientific action is forecast-vs-analysis BLH degradation
+   and free-NWP/Aurora-1.5 verification—not rerunning the kill-test, freezing
+   reports first, fine-tuning, or provisioning a GPU.
+
+The product contract no longer makes Varanasi the default landing city. The
+current benchmark contains zero Varanasi events and an unresolved observation
+level, while 89.1% of event support is Delhi. The default is now an evidence
+overview until a city has adequate prospective support and verified incumbent
+context. Historical data plans remain useful for provenance and source-quality
+work but now carry explicit strategic-supersession notes.
+
+While this reconciliation was in progress, commit `e0a3487` landed the completed
+kill-test, ERA5 inputs, result document, and train-only evaluator. The docs were
+re-audited against that newer commit rather than preserving the transient
+“kill-test in progress” state. No scientific metric, split, model output, data
+artifact, or decision threshold changed in this documentation pass.
+
+Re-verified after reconciliation:
+
+- `.venv/Scripts/python.exe -m pytest -q` -> 91 passed, one existing NumPy
+  binary-compatibility runtime warning;
+- `.venv/Scripts/python.exe -m src.eval.audit` -> 39 checks: 36 pass, two
+  expected legacy warnings, one retained PM-bin ordering failure;
+- ERA5 acquisition inventory -> seven request-matching months, 84 train-only
+  days, 320,544 station-hours, 159 stations, 2,016 timestamps, matching hashes,
+  zero duplicate keys, and zero missing feature cells;
+- documentation stale-claim search -> no active “465 unserved cities,”
+  Varanasi-default, pending-rollout, pending-24-hour-evaluator, or pending
+  Option B kill-test instruction remains.
+
+SILAM backfill remains active. During final validation, cycle 20260713 completed
+at 19,080 rows/159 stations with five source files and `status: complete`,
+joining completed cycles 20260712 and 20260811. The newly completed 20260713
+artifact remains untracked for a separate data/provenance review; it was not
+staged, deleted, or overwritten by this documentation commit.
+
+Next: write and commit the forecast-BLH degradation contract before viewing a
+forecast comparison; check free NWP first, verify the released Aurora 1.5 BLH
+contract, and authorize no GPU work until incremental value is established.

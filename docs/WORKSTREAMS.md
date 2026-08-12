@@ -1,6 +1,6 @@
 # IndiaAQBench workstreams
 
-**Updated:** 2026-08-11
+**Updated:** 2026-08-12
 **Integration policy for this phase:** the owner requested work directly on
 `master`. Do not create or switch branches unless that instruction changes.
 
@@ -20,20 +20,21 @@ exact source-by-source paths are assigned in `docs/DATA_EXPANSION_PLAN.md`.
 | WS-1 | OpenAQ archive and station registry | **Complete** | `src/data/**`, `data/stations.csv`, frozen dates | Preserve provenance; no new bulk source without licence review |
 | WS-2 | Component A local anchoring | **Scored; promising but not certified** | `src/model/anchor.py`, tests, preliminary scorecard | Resolve +84 h L1 POD regression or retain raw Aurora |
 | WS-3 | Calibrator guardrails and tests | **Full-registry model rejected safely** | `src/model/calibrator.py`, guardrail tests | Preserve negative result; do not score stale binary |
-| WS-4 | Reporting package | **24-hour and hourly tables available** | `src/report/**`, `docs/PRELIMINARY_RESULTS.md` | Freeze/version report artifacts after current kill-test |
-| WS-5 | Fine-tuning design | **Deferred; not the next experiment** | planned `docs/FINETUNE_DESIGN.md` | Only after Option B passes and Aurora 1.5 is verified |
+| WS-4 | Reporting package | **24-hour and hourly tables available** | `src/report/**`, `docs/PRELIMINARY_RESULTS.md` | Freeze/version report artifacts after forecast-BLH gate |
+| WS-5 | Fine-tuning design | **Deferred; not the next experiment** | planned `docs/FINETUNE_DESIGN.md` | Only after forecast BLH and Aurora 1.5 value are verified |
 | WS-6 | 56-date Aurora rollout | **Complete: 56/56 dates, 80,136 rows, clean manifest** | `results/pairs/**` | Preserve artifacts and provenance |
 | WS-7 | Public product and interface | **Private preview deployed; live system absent** | `docs/PRODUCT_SPEC.md`, `docs/LIVE_FEED_SPEC.md`, `web/**` | Shadow runner |
-| WS-8 | Additional data and baselines | **CAMS complete; ERA5 kill-test and SILAM capture active** | `src/data/era5_boundary_layer.py`, `src/data/silam_forecast.py` | Finish perfect-prognosis input review; retain expiring SILAM cycles |
+| WS-8 | Additional data and baselines | **CAMS/ERA5 complete; SILAM capture active** | `src/data/era5_boundary_layer.py`, `src/data/silam_forecast.py` | Quantify forecast BLH degradation; retain expiring SILAM cycles |
 | WS-9 | Repository publication | **Blocked** | README, status, portfolio and readiness docs, CI | Tests/build, licence, clean-history decision |
-| WS-10 | Option B event classifier | **Pre-declared kill-test in progress** | `docs/CODEX_BRIEF_OPTION_B.md`, planned train-only evaluator/tests | Honour AUC/CSI gate before any GPU spend |
+| WS-10 | Option B event classifier | **Perfect-prognosis gate passed** | `src/eval/blh_ceiling_test.py`, `docs/BLH_CEILING_RESULT.md` | Forecast-vs-analysis BLH degradation; no GPU yet |
 
 ## Critical path
 
 ```text
 retrospective diagnosis and target re-evaluation complete
-  -> Option B ERA5 perfect-prognosis kill-test
-  -> honour proceed / no-headroom / ambiguous decision
+  -> Option B ERA5 perfect-prognosis kill-test PASSED
+  -> quantify forecast BLH degradation and check free NWP
+  -> verify Aurora 1.5 checkpoint only if still needed
   -> freeze/version retrospective report artifacts
   -> verify incumbent and target-city evidence
 ```
@@ -152,12 +153,12 @@ Active and remaining priorities are:
 ## WS-10 — Option B event classifier
 
 The next learned method predicts 24-hour Very Poor+ exceedance probability,
-not concentration. Development is train-only and out-of-fold by initialization
-date. ERA5 valid-time boundary-layer fields are intentionally
-perfect-prognosis: they measure a ceiling and must never be presented as an
-operational forecast. The frozen proceed/no-headroom/ambiguous rule is in
-`docs/CODEX_BRIEF_OPTION_B.md` §3.3. Report per city; pooled results are
-Delhi-dominated. Do not start an Aurora 1.5 rollout until this gate passes.
+not concentration. The train-only ERA5 ceiling test passed its pre-declared
+gate: pooled ΔAUC +0.046 and ΔCSI +0.206; Patna +0.183/+0.296. ERA5 valid-time
+fields are perfect prognosis and must never be presented as an operational
+forecast. Next quantify how much BLH forecast skill degrades by lead and whether
+a free NWP source is sufficient. Report per city; pooled results are
+Delhi-dominated. Do not start Aurora 1.5 GPU work yet.
 
 No licence-clear historical Patna/Varanasi hourly archive has yet been
 verified. Aakash data can support northwest-India transport diagnostics, but

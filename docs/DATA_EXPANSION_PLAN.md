@@ -3,6 +3,13 @@
 **Status:** implementation-ready research plan; no new source has been approved,
 downloaded, matched, or licensed by this document.
 
+**Strategic scope note (2026-08-12):** this plan predates the event-skill
+diagnosis and target re-evaluation. Its Patna/Varanasi pilots remain useful for
+source identity and data-quality checks, but their “underserved target city”
+motivation is superseded by `TARGET_REEVALUATION.md`. Current predictive work
+is the forecast-vs-analysis BLH degradation gate that follows the completed
+train-only Option B ceiling test in `BLH_CEILING_RESULT.md`.
+
 **Purpose:** identify additional data that can materially improve the experimental
 forecast feed, severe-event skill, and year-round validation without weakening
 the benchmark's provenance or introducing leakage.
@@ -164,7 +171,7 @@ at a time.
 #### P4 — emissions inventories and additional retrospective meteorology
 
 Use existing CAMS-cycle meteorology before adding another weather source.
-Static emissions can eventually help a regional adapter or underserved-city
+Static emissions can eventually help a regional adapter or city-regime
 typology, but they are unlikely to fix abrupt events by themselves.
 
 ---
@@ -843,7 +850,7 @@ the GPU rollout is in flight.
 | Redistribution is unclear | Public release risk | Source dossier and explicit publication class before committing data |
 | Fire/satellite feature duplicates information already in CAMS | Complexity without gain | One-source ablations; contextual-only default |
 | One short severe season drives design | Weak year-round claim | Seal external historical tests and continue prospective live verification |
-| More rows come mainly from Delhi | Project drifts away from underserved cities | Pilot and report Patna/Varanasi first; require L2 results |
+| More rows come mainly from Delhi | Pooled evidence is mistaken for transferable city skill | Report exact city/event support; require prospective non-Delhi evidence |
 
 ---
 

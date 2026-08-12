@@ -1,7 +1,7 @@
 # IndiaAQBench project status
 
-**Snapshot date:** 2026-08-11
-**Status:** active research; retrospective diagnosed, Option B kill-test in progress
+**Snapshot date:** 2026-08-12
+**Status:** active research; Option B ceiling passed, forecast-BLH gate next
 **Public-use level:** code and benchmark design only—not a validated forecast
 service
 
@@ -30,6 +30,7 @@ the [development journal](../JOURNAL.md) preserves the full history.
 | Web preview | CI build/render and owner-only deployment passing |
 | Event-skill diagnosis | Complete on train-only/out-of-fold data; 89.1% of events are Delhi |
 | Current direction | Option B kill-test **PASSED** (perfect-prognosis); see `BLH_CEILING_RESULT.md` |
+| ERA5 Option B inputs | 7 months, 84 train-only days, 320,544 station-hours; validated and committed |
 
 The expected pair count is 56 dates × 159 stations × 9 rows per station: one
 lead-zero CAMS row plus eight Aurora forecast leads.
@@ -131,6 +132,10 @@ The temporal cutoff was revised once on 2026-07-24:
   remaining direct-portal verification caveat.
 - Pre-declared the Option B ERA5 perfect-prognosis decision rule before viewing
   its result and implemented the train-only ERA5 acquisition path.
+- Ran the train-only out-of-fold kill-test. Adding ERA5 raised pooled AUC from
+  0.927 to 0.973 and best CSI from 0.476 to 0.682; Patna rose from
+  0.745/0.159 to 0.928/0.455. The pre-declared proceed gate passed, but these
+  are perfect-prognosis ceiling results rather than operational forecast skill.
 
 ## In progress
 
@@ -163,7 +168,9 @@ These are not complete and must not be implied in public claims:
 - **Verified city-level incumbent comparison:** absent; AQEWS portal coverage
   and initialization-aligned SILAM comparison remain unresolved.
 
-The immediate scientific gate is now a CPU ceiling test, not GPU inference.
+The immediate scientific gate is now forecast-vs-analysis BLH degradation, not
+GPU inference. The ceiling says the information is valuable; it does not show
+that an operational forecast retains it.
 Product work may continue with clearly labeled illustrative data, but the
 public target and default city must not preserve the falsified “unserved city”
 story or imply Varanasi episode evidence that does not exist.
@@ -181,10 +188,10 @@ benchmark results.
 
 The critical scientific sequence is:
 
-1. Run the pre-declared Option B perfect-prognosis ERA5 kill-test on train-only
-   out-of-fold data and report pooled and per-city AUC/CSI.
-2. Honour the decision rule: stop if there is no headroom, report ambiguity as
-   ambiguity, or verify Aurora 1.5 before any GPU rollout if the gate passes.
+1. Quantify forecast-vs-analysis BLH degradation by lead, using the cheapest
+   available forecast source and no test-split model tuning.
+2. Verify whether Aurora 1.5's open checkpoint actually exposes forecast BLH
+   and whether it adds value beyond free NWP before any GPU rollout.
 3. Preserve the rejected concentration calibrator and do not replace it with
    another concentration-regression-plus-threshold pipeline.
 4. Freeze per-city, per-window, pooled, L1, and L2 retrospective artifacts and
@@ -208,8 +215,9 @@ It is accurate today to say:
 > IndiaAQBench is an event-focused benchmark that completed a 56-date,
 > 159-station comparison of Aurora, CAMS, persistence, and cheap local
 > adaptation, exposed where pooled and average-error evaluation fail, and is
-> now testing whether boundary-layer meteorology adds episode-prediction
-> headroom before spending more compute.
+> showed with a pre-declared perfect-prognosis ceiling test that boundary-layer
+> meteorology contains substantial episode-prediction headroom, and is now
+> measuring how much survives in a real forecast before spending more compute.
 
 It is not yet accurate to say:
 

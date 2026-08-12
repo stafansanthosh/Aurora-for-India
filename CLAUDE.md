@@ -30,8 +30,9 @@ duplication-drift failure `src/splits.py` exists to prevent.
 - No A100 needed (0.4° inference fits a ~$0.50/hr 48 GB spot GPU).
 - OpenAQ serves no data before ~Feb 2025; backfill is impossible.
 - Temporal cutoff is 2025-12-01 (revised once, disclosed — see the brief).
-- No replacement concentration regressor: model exceedance probability. Run
-  the pre-declared Option B ERA5 kill-test before any Aurora 1.5 GPU spend.
+- No replacement concentration regressor: model exceedance probability. The
+  Option B ERA5 ceiling test passed; next quantify forecast-vs-analysis BLH
+  degradation. Do not start Aurora 1.5 GPU work yet.
 
 Environment: Windows, `.venv/Scripts/python.exe`. Credentials in `.env`
 (`OPENAQ_API_KEY`) and `~/.cdsapirc` (Copernicus ADS).

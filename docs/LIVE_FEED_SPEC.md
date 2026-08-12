@@ -3,6 +3,11 @@
 Status: proposed implementation contract
 Companion: `docs/PRODUCT_SPEC.md`
 
+Strategic note (2026-08-12): the ledger, provenance, freshness, and failover
+contracts remain valid, but the target/default city and public claim are under
+revision after `TARGET_REEVALUATION.md`. Do not deploy the Varanasi fixtures as
+evidence or preserve the old “unserved city” story in product copy.
+
 ## 1. Scope and assumptions
 
 This document specifies a twice-daily experimental PM2.5 forecast feed. It does

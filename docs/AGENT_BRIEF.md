@@ -33,9 +33,11 @@ about method behaviour, not yet a validated public service.
   pollution episode is worthless here — and we have already been burned by
   exactly that (see "Rejected" below).
 - **Current direction:** predict `P(24 h PM2.5 >= 121)` directly and publish an
-  operating point. The chosen Option B first runs a train-only,
-  perfect-prognosis ERA5 boundary-layer kill-test. Do not spend GPU money on an
-  Aurora 1.5 rollout unless that pre-declared ceiling test shows headroom.
+  operating point. The train-only, perfect-prognosis ERA5 boundary-layer
+  kill-test passed its pre-declared gate (`docs/BLH_CEILING_RESULT.md`), but it
+  is a ceiling rather than forecast skill. Next quantify forecast-vs-analysis
+  BLH degradation and verify whether a free NWP forecast supplies the field.
+  Do not spend GPU money on Aurora 1.5 yet.
 
 ## Map of the repo
 
@@ -91,10 +93,10 @@ rollout +12h…+96h, sampled at station cells) → `src/eval/benchmark.py` (base
   Patna or Varanasi is unserved. The defensible question is whether cheap local
   and meteorological adaptation improves episode skill over the global tier or
   a verified incumbent.
-- **Option B is gated by a CPU kill-test.** ERA5 valid-time boundary-layer
-  fields are perfect-prognosis inputs and therefore an upper bound, not an
-  operational result. The proceed/no-headroom/ambiguous rule is pre-declared in
-  `docs/CODEX_BRIEF_OPTION_B.md` §3.3 and must not be changed after scoring.
+- **Option B cleared its CPU ceiling gate.** Perfect-prognosis ERA5 improved
+  pooled AUC by 0.046 and best CSI by 0.206; Patna improved by 0.183 and 0.296.
+  These are upper-bound analysis results, not an operational forecast. The next
+  gate is forecast BLH degradation; no GPU rollout is authorized yet.
 
 ## Rejected — do not propose again
 
