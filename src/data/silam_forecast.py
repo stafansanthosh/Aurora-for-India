@@ -191,7 +191,8 @@ def _sample_file(path: Path, cells: pd.DataFrame, init: pd.Timestamp) -> pd.Data
 
 
 def capture_cycle(cycle: str, output_dir: Path = OUTPUT_DIR,
-                  keep_raw: bool = False, force: bool = False) -> Path:
+                  keep_raw: bool = False, force: bool = False,
+                  allow_short_lead: bool = False) -> Path:
     """Capture one SILAM cycle to an immutable, provenance-stamped CSV."""
     directory = output_dir / cycle
     directory.mkdir(parents=True, exist_ok=True)
@@ -200,7 +201,7 @@ def capture_cycle(cycle: str, output_dir: Path = OUTPUT_DIR,
 
     if samples_path.exists() and provenance_path.exists() and not force:
         existing = json.loads(provenance_path.read_text())
-        if existing.get("status") == "complete":
+        if existing.get("status") in ("complete", "complete_with_gaps"):
             print(f"[silam] {cycle}: already complete ({samples_path.name})")
             return samples_path
 
@@ -221,7 +222,7 @@ def capture_cycle(cycle: str, output_dir: Path = OUTPUT_DIR,
         "files": [],
     }
 
-    parts, cells = [], None
+    parts, cells, short_leads = [], None, []
     with tempfile.TemporaryDirectory() as tmp:
         for lead in LEAD_DAYS:
             url = _url(cycle, lead)
@@ -238,8 +239,16 @@ def capture_cycle(cycle: str, output_dir: Path = OUTPUT_DIR,
             part = _sample_file(target, cells, init)
             hours = part["valid_time"].nunique()
             if hours != EXPECTED_HOURS_PER_LEAD:
-                raise ValueError(
-                    f"{cycle} {lead}: expected {EXPECTED_HOURS_PER_LEAD} hours, got {hours}")
+                # Upstream short files are real: 20260730 d2 served 20 hours.
+                # Fail closed by default -- a silently short lead produces
+                # incomplete 24-hour windows that look like valid ones.
+                if not allow_short_lead:
+                    raise ValueError(
+                        f"{cycle} {lead}: expected {EXPECTED_HOURS_PER_LEAD} hours, "
+                        f"got {hours}. Re-run with --allow-short-lead to keep the "
+                        f"complete leads and record this gap explicitly.")
+                short_leads.append({"lead": lead, "hours": int(hours)})
+                print(f"[silam] {cycle} {lead}: SHORT ({hours}h) -- recorded as a gap")
             parts.append(part)
             provenance["files"].append({
                 "lead": lead, "url": url, "sha256": digest, "bytes": size,
@@ -258,7 +267,8 @@ def capture_cycle(cycle: str, output_dir: Path = OUTPUT_DIR,
         raise ValueError(f"{cycle}: duplicate (station, valid_time) rows")
 
     samples.to_csv(samples_path, index=False)
-    provenance["status"] = "complete"
+    provenance["status"] = "complete_with_gaps" if short_leads else "complete"
+    provenance["short_leads"] = short_leads
     provenance["rows"] = int(len(samples))
     provenance["stations"] = int(samples["station_id"].nunique())
     provenance["lead_h_range"] = [int(samples["lead_h"].min()), int(samples["lead_h"].max())]
@@ -281,6 +291,10 @@ def main() -> None:
     parser.add_argument("--keep-raw", action="store_true",
                         help="retain the ~190 MB/cycle NetCDF grids")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--allow-short-lead", action="store_true",
+                        help="keep complete leads when upstream serves a short "
+                             "file; records the gap and marks the cycle "
+                             "complete_with_gaps")
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
     args = parser.parse_args()
 
@@ -306,7 +320,8 @@ def main() -> None:
             failures.append(cycle)
             continue
         try:
-            capture_cycle(cycle, args.output_dir, args.keep_raw, args.force)
+            capture_cycle(cycle, args.output_dir, args.keep_raw, args.force,
+                          args.allow_short_lead)
         except Exception as exc:                                   # noqa: BLE001
             print(f"[silam] {cycle}: FAILED {exc}")
             failures.append(cycle)
