@@ -19,9 +19,10 @@ windows come from Delhi and that the original “unserved Patna/Varanasi” fram
 was wrong. The train-only Option B ceiling test found that perfect-prognosis
 ERA5 boundary-layer features cleared the pre-declared bar: pooled AUC rose by
 0.046 and best CSI by 0.206, with an even larger Patna gain. This is analysis
-skill, not forecast skill. The next question is how much degrades when BLH must
-be forecast, and whether a free NWP source is sufficient; no Aurora 1.5 GPU
-rollout is authorized yet. One audit check remains failed for inconsistent auxiliary PM1/PM10
+skill, not forecast skill. The follow-on operational-source gate also passed:
+free NOAA GFS forecast boundary-layer features added 0.0336 AUC and 0.1620 CSI,
+including +0.108/+0.101 in Patna. GFS is sufficient for this purpose, so an
+Aurora 1.5 GPU rollout is not warranted. One audit check remains failed for inconsistent auxiliary PM1/PM10
 size ordering, so this repository does **not** claim fully clean model output,
 transferable target-city skill, or operational readiness. See the
 [live project scoreboard](docs/PROJECT_STATUS.md).
@@ -117,13 +118,14 @@ As of the 12 August 2026 status snapshot:
 | Aurora rollout artifacts | 56/56 dates, 80,136 rows, 159 stations; worker and transfer checks passed |
 | Canonical rollout manifest | 56 records, 56 unique dates, zero errors |
 | Integrity audit | 39 checks: 36 pass, 2 expected legacy warnings, 1 auxiliary size-bin failure |
-| Test suite | 91/91 passing locally |
+| Test suite | 99/99 passing locally |
 | Current-registry forecast pairs | **56 of 56 dates; 80,136 rows** |
 | Forward-24-hour headline metrics | Generated (`src/eval/rolling24.py`); not yet frozen, versioned, or wired into `src/report/` |
 | Hourly-threshold sensitivity metrics | Generated; reported separately and never pooled with the 24-hour headline |
 | Event-skill diagnosis | Complete on train-only/out-of-fold data; pooled evidence is Delhi-dominated |
 | Option B ceiling result | **Proceed**: pooled ΔAUC +0.046, ΔCSI +0.206; Patna +0.183/+0.296; train-only perfect prognosis |
-| Current experiment | Quantify forecast-vs-analysis BLH degradation and check free NWP BLH; no Aurora 1.5 GPU run authorized |
+| Forecast-BLH result | **Free GFS sufficient**: pooled ΔAUC +0.0336, ΔCSI +0.1620; Patna +0.108/+0.101; do not run Aurora 1.5 for BLH |
+| Current experiment | Forecast-BLH gate complete; freeze/version retrospective scorecards next |
 
 Two additional files under `results/pairs/` are legacy pilot-only artifacts
 for dates outside the frozen schedule. The current 56 scheduled files replaced
@@ -185,6 +187,8 @@ labels.
   and concentration-loss limits of the current approach;
 - a pre-declared Option B kill-test using perfect-prognosis ERA5 boundary-layer
   fields, with a documented proceed verdict and explicit ceiling caveat;
+- a pre-declared train-only GFS forecast-BLH gate, with exact cycle/lead
+  provenance, per-city results, and a free-NWP-sufficient verdict;
 - an interactive public-interface preview using explicitly illustrative data.
 - the complete lead-dependent CAMS operational baseline for all 56 dates,
   retained with raw files, checksums, requests, and extraction provenance.
@@ -206,7 +210,6 @@ hide.
 - an Aurora fine-tune justified against the cheap-adaptation baseline.
 - a verified city-level incumbent comparison and transferable non-Delhi event
   evidence.
-- an operational BLH forecast shown to retain enough of the ERA5 ceiling gain;
 
 Until those milestones exist, this repository should be presented as a
 benchmark and system under active development—not as a validated public
@@ -214,14 +217,14 @@ forecast service.
 
 ## Roadmap to a public experimental feed
 
-1. Quantify how forecast BLH degrades relative to ERA5 analysis at each lead
-   and test whether a free NWP source retains useful episode information.
-2. Verify Aurora 1.5's released checkpoint and inputs, but authorize a rollout
-   only if it offers value beyond the cheapest adequate BLH forecast.
-3. Freeze and version the retrospective scorecards and connect the 24-hour
+1. Freeze and version the retrospective scorecards and connect the 24-hour
    table to the reporting package.
-4. Resolve the Varanasi observation anomaly and verify incumbent coverage
+2. Resolve the Varanasi observation anomaly and verify incumbent coverage
    before making city-specific product claims.
+3. Review the prospective SILAM archive and design an initialization-aligned
+   incumbent comparison.
+4. Do not run Aurora 1.5 for BLH unless a future pre-declared experiment has a
+   credible incremental-value case over GFS.
 5. Build an immutable latest-cycle runner and run it privately in shadow mode.
 6. Publish only after the target, operating point, data freshness, and rolling
    verification are supported by prospective evidence.
@@ -236,6 +239,7 @@ and where the system failed.
 |---|---|
 | [Project status](docs/PROJECT_STATUS.md) | Plain-language scoreboard and immediate next steps |
 | [Option B working brief](docs/CODEX_BRIEF_OPTION_B.md) | Pre-declared boundary-layer kill-test and decision rule |
+| [Forecast-BLH result](docs/FORECAST_BLH_RESULT.md) | Why free GFS passed and Aurora 1.5 inference is not warranted |
 | [Episode-skill diagnosis](docs/EPISODE_SKILL_DIAGNOSIS.md) | Why the first calibrator and pooled benchmark are insufficient |
 | [Target re-evaluation](docs/TARGET_REEVALUATION.md) | Why the original “unserved cities” framing was retired |
 | [Benchmark specification](docs/BENCHMARK_SPEC.md) | Task, metrics, baselines, cities, and split design |

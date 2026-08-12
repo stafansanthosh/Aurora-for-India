@@ -31,8 +31,8 @@ duplication-drift failure `src/splits.py` exists to prevent.
 - OpenAQ serves no data before ~Feb 2025; backfill is impossible.
 - Temporal cutoff is 2025-12-01 (revised once, disclosed — see the brief).
 - No replacement concentration regressor: model exceedance probability. The
-  Option B ERA5 ceiling test passed; next quantify forecast-vs-analysis BLH
-  degradation. Do not start Aurora 1.5 GPU work yet.
+  Option B ERA5 ceiling and free GFS forecast-BLH gates passed. Use GFS for
+  forecast BLH; do not run Aurora 1.5 for this purpose.
 
 Environment: Windows, `.venv/Scripts/python.exe`. Credentials in `.env`
 (`OPENAQ_API_KEY`) and `~/.cdsapirc` (Copernicus ADS).

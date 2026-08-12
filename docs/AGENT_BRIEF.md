@@ -35,16 +35,16 @@ about method behaviour, not yet a validated public service.
 - **Current direction:** predict `P(24 h PM2.5 >= 121)` directly and publish an
   operating point. The train-only, perfect-prognosis ERA5 boundary-layer
   kill-test passed its pre-declared gate (`docs/BLH_CEILING_RESULT.md`), but it
-  is a ceiling rather than forecast skill. Next quantify forecast-vs-analysis
-  BLH degradation and verify whether a free NWP forecast supplies the field.
-  Do not spend GPU money on Aurora 1.5 yet.
+  is a ceiling rather than forecast skill. The subsequent train-only GFS gate
+  also passed (`docs/FORECAST_BLH_RESULT.md`): free GFS retains enough episode
+  signal, so do not spend GPU money on Aurora 1.5 for BLH.
 
 ## Map of the repo
 
 | You need | File |
 |---|---|
 | Current state + the exact next command | **`docs/HANDOFF.md`** |
-| Current Option B experiment contract | **`docs/CODEX_BRIEF_OPTION_B.md`** |
+| Forecast-BLH contract and result | **`docs/FORECAST_BLH_CONTRACT.md`**, **`docs/FORECAST_BLH_RESULT.md`** |
 | Why the founding target changed | `docs/TARGET_REEVALUATION.md` |
 | Why concentration calibration failed | `docs/EPISODE_SKILL_DIAGNOSIS.md` |
 | Who owns which files (parallel work) | `docs/WORKSTREAMS.md` |
@@ -95,8 +95,12 @@ rollout +12h…+96h, sampled at station cells) → `src/eval/benchmark.py` (base
   a verified incumbent.
 - **Option B cleared its CPU ceiling gate.** Perfect-prognosis ERA5 improved
   pooled AUC by 0.046 and best CSI by 0.206; Patna improved by 0.183 and 0.296.
-  These are upper-bound analysis results, not an operational forecast. The next
-  gate is forecast BLH degradation; no GPU rollout is authorized yet.
+  These are upper-bound analysis results, not an operational forecast.
+- **Free GFS cleared the forecast-BLH gate.** On the same train-only population,
+  GFS boundary-layer features improved pooled AUC by 0.0336 and CSI by 0.1620;
+  Patna improved by 0.108/0.101. GFS retained about 76%/81% of the like-for-like
+  ERA5 gain. Do not run Aurora 1.5 for BLH; its released weather checkpoint does
+  output `blh`, but GFS already passes without its HRES input burden or a GPU.
 
 ## Rejected — do not propose again
 

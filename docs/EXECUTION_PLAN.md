@@ -29,14 +29,15 @@ illustrative design, retrospective evidence, and prospective live forecasts.
 | Event-skill diagnosis | Complete; train-only/out-of-fold, pooled result is Delhi-dominated |
 | Target re-evaluation | Complete; “Patna/Varanasi are unserved” premise retired |
 | Option B | Kill-test **passed**: dAUC +0.046, dCSI +0.206; Patna +0.183/+0.296 |
+| Forecast-BLH gate | **Free GFS sufficient**: dAUC +0.0336, dCSI +0.1620; no Aurora 1.5 run |
 | SILAM incumbent archive | Prospective rolling capture in progress |
 
 ## 2. Scientific critical path
 
 ```text
 Option B perfect-prognosis kill-test PASSED
-  -> quantify forecast-vs-analysis BLH degradation (no GPU)
-  -> verify Aurora 1.5 exposes BLH; check free NWP BLH first
+  -> free GFS forecast-vs-analysis BLH gate PASSED (no GPU)
+  -> Aurora 1.5 outputs BLH, but adds no justified value over qualified GFS
   -> freeze/version retrospective scorecards
   -> verify incumbent and target-city evidence
   -> private live shadow runner
@@ -47,9 +48,8 @@ produced 20,034 rows with 159 stations and zero errors; the combined local
 inventory is 56 dates and 80,136 rows. All transferred pair files and worker
 manifests matched the remote SHA-256 hashes. No provider credentials or OpenAQ
 archive were placed on the workers. No more GPU compute is required for this
-retrospective pass. No Aurora 1.5 rollout is justified until the train-only ERA5
-ceiling gain is translated into forecast-time BLH skill and the open checkpoint
-is shown to add value beyond a cheaper NWP source.
+retrospective pass. The train-only forecast-BLH gate has now shown that free GFS
+retains enough episode signal. No Aurora 1.5 rollout is justified for BLH.
 
 For reproduction, use one distinct slice on each configured worker:
 
@@ -141,13 +141,14 @@ shadow-mode evidence.
 ## 6. Model-spend decision
 
 The Option B ceiling gate passed: pooled ΔAUC +0.046 and ΔCSI +0.206, with
-Patna +0.183/+0.296. This authorizes the next cheap question, not GPU spend.
-First quantify forecast-vs-analysis BLH degradation by lead and check whether a
-free NWP forecast supplies enough of the signal. Verify Aurora 1.5's released
-variables and input contract in parallel.
+Patna +0.183/+0.296. The follow-on free GFS gate also passed: ΔAUC +0.0336 and
+ΔCSI +0.1620, with Patna +0.108/+0.101. Microsoft documentation confirms the
+released Aurora 1.5 weather checkpoint outputs BLH, but GFS already clears the
+pre-declared hurdle without its HRES input burden or GPU inference. Do not run
+Aurora 1.5 for BLH.
 
-Only if those checks show incremental value should an Aurora 1.5 or fine-tuning
-design define:
+Any future Aurora or fine-tuning design would require a new incremental-value
+case over GFS and must define:
 
 1. which parameters are trainable;
 2. a loss that protects severe-event detection;

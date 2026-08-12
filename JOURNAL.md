@@ -1226,3 +1226,58 @@ staged, deleted, or overwritten by this documentation commit.
 Next: write and commit the forecast-BLH degradation contract before viewing a
 forecast comparison; check free NWP first, verify the released Aurora 1.5 BLH
 contract, and authorize no GPU work until incremental value is established.
+
+## 2026-08-12 — Free GFS passes the forecast-BLH gate; no Aurora 1.5 run
+
+Pre-declared `docs/FORECAST_BLH_CONTRACT.md` and committed it as `b78479b`
+before acquiring or scoring the multi-date comparison. Primary NOAA
+documentation established that the public 0.25 degree GFS pgrb2 product exposes
+surface `HPBL`, 2 m temperature/dew point, and 10 m U/V wind through +96 h,
+with anonymous historical access and open reuse terms. Microsoft documentation
+separately confirmed that the released `AuroraV1p5` weather checkpoint outputs
+`blh`, but is intended for IFS HRES T0 and requires 19 surface inputs, five
+atmospheric fields on 13 pressure levels, and 36 static fields. It is not an
+Aurora 1.5 air-pollution checkpoint.
+
+Implemented `src.data.gfs_boundary_layer`: exact 12Z train cycles, +0..+96 h by
+3 h, range reads of only five GRIB messages, immutable per-cycle source/index
+URLs, byte ranges, hashes, retrieval times, GRIB cycle/lead metadata, units and
+terms, station sampling, atomic resumable date caches, exact-cycle retries, and
+a read-only validator. The complete acquisition has 32/32 train dates, 159
+stations, 33 leads, 167,904 rows, zero duplicate keys, zero missing dates, zero
+non-finite required fields, and zero unresolved failures. The temporal test
+split was not acquired for development or scored.
+
+Implemented `src.eval.forecast_blh_gate` under the committed design. Raw GFS
+HPBL versus ERA5 is strongly high-biased but correlated: at +24/+48/+72/+96 h,
+bias is +515.5/+460.8/+485.9/+404.6 m, RMSE 1029.2/955.0/954.2/859.7 m, and
+correlation 0.707/0.717/0.753/0.750. The result is retained ordering signal, not
+proof that GFS and ERA5 BLH are physically interchangeable.
+
+On the exact ceiling-test population (18,934 train-pool windows, 2,167 events,
+32 grouped folds), current features score AUC/CSI 0.927/0.476; same-grid ERA5
+0.971/0.676; and actual GFS forecast boundary-layer features 0.961/0.638. GFS
+therefore adds +0.0336 AUC and +0.1620 CSI, retaining 75.8% and 80.9% of the
+like-for-like ERA5 incremental gains. Patna improves +0.108 AUC/+0.101 CSI over
+111 events and Mumbai +0.075/+0.075 over 61 events, satisfying the non-Delhi
+condition. GFS improves both AUC and CSI at window ends +24, +48, +72 and +96 h.
+
+Verdict against the pre-declared rule: **FREE NWP SUFFICIENT — do not run
+Aurora 1.5**. This remains train-only, out-of-fold, Delhi-dominated evidence; it
+does not certify an operational product or unlock the test split. A future
+Aurora experiment would need a new incremental-value case over GFS, not merely
+the existence of an open BLH-capable checkpoint.
+
+During implementation, an initial parallel ecCodes decode exposed a Windows
+definition-loader race; network reads remain parallel and the short native
+decode is now serialized. The first scoring run also exposed a coverage
+denominator bug: it charged GFS for windows already unusable because current
+Aurora/CAMS features were missing. The binding contract says “otherwise
+eligible,” so the denominator was corrected to current-comparator-eligible
+windows and regression-tested. The scientific population and scores were
+unchanged; coverage is correctly 100%.
+
+The prospective SILAM process continued independently and produced additional
+untracked cycles while this work ran. They remain outside this commit and need
+their separate provenance review; no SILAM file was staged, deleted, or
+overwritten here.

@@ -2,7 +2,7 @@
 
 **Updated:** 2026-08-12
 **Branch:** `master`
-**Scientific state:** Option B perfect-prognosis gate passed; forecast-BLH gate next; one audit failure remains
+**Scientific state:** free GFS passed the forecast-BLH gate; do not run Aurora 1.5; one audit failure remains
 **Product status:** illustrative preview only; no live feed
 **Documentation state:** canonical/tool instructions and public/current-state
 documents reconciled on 2026-08-12 with the event-skill diagnosis, target
@@ -32,14 +32,15 @@ headline and not evidence of year-round operational utility.
 | Aurora rollout | 56 dates, 80,136 rows, registry `159:4c0b55ad238f` |
 | Canonical manifest | 56 records, 56 unique dates, zero errors, zero duplicates |
 | Legacy pairs | 2025-11-15 and 2025-11-20 remain on disk and are strictly excluded |
-| Tests | 91/91 pass locally (re-verified 2026-08-12) |
+| Tests | 99/99 pass locally (re-verified 2026-08-12) |
 | Audit | 39 checks: 36 pass, 2 expected legacy warnings, 1 size-bin failure (re-verified 2026-08-12) |
 | Raw/Component A scorecards | 24-hour headline and hourly sensitivity generated separately |
 | Accepted calibrator | Absent; full-registry fit failed the POD no-harm gate |
 | Public live forecast | Absent |
 | ERA5 Option B acquisition | 7/7 planned months, 84 train-only days, 320,544 station-hours, 159 stations; hashes/coverage/duplicates/missing values validated 2026-08-12 |
 | Option B kill-test | **PROCEED**: pooled ΔAUC +0.046, ΔCSI +0.206; Patna +0.183/+0.296; train-only perfect prognosis |
-| SILAM prospective capture | Backfill running; completed cycles are immutable and the next cycle remains in progress |
+| GFS forecast-BLH gate | **FREE NWP SUFFICIENT**: pooled ΔAUC +0.0336, ΔCSI +0.1620; Patna +0.108/+0.101; 32/32 train cycles, no GPU |
+| SILAM prospective capture | Active; untracked 20260713/14/15 directories await separate provenance review and are excluded here |
 
 The local `.venv` is healthy: Python 3.11.9. The earlier broken-environment
 claim was caused by a restricted Codex sandbox, not the repository runtime.
@@ -157,32 +158,54 @@ station-hours, 159 stations, 2,016 timestamps, zero duplicate
 hashes. The validated inputs and ceiling-test implementation are committed in
 `e0a3487`.
 
-SILAM `--backfill` is still running against its rolling public window. As of
-the documentation snapshot, 20260712, 20260713, and 20260811 were complete at
-19,080 rows and 159 stations each. Cycle 20260713 completed while this
-documentation pass was being validated and remains untracked for separate
-data/provenance review. Do not trust or stage a partial next cycle; recheck this
-state before the next handoff.
+The **forecast-BLH gate is also complete and passed** under the contract
+committed in `b78479b` before acquisition. NOAA GFS 0.25 degree 12Z forecasts
+were acquired for all 32 frozen train initializations, every three hours through
++96 h: 167,904 rows, 159 stations, zero missing dates, duplicates, unresolved
+failures, or non-finite fields. Exact source/index URLs, byte ranges, hashes,
+retrieval times, GRIB cycle/lead metadata, units, and terms are retained per
+cycle. The temporal test split remained sealed.
+
+On the same 18,934 out-of-fold train windows and 2,167 events, adding GFS
+forecast boundary-layer features raised pooled AUC from 0.927 to 0.961 and best
+CSI from 0.476 to 0.638 (ΔAUC +0.0336, ΔCSI +0.1620). It retained 75.8% of the
+like-for-like ERA5-3h AUC gain and 80.9% of the CSI gain. Patna improved by
++0.108 AUC/+0.101 CSI across 111 events; Mumbai also improved across 61 events.
+GFS cleared the pre-declared rule, so **do not run Aurora 1.5 for BLH**. Raw GFS
+HPBL is strongly high-biased against ERA5 (+405 to +516 m pooled), so the claim
+is retained classifier signal, not interchangeable physical BLH. Full results:
+`docs/FORECAST_BLH_RESULT.md`.
+
+Primary documentation separately confirmed that Aurora 1.5's released weather
+checkpoint outputs `blh`, but requires a much larger IFS HRES T0 weather-input
+contract. It is not an Aurora 1.5 air-pollution checkpoint. Technical
+availability no longer justifies a rollout because free GFS already passes.
+
+The SILAM capture continued independently during this work. Untracked
+directories now exist for 20260713, 20260714, and 20260715; they remain outside
+this gate and were not provenance-reviewed, staged, deleted, or overwritten.
+Cycle 20260811 and the previously documented capture remain in place. Review
+each untracked cycle separately before trusting or committing it.
 
 ## Exact next scientific action
 
-1. Quantify forecast-vs-analysis BLH degradation at +24/+48/+72/+96 h using
-   the cheapest verified historical forecast source. Write the matching,
-   metrics, missing-data policy, and GPU-decision rule before viewing results.
-2. Check free NWP sources such as GFS first; separately verify from primary
-   documentation whether Aurora 1.5's released checkpoint exposes BLH and what
-   inputs it requires.
-3. Preserve train-only development and per-city reporting. ERA5 remains
-   perfect-prognosis analysis and must not be presented as operational skill.
-   Do not start Aurora 1.5 inference or provision a GPU yet.
-4. Verify the prospective SILAM capture without deleting or overwriting cycles;
+1. Freeze/version the generated 24-hour and hourly retrospective tables and
+   connect the forward-24-hour headline to `src/report/` without pooling the two
+   scoring paths.
+2. Preserve train-only development and per-city event counts. ERA5 remains
+   perfect-prognosis analysis; GFS is forecast-time input but this gate is not
+   temporal-test or operational validation.
+3. Do not start Aurora 1.5 inference or provision a GPU for BLH. Any future
+   Aurora experiment requires a new pre-declared incremental-value question
+   over the now-qualified GFS source.
+4. Review the prospective SILAM capture without deleting or overwriting cycles;
    an eventual head-to-head must align its 00Z initialization with the
    comparison forecast.
-5. After the current gate, freeze/version the generated retrospective tables
-   and connect the forward-24-hour headline to `src/report/`.
+5. Resolve the Varanasi observation anomaly and verify incumbent coverage before
+   making city-specific product claims.
 
-No additional GPU compute is authorized until the forecast-BLH gate shows
-incremental value beyond the cheapest adequate source. Fine-tuning is deferred.
+No Aurora 1.5 GPU compute is warranted for BLH: the cheapest adequate source is
+GFS and it passed. Fine-tuning remains deferred.
 
 ## Publication boundary
 

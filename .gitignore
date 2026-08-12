@@ -37,3 +37,6 @@ data/cams_forecast/
 artifacts/gpu_inputs/
 !**/.gitkeep
 results/*.nc
+
+# Resumable GFS forecast-BLH acquisition cache (assembled samples/provenance are tracked)
+data/gfs_blh/by_init/

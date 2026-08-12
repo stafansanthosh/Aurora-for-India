@@ -1,7 +1,7 @@
 # IndiaAQBench project status
 
 **Snapshot date:** 2026-08-12
-**Status:** active research; Option B ceiling passed, forecast-BLH gate next
+**Status:** active research; free GFS passed the forecast-BLH gate; no Aurora 1.5 run
 **Public-use level:** code and benchmark design only—not a validated forecast
 service
 
@@ -26,11 +26,12 @@ the [development journal](../JOURNAL.md) preserves the full history.
 | Pilot-only pair files rejected by the loader | 2 |
 | Canonical manifest | 56 unique done records; zero errors |
 | Integrity audit | 36 pass, 2 expected legacy warnings, 1 PM-bin ordering failure |
-| Unit tests | 91/91 passing locally |
+| Unit tests | 99/99 passing locally |
 | Web preview | CI build/render and owner-only deployment passing |
 | Event-skill diagnosis | Complete on train-only/out-of-fold data; 89.1% of events are Delhi |
 | Current direction | Option B kill-test **PASSED** (perfect-prognosis); see `BLH_CEILING_RESULT.md` |
 | ERA5 Option B inputs | 7 months, 84 train-only days, 320,544 station-hours; validated and committed |
+| GFS forecast-BLH gate | **FREE NWP SUFFICIENT**: ΔAUC +0.0336, ΔCSI +0.1620; 32/32 train cycles; no Aurora 1.5 run |
 
 The expected pair count is 56 dates × 159 stations × 9 rows per station: one
 lead-zero CAMS row plus eight Aurora forecast leads.
@@ -136,14 +137,16 @@ The temporal cutoff was revised once on 2026-07-24:
   0.927 to 0.973 and best CSI from 0.476 to 0.682; Patna rose from
   0.745/0.159 to 0.928/0.455. The pre-declared proceed gate passed, but these
   are perfect-prognosis ceiling results rather than operational forecast skill.
+- Pre-declared and ran the forecast-versus-analysis gate on exact 12Z NOAA GFS
+  cycles for all 32 train dates. GFS raised pooled AUC from 0.927 to 0.961 and
+  CSI from 0.476 to 0.638, including +0.108/+0.101 in Patna, and passed the
+  free-NWP-sufficient rule. Aurora 1.5 inference is not warranted for BLH.
 
 ## In progress
 
-- Quantifying forecast-vs-analysis boundary-layer degradation, the number that
-  converts the Option B ceiling into an expectation. No GPU required.
 - Capturing the rolling SILAM operational archive while cycles remain online.
 - Freezing the generated 24-hour and hourly tables and connecting them to the
-  reporting package after the current scientific gate.
+  reporting package.
 - Resolving repository licensing and historical raw-data publication before a
   public launch.
 
@@ -168,9 +171,9 @@ These are not complete and must not be implied in public claims:
 - **Verified city-level incumbent comparison:** absent; AQEWS portal coverage
   and initialization-aligned SILAM comparison remain unresolved.
 
-The immediate scientific gate is now forecast-vs-analysis BLH degradation, not
-GPU inference. The ceiling says the information is valuable; it does not show
-that an operational forecast retains it.
+The forecast-BLH gate is complete: free GFS retains enough train-only episode
+signal to pass. Do not spend GPU budget on Aurora 1.5 for BLH. This does not
+unlock the temporal test split or establish year-round operational skill.
 Product work may continue with clearly labeled illustrative data, but the
 public target and default city must not preserve the falsified “unserved city”
 story or imply Varanasi episode evidence that does not exist.
@@ -188,16 +191,16 @@ benchmark results.
 
 The critical scientific sequence is:
 
-1. Quantify forecast-vs-analysis BLH degradation by lead, using the cheapest
-   available forecast source and no test-split model tuning.
-2. Verify whether Aurora 1.5's open checkpoint actually exposes forecast BLH
-   and whether it adds value beyond free NWP before any GPU rollout.
-3. Preserve the rejected concentration calibrator and do not replace it with
-   another concentration-regression-plus-threshold pipeline.
-4. Freeze per-city, per-window, pooled, L1, and L2 retrospective artifacts and
+1. Freeze per-city, per-window, pooled, L1, and L2 retrospective artifacts and
    connect the generated 24-hour table to the reporting package.
-5. Resolve the Varanasi data anomaly and incumbent comparison before a
+2. Preserve the rejected concentration calibrator and do not replace it with
+   another concentration-regression-plus-threshold pipeline.
+3. Resolve the Varanasi data anomaly and incumbent comparison before a
    city-specific public claim.
+4. Review the SILAM provenance and pre-declare an initialization-aligned
+   incumbent comparison.
+5. Treat GFS as the qualified forecast-BLH source; do not run Aurora 1.5 for
+   this purpose without a new incremental-value contract.
 
 The public-product sequence can run beside it:
 

@@ -82,9 +82,8 @@ boundary-layer problem with a local-observation anchor?"
 1. **This is perfect prognosis, not skill.** ERA5 is analysis. Aurora 1.5's
    *forecast* BLH at +48–96 h will be worse, perhaps much worse. The honest
    reading is "the information is worth having", not "we will achieve AUC 0.973".
-2. **The next test is forecast-vs-analysis BLH degradation**, and it is cheap:
-   score how well any available forecast reproduces ERA5 BLH at +24/+48/+72/+96 h
-   before committing to a rollout. That converts the ceiling into an estimate.
+2. **The follow-on forecast-vs-analysis BLH test is complete.** Free NOAA GFS
+   passed the pre-declared train-only gate; see `FORECAST_BLH_RESULT.md`.
 3. **Still train-only.** Nothing here has touched the test split, and it must not
    until a validation design is pre-declared.
 4. **Small event counts outside Delhi.** Patna 111, Mumbai 61, Lucknow 16. The
@@ -100,20 +99,17 @@ boundary-layer problem with a local-observation anchor?"
 
 ---
 
-## 5. Recommended next steps, cheapest first
+## 5. Follow-on result and next steps
 
-1. **Quantify forecast BLH degradation** vs ERA5 analysis at each lead. No GPU.
-   This is the single number that converts this ceiling into an expectation.
-2. **Verify Aurora 1.5's open checkpoint actually exposes BLH** before any
-   rollout is planned (`CODEX_BRIEF_OPTION_B.md` §4.4).
-3. **Check whether an existing forecast already supplies BLH** — ERA5 has no
-   forecast mode, but IFS/GFS do, and GFS is free. If a free NWP BLH forecast is
-   good enough, Option B may need no Aurora run at all.
-4. **Pre-declare the validation design** for whatever learned method follows,
+1. **Use free GFS for forecast-time BLH.** It added +0.0336 AUC and +0.1620 CSI,
+   retained about 76%/81% of the like-for-like ERA5 gain, and passed in Patna.
+2. **Do not run Aurora 1.5 for BLH.** Its released weather checkpoint does
+   expose `blh`, but requires a much larger HRES input contract and GFS already
+   clears the absolute gate without a GPU.
+3. **Pre-declare the validation design** for whatever learned method follows,
    before it touches test data.
-5. Only then consider the Aurora 1.5 rollout.
+4. Freeze/version the retrospective scorecards and preserve per-city counts.
 
-Step 3 deserves emphasis: this result showed that the *boundary layer*, not the
-pollution model, carries the signal. If a free NWP boundary-layer forecast
-delivers most of the ERA5 gain, the cheapest useful system may not involve
-Aurora at all — which would be a valid and valuable outcome.
+The follow-on result confirms the implication: the *boundary layer*, not the
+pollution model, carries the signal, and a free NWP forecast delivers most of
+the ERA5 gain. The cheapest useful system does not require Aurora 1.5 inference.

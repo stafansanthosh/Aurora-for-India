@@ -1,0 +1,3873 @@
+{
+  "dataset": "NOAA GFS 0.25 degree pgrb2",
+  "bucket": "https://noaa-gfs-bdp-pds.s3.amazonaws.com",
+  "cycle": "12Z",
+  "forecast_hours": [
+    0,
+    3,
+    6,
+    9,
+    12,
+    15,
+    18,
+    21,
+    24,
+    27,
+    30,
+    33,
+    36,
+    39,
+    42,
+    45,
+    48,
+    51,
+    54,
+    57,
+    60,
+    63,
+    66,
+    69,
+    72,
+    75,
+    78,
+    81,
+    84,
+    87,
+    90,
+    93,
+    96
+  ],
+  "retrieved_at_utc": "2026-08-12T09:10:45.516752+00:00",
+  "licence": "NOAA data disseminated through NODD are open to the public and can be used as desired; attribution requested",
+  "purpose": "forecast-versus-analysis BLH gate; operational forecast",
+  "records": [
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-07T12:00:00+00:00",
+      "lead_h": 0,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f000",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f000.idx",
+      "index_sha256": "b97615c1808f0ff7089d10b2d5da5765edc884b0e39f4b6785705601157329bf",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            481768226,
+            483111613
+          ],
+          "bytes": 1343388,
+          "sha256": "6c63060b093a2cdf3e5dd54838fcdfda0dc89a5548fbfbace3d93d91e9c0b502",
+          "index_line": "666:481768226:d=2025070712:HPBL:surface:anl:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 0,
+            "validity_date": 20250707,
+            "validity_time": 1200,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            412339224,
+            412855401
+          ],
+          "bytes": 516178,
+          "sha256": "adf4edae5ffd46c16da4fcb8b9610e9238708d1acd9f543cb200288063185146",
+          "index_line": "580:412339224:d=2025070712:TMP:2 m above ground:anl:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 0,
+            "validity_date": 20250707,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            414078477,
+            414610142
+          ],
+          "bytes": 531666,
+          "sha256": "1e4d1b08c9fa70c51f0bc0809805a592f8e239e78f26fd8514d4824ffc0631b4",
+          "index_line": "582:414078477:d=2025070712:DPT:2 m above ground:anl:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 0,
+            "validity_date": 20250707,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            415964437,
+            416947135
+          ],
+          "bytes": 982699,
+          "sha256": "eafa6f75a9327ee8524cb3e4d79f9967f3ac000af3910af5eaa2b0fb1d6c903c",
+          "index_line": "585:415964437:d=2025070712:UGRD:10 m above ground:anl:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 0,
+            "validity_date": 20250707,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            416947136,
+            417898347
+          ],
+          "bytes": 951212,
+          "sha256": "2585e734f1058996e5a6d9a8a0f087c531df173da8d23840a208ab3c4a86d2e8",
+          "index_line": "586:416947136:d=2025070712:VGRD:10 m above ground:anl:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 0,
+            "validity_date": 20250707,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-07T15:00:00+00:00",
+      "lead_h": 3,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f003",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f003.idx",
+      "index_sha256": "d471b00cb1a26d90195bcc0abd16269b8e545be7a41e91277dcfa1ac2bef2034",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            514601299,
+            515955987
+          ],
+          "bytes": 1354689,
+          "sha256": "f37395f399dd6a6831c91b814b0f210bc5f016f5499588236c8c32d1a94d4a9b",
+          "index_line": "712:514601299:d=2025070712:HPBL:surface:3 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 3,
+            "validity_date": 20250707,
+            "validity_time": 1500,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            414503430,
+            415020996
+          ],
+          "bytes": 517567,
+          "sha256": "880401f16bd4931e86fb1e0c3ee8f84a4dd610ac06a8fef1352eb8bbaea32e57",
+          "index_line": "581:414503430:d=2025070712:TMP:2 m above ground:3 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 3,
+            "validity_date": 20250707,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            416246415,
+            416784557
+          ],
+          "bytes": 538143,
+          "sha256": "abe66c19956addc8f76e22e1d89ad437f809faae1edc2be7fa6db285b9a9a161",
+          "index_line": "583:416246415:d=2025070712:DPT:2 m above ground:3 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 3,
+            "validity_date": 20250707,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            419154351,
+            420137395
+          ],
+          "bytes": 983045,
+          "sha256": "7e1c45f628e35dea7425532c360e39038f00682337892dafff607fac47cca3a8",
+          "index_line": "588:419154351:d=2025070712:UGRD:10 m above ground:3 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 3,
+            "validity_date": 20250707,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            420137396,
+            421094753
+          ],
+          "bytes": 957358,
+          "sha256": "e50dae6d537bbc80fd2c46a6168982a331b412300dbf7bf451a4c29610290753",
+          "index_line": "589:420137396:d=2025070712:VGRD:10 m above ground:3 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 3,
+            "validity_date": 20250707,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-07T18:00:00+00:00",
+      "lead_h": 6,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f006",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f006.idx",
+      "index_sha256": "590a51b4fd0e0285f2add7001ecb565bf5deadacb005e3ac041fd79246bc3220",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            517782885,
+            519125232
+          ],
+          "bytes": 1342348,
+          "sha256": "05c126391f5620af6314cb9ede08a51c89bf694c4b6b038b948d5530314d3415",
+          "index_line": "712:517782885:d=2025070712:HPBL:surface:6 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 6,
+            "validity_date": 20250707,
+            "validity_time": 1800,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            416349825,
+            416868109
+          ],
+          "bytes": 518285,
+          "sha256": "68fa735cd4cb6bb7b50f1bc66f5c446c59d06eecaef2cf47d300b3fbeef1ff34",
+          "index_line": "581:416349825:d=2025070712:TMP:2 m above ground:6 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 6,
+            "validity_date": 20250707,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            418091136,
+            418627134
+          ],
+          "bytes": 535999,
+          "sha256": "fbafe16a6c0ca625cba10238b4b7863c0a85283b2f9a39b23697bf743e26d375",
+          "index_line": "583:418091136:d=2025070712:DPT:2 m above ground:6 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 6,
+            "validity_date": 20250707,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            420989375,
+            421969468
+          ],
+          "bytes": 980094,
+          "sha256": "bea63a4eb0b52aee598c5751586ba1d389014a4a0d32035bd266cf0738a613ad",
+          "index_line": "588:420989375:d=2025070712:UGRD:10 m above ground:6 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 6,
+            "validity_date": 20250707,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            421969469,
+            422927756
+          ],
+          "bytes": 958288,
+          "sha256": "988b52276e9d2c13788dca670fa3c38961a606706c7ef6014e1a195e6771cdf7",
+          "index_line": "589:421969469:d=2025070712:VGRD:10 m above ground:6 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 6,
+            "validity_date": 20250707,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-07T21:00:00+00:00",
+      "lead_h": 9,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f009",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f009.idx",
+      "index_sha256": "9106e0a92e56d731ddd88e9659faeba6b4f8e98fcdb6004f9c580a441c121018",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            521111269,
+            522441418
+          ],
+          "bytes": 1330150,
+          "sha256": "c01b8388ba6c8782c4c23fd99082e98734943aeeacd762e3533e26eb508a709d",
+          "index_line": "712:521111269:d=2025070712:HPBL:surface:9 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 9,
+            "validity_date": 20250707,
+            "validity_time": 2100,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            421098552,
+            421615951
+          ],
+          "bytes": 517400,
+          "sha256": "8e0d4c6661d8bd19c7e2c866022e6e72e9b220292f7bad6f8e0a7999a6151ade",
+          "index_line": "581:421098552:d=2025070712:TMP:2 m above ground:9 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 9,
+            "validity_date": 20250707,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            422837163,
+            423368270
+          ],
+          "bytes": 531108,
+          "sha256": "ca2611ab75d0131792fda8d233693e508a428b3526f3aad12b2329db29004046",
+          "index_line": "583:422837163:d=2025070712:DPT:2 m above ground:9 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 9,
+            "validity_date": 20250707,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            425733509,
+            426713004
+          ],
+          "bytes": 979496,
+          "sha256": "30b30f1ee1a7f19a1c1c285cc25bacd2e94da9ce205aaedc395d007d44ab5121",
+          "index_line": "588:425733509:d=2025070712:UGRD:10 m above ground:9 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 9,
+            "validity_date": 20250707,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            426713005,
+            427665350
+          ],
+          "bytes": 952346,
+          "sha256": "7e6d652b9c9161677b4692133739a21fbfa07e3cb7e579627b5666accbf494ae",
+          "index_line": "589:426713005:d=2025070712:VGRD:10 m above ground:9 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 9,
+            "validity_date": 20250707,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-08T00:00:00+00:00",
+      "lead_h": 12,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f012",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f012.idx",
+      "index_sha256": "134a7a56981b20213671612dac8d0901ed9c7810dd347eae3cbd092017b28bb8",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            522395075,
+            523719441
+          ],
+          "bytes": 1324367,
+          "sha256": "688011d7e85791f57f676010d18b878508a1e93a75b8da997ae7b664f5f6c076",
+          "index_line": "712:522395075:d=2025070712:HPBL:surface:12 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 12,
+            "validity_date": 20250708,
+            "validity_time": 0,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            421327566,
+            421840819
+          ],
+          "bytes": 513254,
+          "sha256": "8b38fc329a007bd9e1cfffd76fd972533d127991f64d7ab77c1498fad0b0a491",
+          "index_line": "581:421327566:d=2025070712:TMP:2 m above ground:12 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 12,
+            "validity_date": 20250708,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            423058823,
+            423587384
+          ],
+          "bytes": 528562,
+          "sha256": "a1a6ae071ab67b5d99a7b5181d56106bb5491656e096b82f1c351251a00cb8c2",
+          "index_line": "583:423058823:d=2025070712:DPT:2 m above ground:12 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 12,
+            "validity_date": 20250708,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            425937113,
+            426911955
+          ],
+          "bytes": 974843,
+          "sha256": "b2242b4c8142fa2f2427fc3ec6ce5fa54355b26d5980f4453a7c08d6e1af04f9",
+          "index_line": "588:425937113:d=2025070712:UGRD:10 m above ground:12 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 12,
+            "validity_date": 20250708,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            426911956,
+            427864838
+          ],
+          "bytes": 952883,
+          "sha256": "d6ef3a94ea2995de2377aa093f1a12fef4ab9f3fd9d1d71ee7ea1f055f50ba45",
+          "index_line": "589:426911956:d=2025070712:VGRD:10 m above ground:12 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 12,
+            "validity_date": 20250708,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-08T03:00:00+00:00",
+      "lead_h": 15,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f015",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f015.idx",
+      "index_sha256": "bbbd5baa1808a4dc9260ab44588366dca8d3d1f5c8b0639b2edb18c06dd0cd6c",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            523242082,
+            524697386
+          ],
+          "bytes": 1455305,
+          "sha256": "dd5d17860ab31def1574af881bb9d7e8efc6c47c1e4e3c3b345dcc7c16824993",
+          "index_line": "712:523242082:d=2025070712:HPBL:surface:15 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 15,
+            "validity_date": 20250708,
+            "validity_time": 300,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            423427439,
+            423942102
+          ],
+          "bytes": 514664,
+          "sha256": "81be5cfe3460cb7df292bf6d0bb34f39c8a2568a69fddeff2fc18e30276714df",
+          "index_line": "581:423427439:d=2025070712:TMP:2 m above ground:15 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 15,
+            "validity_date": 20250708,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            425162574,
+            425691500
+          ],
+          "bytes": 528927,
+          "sha256": "fbc8fd6545dc6ee747d6f331efc24ad79e48d076f6596a8a7726a9f9e33770f5",
+          "index_line": "583:425162574:d=2025070712:DPT:2 m above ground:15 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 15,
+            "validity_date": 20250708,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            428044564,
+            429018472
+          ],
+          "bytes": 973909,
+          "sha256": "912997109ce48bbf97caf61096cfcc10c6a31e58e0588d3b45e1856c84f083fd",
+          "index_line": "588:428044564:d=2025070712:UGRD:10 m above ground:15 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 15,
+            "validity_date": 20250708,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            429018473,
+            429966378
+          ],
+          "bytes": 947906,
+          "sha256": "5408bef7742172a03b8ab9e2a2a34e10f8c01e75ce1f6f60913dd3911ef8aad5",
+          "index_line": "589:429018473:d=2025070712:VGRD:10 m above ground:15 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 15,
+            "validity_date": 20250708,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-08T06:00:00+00:00",
+      "lead_h": 18,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f018",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f018.idx",
+      "index_sha256": "0865ea7cb880ef2a5dee6d97d4a2edc4b2a1d1fac411c91efe61cce000c9421a",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            523125494,
+            524590096
+          ],
+          "bytes": 1464603,
+          "sha256": "3e749cf577359fb0bc1423d8ffe10da28628ffd544f80acc584013fb800e36a8",
+          "index_line": "712:523125494:d=2025070712:HPBL:surface:18 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 18,
+            "validity_date": 20250708,
+            "validity_time": 600,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            422111372,
+            422626949
+          ],
+          "bytes": 515578,
+          "sha256": "3e963f8219518fd0c4cb66816bf03b066659c9ae78e96a0cbb441237bb0ce658",
+          "index_line": "581:422111372:d=2025070712:TMP:2 m above ground:18 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 18,
+            "validity_date": 20250708,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            423848731,
+            424377905
+          ],
+          "bytes": 529175,
+          "sha256": "f538e7a8d373724556c04a46fd6f9d7f75d3991fce0c764f30ca7560944abeae",
+          "index_line": "583:423848731:d=2025070712:DPT:2 m above ground:18 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 18,
+            "validity_date": 20250708,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            426729769,
+            427703799
+          ],
+          "bytes": 974031,
+          "sha256": "335f1f7baf1166910ca7b44b6f2833a679e7f02cd72c6d8b09a31c469b3cfd5e",
+          "index_line": "588:426729769:d=2025070712:UGRD:10 m above ground:18 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 18,
+            "validity_date": 20250708,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            427703800,
+            428651770
+          ],
+          "bytes": 947971,
+          "sha256": "b28b353ea97f335bc6ad34e5cd10eea09fcc670f7160eb7cc25bd541cf61c1f1",
+          "index_line": "589:427703800:d=2025070712:VGRD:10 m above ground:18 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 18,
+            "validity_date": 20250708,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-08T09:00:00+00:00",
+      "lead_h": 21,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f021",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f021.idx",
+      "index_sha256": "88b2a337193583898baae98d598023969960d63ff9b8328e5541c36fc015ba98",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            520610134,
+            522084539
+          ],
+          "bytes": 1474406,
+          "sha256": "ba37371ccd93e65f83f5abdbfb8e518ede0f7216cfb48e1427afba1c7cff203c",
+          "index_line": "712:520610134:d=2025070712:HPBL:surface:21 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 21,
+            "validity_date": 20250708,
+            "validity_time": 900,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            420435849,
+            420955278
+          ],
+          "bytes": 519430,
+          "sha256": "8838bcc85c68502db8b4109120bffd4e832ea8932e9610c17100e215ee4be817",
+          "index_line": "581:420435849:d=2025070712:TMP:2 m above ground:21 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 21,
+            "validity_date": 20250708,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            422179155,
+            422713818
+          ],
+          "bytes": 534664,
+          "sha256": "90b73d0c397ae11f1caa1ce4c0f58f4065ba2112763e1e61e84293d0440dfbe2",
+          "index_line": "583:422179155:d=2025070712:DPT:2 m above ground:21 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 21,
+            "validity_date": 20250708,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            425076941,
+            426053152
+          ],
+          "bytes": 976212,
+          "sha256": "6c969caec2b1ef087f023cba1e281caf437d6b4a898da18eb427a57fce10a890",
+          "index_line": "588:425076941:d=2025070712:UGRD:10 m above ground:21 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 21,
+            "validity_date": 20250708,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            426053153,
+            427002388
+          ],
+          "bytes": 949236,
+          "sha256": "3612b8b8a6ac506a9d36deeb7e9d5107ec72ded01d0cf875d8cfc0f94c791b36",
+          "index_line": "589:426053153:d=2025070712:VGRD:10 m above ground:21 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 21,
+            "validity_date": 20250708,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-08T12:00:00+00:00",
+      "lead_h": 24,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f024",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f024.idx",
+      "index_sha256": "bb52910c307458f0073bdffc9ea0700ce247eed767d16f1dd12b923d5894957c",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            519526409,
+            520876274
+          ],
+          "bytes": 1349866,
+          "sha256": "a3ac4aa38ccbfeee1bb3a1104f24aac5c3e07c88d75ae66f681ee22510a72bc8",
+          "index_line": "712:519526409:d=2025070712:HPBL:surface:24 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 24,
+            "validity_date": 20250708,
+            "validity_time": 1200,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            417877656,
+            418394419
+          ],
+          "bytes": 516764,
+          "sha256": "a32316bcf60b067fef8947824ad65bbdc62814d334ac2f5abfc88d1c1e32201a",
+          "index_line": "581:417877656:d=2025070712:TMP:2 m above ground:24 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 24,
+            "validity_date": 20250708,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            419618927,
+            420153564
+          ],
+          "bytes": 534638,
+          "sha256": "61d752a6357b464f57f522f62147c13758c3bd60771c60142513080784361b89",
+          "index_line": "583:419618927:d=2025070712:DPT:2 m above ground:24 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 24,
+            "validity_date": 20250708,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            422512616,
+            423490422
+          ],
+          "bytes": 977807,
+          "sha256": "b7d5877c42a240fee6639a92144de89e1f5cc42fca57610baf630457e068bd0a",
+          "index_line": "588:422512616:d=2025070712:UGRD:10 m above ground:24 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 24,
+            "validity_date": 20250708,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            423490423,
+            424441018
+          ],
+          "bytes": 950596,
+          "sha256": "223ff82e76b3aa28438c2e7601c6317f9dfaf54abef1a5a21aaa874d77e18719",
+          "index_line": "589:423490423:d=2025070712:VGRD:10 m above ground:24 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 24,
+            "validity_date": 20250708,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-08T15:00:00+00:00",
+      "lead_h": 27,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f027",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f027.idx",
+      "index_sha256": "a824faac9735c016c7fce34daa15d380b8f65748014934c59559e3b5132d4a6e",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            519552120,
+            520905887
+          ],
+          "bytes": 1353768,
+          "sha256": "32fdd6a7db40f630883592a1ef4c20200a5d581b2a130e7a72b213ea12927ec9",
+          "index_line": "712:519552120:d=2025070712:HPBL:surface:27 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 27,
+            "validity_date": 20250708,
+            "validity_time": 1500,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            419594121,
+            420113275
+          ],
+          "bytes": 519155,
+          "sha256": "11209ece5030aa5ee1a8748ea5d8d73a22222f2712bbdf9a2f9a94a8f7ea8db5",
+          "index_line": "581:419594121:d=2025070712:TMP:2 m above ground:27 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 27,
+            "validity_date": 20250708,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            421339755,
+            421876287
+          ],
+          "bytes": 536533,
+          "sha256": "bfc08b5dedb22f1001f92e59e8ee84866e5c750313e485fd3177933177d5ce39",
+          "index_line": "583:421339755:d=2025070712:DPT:2 m above ground:27 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 27,
+            "validity_date": 20250708,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            424244377,
+            425221103
+          ],
+          "bytes": 976727,
+          "sha256": "d1ca933a80e02b321337f6d6072d7438ae2419a4b3af51e2da875897d12b7518",
+          "index_line": "588:424244377:d=2025070712:UGRD:10 m above ground:27 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 27,
+            "validity_date": 20250708,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            425221104,
+            426172928
+          ],
+          "bytes": 951825,
+          "sha256": "a626632ba5c813b60c5c7eb89af2cb6addaf6ae99a122678e99e93da602e6c5c",
+          "index_line": "589:425221104:d=2025070712:VGRD:10 m above ground:27 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 27,
+            "validity_date": 20250708,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-08T18:00:00+00:00",
+      "lead_h": 30,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f030",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f030.idx",
+      "index_sha256": "8c4ad0db2ed21e4aee59a356d76e4a92c445455068ef9ff4983bb4b4abea582d",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            523804151,
+            525146134
+          ],
+          "bytes": 1341984,
+          "sha256": "8278b0e3e2f2ce4031d2c08b95308d0b4298ba060cb5ece6ee821043fe71078d",
+          "index_line": "712:523804151:d=2025070712:HPBL:surface:30 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 30,
+            "validity_date": 20250708,
+            "validity_time": 1800,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            422465286,
+            422984569
+          ],
+          "bytes": 519284,
+          "sha256": "ef6cb204e94848a19d24eea1607565f74489adc7b05f294f74dc97170cb4327c",
+          "index_line": "581:422465286:d=2025070712:TMP:2 m above ground:30 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 30,
+            "validity_date": 20250708,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            424209450,
+            424741105
+          ],
+          "bytes": 531656,
+          "sha256": "f01f379827b4ffeb33446d329fb2aed2fa8eccde9723b5a874a901b568b00dd3",
+          "index_line": "583:424209450:d=2025070712:DPT:2 m above ground:30 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 30,
+            "validity_date": 20250708,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            427105544,
+            428086716
+          ],
+          "bytes": 981173,
+          "sha256": "3f4d796e0a88a37b2a837c755740c244f4e2b8da06f91a656ee0c1d8a2a67123",
+          "index_line": "588:427105544:d=2025070712:UGRD:10 m above ground:30 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 30,
+            "validity_date": 20250708,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            428086717,
+            429039648
+          ],
+          "bytes": 952932,
+          "sha256": "8f40affeba5a80286ac3842f820101337011b0e6cc66a9593c1e0acef606ab5f",
+          "index_line": "589:428086717:d=2025070712:VGRD:10 m above ground:30 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 30,
+            "validity_date": 20250708,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-08T21:00:00+00:00",
+      "lead_h": 33,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f033",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f033.idx",
+      "index_sha256": "74d469bf64979027080b9ca42b59900f8ad324436f6c338bf5422a95afe93553",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            519070455,
+            520397769
+          ],
+          "bytes": 1327315,
+          "sha256": "97f88430d631434bba4c9b859c111f1b065b9a31e7176a7c4f8c297a300b82e6",
+          "index_line": "712:519070455:d=2025070712:HPBL:surface:33 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 33,
+            "validity_date": 20250708,
+            "validity_time": 2100,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            419743576,
+            420261715
+          ],
+          "bytes": 518140,
+          "sha256": "ace95729842bfab6e6c93a9b9cd54f47662cf75622a45cda5632d8018b0bb5b9",
+          "index_line": "581:419743576:d=2025070712:TMP:2 m above ground:33 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 33,
+            "validity_date": 20250708,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            421485259,
+            422015447
+          ],
+          "bytes": 530189,
+          "sha256": "dc16b12a787f047aa934f028bf45a8b0cb9682b8af38f077dcc30911ec6eaa7b",
+          "index_line": "583:421485259:d=2025070712:DPT:2 m above ground:33 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 33,
+            "validity_date": 20250708,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            424381923,
+            425357672
+          ],
+          "bytes": 975750,
+          "sha256": "fd2dad0d14c15b33585494e2df1ccac17c30d4baf199edc9f29baec280ea76f2",
+          "index_line": "588:424381923:d=2025070712:UGRD:10 m above ground:33 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 33,
+            "validity_date": 20250708,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            425357673,
+            426310638
+          ],
+          "bytes": 952966,
+          "sha256": "4a9eaec4721a7d8390634b9105fdf64b891016ae452fa93b4d45d96b5fd0b4d3",
+          "index_line": "589:425357673:d=2025070712:VGRD:10 m above ground:33 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 33,
+            "validity_date": 20250708,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-09T00:00:00+00:00",
+      "lead_h": 36,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f036",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f036.idx",
+      "index_sha256": "db339fdeaee9c0f872dbff9b888ef12119923e5623aee412ffb054bf08f77115",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            522174046,
+            523500110
+          ],
+          "bytes": 1326065,
+          "sha256": "df01c2e8ad0b11a69436191fb0e9acb8a901e443fda5fe4dd37cd693775835c6",
+          "index_line": "712:522174046:d=2025070712:HPBL:surface:36 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 36,
+            "validity_date": 20250709,
+            "validity_time": 0,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            421130685,
+            421647427
+          ],
+          "bytes": 516743,
+          "sha256": "f26113ef28834bd4478f5b27ddfc2e68557f0c3ad3ff022ebc5f7940e11db780",
+          "index_line": "581:421130685:d=2025070712:TMP:2 m above ground:36 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 36,
+            "validity_date": 20250709,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            422869942,
+            423398933
+          ],
+          "bytes": 528992,
+          "sha256": "ce191fc61af87e776c9eb6ac8aa26005b7cd1700ab2e065b19fd778b0c22f313",
+          "index_line": "583:422869942:d=2025070712:DPT:2 m above ground:36 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 36,
+            "validity_date": 20250709,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            425755683,
+            426731847
+          ],
+          "bytes": 976165,
+          "sha256": "d4ff24d5f82cc0e6e955613d488153475407a827500ff9378e6f54d633a229ca",
+          "index_line": "588:425755683:d=2025070712:UGRD:10 m above ground:36 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 36,
+            "validity_date": 20250709,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            426731848,
+            427681994
+          ],
+          "bytes": 950147,
+          "sha256": "19397ae43b6d1f9b05f59539edaf7f158a8ffba9bddf0df819873ff490100580",
+          "index_line": "589:426731848:d=2025070712:VGRD:10 m above ground:36 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 36,
+            "validity_date": 20250709,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-09T03:00:00+00:00",
+      "lead_h": 39,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f039",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f039.idx",
+      "index_sha256": "6b4e758074265f66eda88837e33fa224ea7d74ba6dc2d85269ad61edeb3cbfd3",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            520219489,
+            521671648
+          ],
+          "bytes": 1452160,
+          "sha256": "930315847161c43d0e2a816f10fad5454bf025d71bfe221e09797f04e90d3234",
+          "index_line": "712:520219489:d=2025070712:HPBL:surface:39 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 39,
+            "validity_date": 20250709,
+            "validity_time": 300,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            420893868,
+            421411245
+          ],
+          "bytes": 517378,
+          "sha256": "a1d3921c33d94516ffcfb2aa7786638db0685ca32fddb7a87d07543dcdbed84d",
+          "index_line": "581:420893868:d=2025070712:TMP:2 m above ground:39 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 39,
+            "validity_date": 20250709,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            422636068,
+            423165352
+          ],
+          "bytes": 529285,
+          "sha256": "921ef54ebde00cfa1c69e421f3624ca7bc4275c2fce874415dbf0c00e329425e",
+          "index_line": "583:422636068:d=2025070712:DPT:2 m above ground:39 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 39,
+            "validity_date": 20250709,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            425529016,
+            426498682
+          ],
+          "bytes": 969667,
+          "sha256": "69eba6657e3c5b55f81f68350c782b450dd6089f348c857eb69b30f106dd324e",
+          "index_line": "588:425529016:d=2025070712:UGRD:10 m above ground:39 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 39,
+            "validity_date": 20250709,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            426498683,
+            427447616
+          ],
+          "bytes": 948934,
+          "sha256": "a077ae9686d73ce8cc0a56456c6c0fce3ee42c06bf0c9d0408c2e2729d4356bb",
+          "index_line": "589:426498683:d=2025070712:VGRD:10 m above ground:39 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 39,
+            "validity_date": 20250709,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-09T06:00:00+00:00",
+      "lead_h": 42,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f042",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f042.idx",
+      "index_sha256": "c9b4a8a8f63d714f713ed350ee6af614fb661b3e01ea28fbf7ab947357212adc",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            522970954,
+            524437380
+          ],
+          "bytes": 1466427,
+          "sha256": "9ea9497844b710f4702dffdbfb2b004bd5f88c664967983f294b3387a9bcca5a",
+          "index_line": "712:522970954:d=2025070712:HPBL:surface:42 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 42,
+            "validity_date": 20250709,
+            "validity_time": 600,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            421728562,
+            422245877
+          ],
+          "bytes": 517316,
+          "sha256": "3c630d0a65b35c22202a1999dd1e430ce79d3e0fa677319de065dfe44295b1a4",
+          "index_line": "581:421728562:d=2025070712:TMP:2 m above ground:42 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 42,
+            "validity_date": 20250709,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            423473495,
+            424008884
+          ],
+          "bytes": 535390,
+          "sha256": "53af6cfd2fc47edaa1ada6b1f960ce287522edd9e01da22ddb746636f1c6e791",
+          "index_line": "583:423473495:d=2025070712:DPT:2 m above ground:42 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 42,
+            "validity_date": 20250709,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            426366773,
+            427339188
+          ],
+          "bytes": 972416,
+          "sha256": "092090610a25aa9a33541172bd3f625374591a79a745a5358d1ce9cfbb183e93",
+          "index_line": "588:426366773:d=2025070712:UGRD:10 m above ground:42 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 42,
+            "validity_date": 20250709,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            427339189,
+            428287959
+          ],
+          "bytes": 948771,
+          "sha256": "c15295ce22ec0e092bff49eaf93fadab4a45bd960c802d9035030742935d8c87",
+          "index_line": "589:427339189:d=2025070712:VGRD:10 m above ground:42 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 42,
+            "validity_date": 20250709,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-09T09:00:00+00:00",
+      "lead_h": 45,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f045",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f045.idx",
+      "index_sha256": "df87906985b9ba07616b825b643d51bd3234849c228328a79ff2192ddf74d310",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            515975562,
+            517452905
+          ],
+          "bytes": 1477344,
+          "sha256": "e48559b3ed01854b025fb9109aeeb67eb41c36f996b79ee1c4c4a1a7fb55dc77",
+          "index_line": "712:515975562:d=2025070712:HPBL:surface:45 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 45,
+            "validity_date": 20250709,
+            "validity_time": 900,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            415709806,
+            416230553
+          ],
+          "bytes": 520748,
+          "sha256": "0b4e6ba3ade903c9027ae5083675474ee72fe9e3f0d974b748ce389d7808f99c",
+          "index_line": "581:415709806:d=2025070712:TMP:2 m above ground:45 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 45,
+            "validity_date": 20250709,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            417458067,
+            417990063
+          ],
+          "bytes": 531997,
+          "sha256": "dbbaa3b2f44c61fe31a6566bd7c82e181749fca11a71ddfc6e9043da1257f7fa",
+          "index_line": "583:417458067:d=2025070712:DPT:2 m above ground:45 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 45,
+            "validity_date": 20250709,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            420356873,
+            421335073
+          ],
+          "bytes": 978201,
+          "sha256": "67b2f180dc40050fa29c71e126155620c9459816c9aa9df636a33e64de870dae",
+          "index_line": "588:420356873:d=2025070712:UGRD:10 m above ground:45 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 45,
+            "validity_date": 20250709,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            421335074,
+            422289548
+          ],
+          "bytes": 954475,
+          "sha256": "5f3d1ec7316c5aa134a205b026d22f6b49c04c5aa97197b80ffab1b2d750f3e9",
+          "index_line": "589:421335074:d=2025070712:VGRD:10 m above ground:45 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 45,
+            "validity_date": 20250709,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-09T12:00:00+00:00",
+      "lead_h": 48,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f048",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f048.idx",
+      "index_sha256": "7384cc38325cb7f5cbab2260a0c46f892b09d1d7f07ea018c4d7652d368bd733",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            519589612,
+            520935281
+          ],
+          "bytes": 1345670,
+          "sha256": "071c526f5c2f68d0ee37fb7bc024d843d97bd848e40726f3c4234700cb3c90e8",
+          "index_line": "712:519589612:d=2025070712:HPBL:surface:48 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 48,
+            "validity_date": 20250709,
+            "validity_time": 1200,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            417880520,
+            418398465
+          ],
+          "bytes": 517946,
+          "sha256": "c0880cd3362bb4ee7386c3b0dd025de05012667f9ec2343b43dd33f12469aad7",
+          "index_line": "581:417880520:d=2025070712:TMP:2 m above ground:48 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 48,
+            "validity_date": 20250709,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            419621548,
+            420153637
+          ],
+          "bytes": 532090,
+          "sha256": "e01f43616b5bce8231d55cd6b17a3517e1ac0ed8cf4053cbe5f997fbbead3e0b",
+          "index_line": "583:419621548:d=2025070712:DPT:2 m above ground:48 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 48,
+            "validity_date": 20250709,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            422509658,
+            423484085
+          ],
+          "bytes": 974428,
+          "sha256": "5ba2e586b5d89d6fa637343b7782242c80fe130cbd247438971b50b36e89d20a",
+          "index_line": "588:422509658:d=2025070712:UGRD:10 m above ground:48 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 48,
+            "validity_date": 20250709,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            423484086,
+            424438433
+          ],
+          "bytes": 954348,
+          "sha256": "3331f3c9282bcf63bdfd1af55a71150d387ea1c093e7d1832bfee05a2a2b88cf",
+          "index_line": "589:423484086:d=2025070712:VGRD:10 m above ground:48 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 48,
+            "validity_date": 20250709,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-09T15:00:00+00:00",
+      "lead_h": 51,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f051",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f051.idx",
+      "index_sha256": "4e77f24e93124b700798b653cda701dc8d33375888f8432540a823a4660afb69",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            518692770,
+            520043443
+          ],
+          "bytes": 1350674,
+          "sha256": "d2bf25685380723a8a2fa1cebbbb78a29eff4fd618afc929917a5a9e204b3ad8",
+          "index_line": "712:518692770:d=2025070712:HPBL:surface:51 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 51,
+            "validity_date": 20250709,
+            "validity_time": 1500,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            418507244,
+            419024318
+          ],
+          "bytes": 517075,
+          "sha256": "f4210b7f70c0fc6c64fdf9b0eb7f1d78dfeff223b73a9bc73a797b2757e80e35",
+          "index_line": "581:418507244:d=2025070712:TMP:2 m above ground:51 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 51,
+            "validity_date": 20250709,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            420246860,
+            420774843
+          ],
+          "bytes": 527984,
+          "sha256": "dd1a791e62374197f2acb7fa06c5896f4defbc5f6d5fc39f55e389d71a583a0a",
+          "index_line": "583:420246860:d=2025070712:DPT:2 m above ground:51 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 51,
+            "validity_date": 20250709,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            423137370,
+            424114531
+          ],
+          "bytes": 977162,
+          "sha256": "90aa477c0d9bc9bef3714de788d056cdca1796f8236dd4a1941da9fc593efc1b",
+          "index_line": "588:423137370:d=2025070712:UGRD:10 m above ground:51 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 51,
+            "validity_date": 20250709,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            424114532,
+            425064978
+          ],
+          "bytes": 950447,
+          "sha256": "a98335edf44c1f5ff36e24d9e3e4ba452413e8f7509e5d9c56c592b7c8870c99",
+          "index_line": "589:424114532:d=2025070712:VGRD:10 m above ground:51 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 51,
+            "validity_date": 20250709,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-09T18:00:00+00:00",
+      "lead_h": 54,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f054",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f054.idx",
+      "index_sha256": "57c97b95d9749f5303a930a21ddf4a6cedb7527bf46d20a0233699aabefb55b4",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            520051138,
+            521389359
+          ],
+          "bytes": 1338222,
+          "sha256": "3188031093ebca3196d86b12b7e1b6f077d3bd40dc1c8971c4b61cb3ca4b39b3",
+          "index_line": "712:520051138:d=2025070712:HPBL:surface:54 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 54,
+            "validity_date": 20250709,
+            "validity_time": 1800,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            418573557,
+            419089393
+          ],
+          "bytes": 515837,
+          "sha256": "229959933dbdd2f09de39b31b5a2713b89bcc637f6dda98715f513c7d6e42dc8",
+          "index_line": "581:418573557:d=2025070712:TMP:2 m above ground:54 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 54,
+            "validity_date": 20250709,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            420309870,
+            420836116
+          ],
+          "bytes": 526247,
+          "sha256": "a6a88688e3e826458e11666cebf44433f92873dca5a16648e7b0c2ef7be3e672",
+          "index_line": "583:420309870:d=2025070712:DPT:2 m above ground:54 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 54,
+            "validity_date": 20250709,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            423191109,
+            424168332
+          ],
+          "bytes": 977224,
+          "sha256": "8fba6b46503470cf3f15f28ecc20cdffe65a1a23dd34185055220ad8aac15076",
+          "index_line": "588:423191109:d=2025070712:UGRD:10 m above ground:54 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 54,
+            "validity_date": 20250709,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            424168333,
+            425119377
+          ],
+          "bytes": 951045,
+          "sha256": "4011fe1974adac879a5bd785a8dc8326e5491e3f597bc54685ed7c9adb618d8e",
+          "index_line": "589:424168333:d=2025070712:VGRD:10 m above ground:54 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 54,
+            "validity_date": 20250709,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-09T21:00:00+00:00",
+      "lead_h": 57,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f057",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f057.idx",
+      "index_sha256": "725791b18fc05a6357032b5eb4aa47c7051cae353393893f4be13db773e61d8c",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            518925818,
+            520248965
+          ],
+          "bytes": 1323148,
+          "sha256": "fa9b84af2e9eb31fd30be392e87a00d7cd36f69918393f00c165261f4843485c",
+          "index_line": "712:518925818:d=2025070712:HPBL:surface:57 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 57,
+            "validity_date": 20250709,
+            "validity_time": 2100,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            419661208,
+            420175529
+          ],
+          "bytes": 514322,
+          "sha256": "2cf2440bb80cab158b3058a3d0ab12cf2e5538e691e5b29460383fae047eeb7d",
+          "index_line": "581:419661208:d=2025070712:TMP:2 m above ground:57 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 57,
+            "validity_date": 20250709,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            421394445,
+            421919160
+          ],
+          "bytes": 524716,
+          "sha256": "d487fd86a77c0a114574ee9a69603168dbe14c3a2ad994eed957a0ce8c6d0fab",
+          "index_line": "583:421394445:d=2025070712:DPT:2 m above ground:57 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 57,
+            "validity_date": 20250709,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            424269652,
+            425240331
+          ],
+          "bytes": 970680,
+          "sha256": "b154d1f89a3a4bcaedf75c84d509a7af5273656f2badb95548072468aa570d97",
+          "index_line": "588:424269652:d=2025070712:UGRD:10 m above ground:57 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 57,
+            "validity_date": 20250709,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            425240332,
+            426188710
+          ],
+          "bytes": 948379,
+          "sha256": "804ff61c1b0b7f9e5ea64c8675fad620ff7382cc846d78ae1d533bf30d8dab85",
+          "index_line": "589:425240332:d=2025070712:VGRD:10 m above ground:57 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 57,
+            "validity_date": 20250709,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-10T00:00:00+00:00",
+      "lead_h": 60,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f060",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f060.idx",
+      "index_sha256": "27ba059fb4665cb35ec1f4afe0a92addb6832019a4ae12d0cd2029b8de2d2c2f",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            518402338,
+            519725512
+          ],
+          "bytes": 1323175,
+          "sha256": "565a7ed284b96d67a0aafcce877b9faa9bfe9bbadeda468c9c85af27b2526763",
+          "index_line": "712:518402338:d=2025070712:HPBL:surface:60 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 60,
+            "validity_date": 20250710,
+            "validity_time": 0,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            417543850,
+            418055728
+          ],
+          "bytes": 511879,
+          "sha256": "c318e067771a939afce2e2f8bbdfe27d4c222448b00462727b97cb45675a7a46",
+          "index_line": "581:417543850:d=2025070712:TMP:2 m above ground:60 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 60,
+            "validity_date": 20250710,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            419272103,
+            419794889
+          ],
+          "bytes": 522787,
+          "sha256": "3b5f270bd7b3c86ca3b8ecc6d8bde4fa77483f6ad2dd5fab49b0004afa010409",
+          "index_line": "583:419272103:d=2025070712:DPT:2 m above ground:60 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 60,
+            "validity_date": 20250710,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            422132731,
+            423100215
+          ],
+          "bytes": 967485,
+          "sha256": "43e5f56842e6817413f8832eb088b555945e3117618141c83b5138b2e4969a96",
+          "index_line": "588:422132731:d=2025070712:UGRD:10 m above ground:60 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 60,
+            "validity_date": 20250710,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            423100216,
+            424048941
+          ],
+          "bytes": 948726,
+          "sha256": "a8706914565178a601270a032d7c5ba24ef82d6913564b2cba50d0eba85437ee",
+          "index_line": "589:423100216:d=2025070712:VGRD:10 m above ground:60 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 60,
+            "validity_date": 20250710,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-10T03:00:00+00:00",
+      "lead_h": 63,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f063",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f063.idx",
+      "index_sha256": "e69642c0a6cd8da380ab015b13f7f3501a4f86424bf27f8ece041559ea1345be",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            518076606,
+            519529781
+          ],
+          "bytes": 1453176,
+          "sha256": "ef59e0bc3f946e807d8bd1ceff353c528345d79d1bdcb2770b65d909f82dda56",
+          "index_line": "712:518076606:d=2025070712:HPBL:surface:63 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 63,
+            "validity_date": 20250710,
+            "validity_time": 300,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            418633717,
+            419146343
+          ],
+          "bytes": 512627,
+          "sha256": "4b0878abbb54067d1fbbe3b27f51a99e845c44f1836ef55ca5ac6193bd69f948",
+          "index_line": "581:418633717:d=2025070712:TMP:2 m above ground:63 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 63,
+            "validity_date": 20250710,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            420364774,
+            420888372
+          ],
+          "bytes": 523599,
+          "sha256": "3d591ff97b20b5adc2e0a962be434cd49ef2b8dff38113cde80ce3884a0cf7ec",
+          "index_line": "583:420364774:d=2025070712:DPT:2 m above ground:63 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 63,
+            "validity_date": 20250710,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            423233504,
+            424199078
+          ],
+          "bytes": 965575,
+          "sha256": "c409c032d8945ab2b19546575d5880cb1e6ca5d6688a39587020f55c2850fad0",
+          "index_line": "588:423233504:d=2025070712:UGRD:10 m above ground:63 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 63,
+            "validity_date": 20250710,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            424199079,
+            425142825
+          ],
+          "bytes": 943747,
+          "sha256": "af6911642f1c930a780ba45edf8347fe1254b82da710fbd308a96745d74422dc",
+          "index_line": "589:424199079:d=2025070712:VGRD:10 m above ground:63 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 63,
+            "validity_date": 20250710,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-10T06:00:00+00:00",
+      "lead_h": 66,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f066",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f066.idx",
+      "index_sha256": "b3d485f3d3ea2fe1809fa0a9dd0876999d654070d85fb5ac4b673885c021c7ac",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            519185046,
+            520650550
+          ],
+          "bytes": 1465505,
+          "sha256": "b2263b814eb1fb12ed14f8167dc7423649f6cb77b8959629d6fad00b49a2fd66",
+          "index_line": "712:519185046:d=2025070712:HPBL:surface:66 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 66,
+            "validity_date": 20250710,
+            "validity_time": 600,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            418194561,
+            418706670
+          ],
+          "bytes": 512110,
+          "sha256": "4aab214e25a3f91b73a4e940e1933768e5211b17f54840b023ea5dd2d094e1ac",
+          "index_line": "581:418194561:d=2025070712:TMP:2 m above ground:66 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 66,
+            "validity_date": 20250710,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            419926723,
+            420450930
+          ],
+          "bytes": 524208,
+          "sha256": "cf8963f694fb4a548ff140310ffab50e34045cad28f0ec03cc61c1ab29802118",
+          "index_line": "583:419926723:d=2025070712:DPT:2 m above ground:66 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 66,
+            "validity_date": 20250710,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            422789105,
+            423755723
+          ],
+          "bytes": 966619,
+          "sha256": "0006570b49e150a16c46e13407293783e3481f910c2f6da33e5becaa76619e27",
+          "index_line": "588:422789105:d=2025070712:UGRD:10 m above ground:66 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 66,
+            "validity_date": 20250710,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            423755724,
+            424699887
+          ],
+          "bytes": 944164,
+          "sha256": "80379adada96a4dce06af3edacea6a82cbb65e83509fe710d77afa1f51f34f23",
+          "index_line": "589:423755724:d=2025070712:VGRD:10 m above ground:66 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 66,
+            "validity_date": 20250710,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-10T09:00:00+00:00",
+      "lead_h": 69,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f069",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f069.idx",
+      "index_sha256": "44399c08bf27bc0548106c9542344d68b76f3473e8472f3d0a331b8c3cb3dfb2",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            515564419,
+            516912825
+          ],
+          "bytes": 1348407,
+          "sha256": "f4b2451b40e48fdcfa72ae0193caf3d19560a25e040721145fc3a0e349a1bdb9",
+          "index_line": "712:515564419:d=2025070712:HPBL:surface:69 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 69,
+            "validity_date": 20250710,
+            "validity_time": 900,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            415383877,
+            415898848
+          ],
+          "bytes": 514972,
+          "sha256": "78b073060741567f34cdf440e1fa15c8ae6c0e1201bf8572dc12b15337d23d1f",
+          "index_line": "581:415383877:d=2025070712:TMP:2 m above ground:69 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 69,
+            "validity_date": 20250710,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            417121077,
+            417646708
+          ],
+          "bytes": 525632,
+          "sha256": "33dad0c7f8da55ce248f136fda2440b1a94f15ba83b43bcf89f40c15f2a6c24f",
+          "index_line": "583:417121077:d=2025070712:DPT:2 m above ground:69 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 69,
+            "validity_date": 20250710,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            419994987,
+            420964318
+          ],
+          "bytes": 969332,
+          "sha256": "3e443851b6b03f025ebd01e50ee5d9fe47e202fd9b05051fb117bb9bf1be1101",
+          "index_line": "588:419994987:d=2025070712:UGRD:10 m above ground:69 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 69,
+            "validity_date": 20250710,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            420964319,
+            421910668
+          ],
+          "bytes": 946350,
+          "sha256": "da3fb9c0f870395c2ca83127e13d69ad27bb21f17cad0b70a38196ea48eeb9c3",
+          "index_line": "589:420964319:d=2025070712:VGRD:10 m above ground:69 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 69,
+            "validity_date": 20250710,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-10T12:00:00+00:00",
+      "lead_h": 72,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f072",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f072.idx",
+      "index_sha256": "ee506a9ef2641d6535c29e7107133abdcedf165c079e71584882e4a4ffd8e5a2",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            513337076,
+            514683221
+          ],
+          "bytes": 1346146,
+          "sha256": "bc9b3273ea2158d61980f26472d925e71c2fbd584edeeca01d3c261e1e4829a9",
+          "index_line": "712:513337076:d=2025070712:HPBL:surface:72 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 72,
+            "validity_date": 20250710,
+            "validity_time": 1200,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            412150983,
+            412665315
+          ],
+          "bytes": 514333,
+          "sha256": "ac1594f7729375d3c43ec5af6414ae6bad7241a2c7ca08ddca9e34d114c3c26f",
+          "index_line": "581:412150983:d=2025070712:TMP:2 m above ground:72 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 72,
+            "validity_date": 20250710,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            413885496,
+            414409780
+          ],
+          "bytes": 524285,
+          "sha256": "0570aa3cc8fc5d44c3aba559b5334ddfab1a6f723a4cfd1c7bcae3dea6e7b2a8",
+          "index_line": "583:413885496:d=2025070712:DPT:2 m above ground:72 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 72,
+            "validity_date": 20250710,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            416755418,
+            417726128
+          ],
+          "bytes": 970711,
+          "sha256": "1573024ad00ab4b30ccfae4bbb5f5355f4756338ad5ed1bca3bcfb4a7fbac75c",
+          "index_line": "588:416755418:d=2025070712:UGRD:10 m above ground:72 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 72,
+            "validity_date": 20250710,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            417726129,
+            418678143
+          ],
+          "bytes": 952015,
+          "sha256": "06d6574dd2c1d853c9f3137b392f5b08426e404486b80353cd2035278fc064ac",
+          "index_line": "589:417726129:d=2025070712:VGRD:10 m above ground:72 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 72,
+            "validity_date": 20250710,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-10T15:00:00+00:00",
+      "lead_h": 75,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f075",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f075.idx",
+      "index_sha256": "517da1698f7b021397e903887d6a15c3a91f34091ec7f8f15b2e79473a3517a4",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            510008279,
+            511357063
+          ],
+          "bytes": 1348785,
+          "sha256": "21370f50019ec1904ea12f01e80a12f5f216bc4b6907ed09cf763a077c754e2a",
+          "index_line": "712:510008279:d=2025070712:HPBL:surface:75 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 75,
+            "validity_date": 20250710,
+            "validity_time": 1500,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            410001782,
+            410516750
+          ],
+          "bytes": 514969,
+          "sha256": "9b2f2ce9cba02b7e1bb2e157f38aeaf765e9036c4808c4043b6fb54d900b287d",
+          "index_line": "581:410001782:d=2025070712:TMP:2 m above ground:75 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 75,
+            "validity_date": 20250710,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            411737478,
+            412262830
+          ],
+          "bytes": 525353,
+          "sha256": "735a38620bccf917f42f19e6b30a6982ca3ea4ed4f6bcf61f1c0fcd40b581d10",
+          "index_line": "583:411737478:d=2025070712:DPT:2 m above ground:75 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 75,
+            "validity_date": 20250710,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            414616255,
+            415589644
+          ],
+          "bytes": 973390,
+          "sha256": "b519742be34d4622bcbe08a6f81d8c305eb60372ec4ea6566374f283e26d7866",
+          "index_line": "588:414616255:d=2025070712:UGRD:10 m above ground:75 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 75,
+            "validity_date": 20250710,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            415589645,
+            416537887
+          ],
+          "bytes": 948243,
+          "sha256": "97087b3a2cba681cbfad6ecbee166a49d92b9d5b35087d9240be790d792f771d",
+          "index_line": "589:415589645:d=2025070712:VGRD:10 m above ground:75 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 75,
+            "validity_date": 20250710,
+            "validity_time": 1500,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-10T18:00:00+00:00",
+      "lead_h": 78,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f078",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f078.idx",
+      "index_sha256": "bf75275997a65b87e7b0e2c11672efdfec6f58308a0bb0ac96b98b0bb5081ee2",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            515237336,
+            516573485
+          ],
+          "bytes": 1336150,
+          "sha256": "85d474ba940f38f3117592e39f628adc9524e3680846ba34fec93fcb80c5a45a",
+          "index_line": "712:515237336:d=2025070712:HPBL:surface:78 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 78,
+            "validity_date": 20250710,
+            "validity_time": 1800,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            414205228,
+            414719565
+          ],
+          "bytes": 514338,
+          "sha256": "914f8ee4203835bddbe67a74c4da26ada14e3ad68ced5b6f18b89c9cc1d7e8f7",
+          "index_line": "581:414205228:d=2025070712:TMP:2 m above ground:78 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 78,
+            "validity_date": 20250710,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            415940564,
+            416469832
+          ],
+          "bytes": 529269,
+          "sha256": "df3acf7e63de140ddfa48697702f7e664a39116b28ed547b0ea78eb1cbed813b",
+          "index_line": "583:415940564:d=2025070712:DPT:2 m above ground:78 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 78,
+            "validity_date": 20250710,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            418815471,
+            419788725
+          ],
+          "bytes": 973255,
+          "sha256": "016d45f29f71e238ae0996e7316ad1d0b972ac25eaf8ee8058c3b0b5e39fcdd4",
+          "index_line": "588:418815471:d=2025070712:UGRD:10 m above ground:78 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 78,
+            "validity_date": 20250710,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            419788726,
+            420737671
+          ],
+          "bytes": 948946,
+          "sha256": "4c9c5eabe0e6fa97c576bb8bdd084a3aa1e29f33b4a565cf00e8e7fcbf4a453c",
+          "index_line": "589:419788726:d=2025070712:VGRD:10 m above ground:78 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 78,
+            "validity_date": 20250710,
+            "validity_time": 1800,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-10T21:00:00+00:00",
+      "lead_h": 81,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f081",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f081.idx",
+      "index_sha256": "fb8af4676ef8bd09af19d85f5dd61696d500871952a2b684cea9b76213ed2c72",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            509708991,
+            511031138
+          ],
+          "bytes": 1322148,
+          "sha256": "ec8e24ee20eddf966151954992a33a73f04f3f562ee4cf7c8e08aeb1f4d2ab05",
+          "index_line": "712:509708991:d=2025070712:HPBL:surface:81 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 81,
+            "validity_date": 20250710,
+            "validity_time": 2100,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            410712850,
+            411226131
+          ],
+          "bytes": 513282,
+          "sha256": "8a8a6e0796b16eb9e793948a3d59262c9c25339a0744d10e7964c0fce6c2b6c5",
+          "index_line": "581:410712850:d=2025070712:TMP:2 m above ground:81 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 81,
+            "validity_date": 20250710,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            412445346,
+            412968457
+          ],
+          "bytes": 523112,
+          "sha256": "543f3b5637ad26d679b0745fe49746798a443de2a6704098703c69e365b6dd6b",
+          "index_line": "583:412445346:d=2025070712:DPT:2 m above ground:81 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 81,
+            "validity_date": 20250710,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            415319558,
+            416291925
+          ],
+          "bytes": 972368,
+          "sha256": "6b0ebec9978c081518c68c28a77f8c52acfcd9ebe6196b6111aa6cc4e094f830",
+          "index_line": "588:415319558:d=2025070712:UGRD:10 m above ground:81 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 81,
+            "validity_date": 20250710,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            416291926,
+            417239181
+          ],
+          "bytes": 947256,
+          "sha256": "9dd60ee3e017ad6e9bf70e28efd3391ee7e4a3c8db6e0c84c8ae9205d5b6580f",
+          "index_line": "589:416291926:d=2025070712:VGRD:10 m above ground:81 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 81,
+            "validity_date": 20250710,
+            "validity_time": 2100,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-11T00:00:00+00:00",
+      "lead_h": 84,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f084",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f084.idx",
+      "index_sha256": "9e49fc50afacaa96b6069c8c5133db9f9c8d4259954c597e0434a5d7d37b1583",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            511992329,
+            513308756
+          ],
+          "bytes": 1316428,
+          "sha256": "90b6b92b4299c1bb7cb728044b679cf22bd2b5ba596c493764aa73d9f7633086",
+          "index_line": "712:511992329:d=2025070712:HPBL:surface:84 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 84,
+            "validity_date": 20250711,
+            "validity_time": 0,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            411390093,
+            411900559
+          ],
+          "bytes": 510467,
+          "sha256": "112c30c43474514b742b2d86a31f05274edce0aa13435e204e4446499d986df5",
+          "index_line": "581:411390093:d=2025070712:TMP:2 m above ground:84 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 84,
+            "validity_date": 20250711,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            413117197,
+            413638462
+          ],
+          "bytes": 521266,
+          "sha256": "5764dd114484e1e68721b81225dfda09394979229f5710ef7e71851111b2744b",
+          "index_line": "583:413117197:d=2025070712:DPT:2 m above ground:84 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 84,
+            "validity_date": 20250711,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            415973263,
+            416942723
+          ],
+          "bytes": 969461,
+          "sha256": "78a30807b93e0b97735611aa022ac3e86a7b4e25cac4c5983998a19fc4cf59d1",
+          "index_line": "588:415973263:d=2025070712:UGRD:10 m above ground:84 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 84,
+            "validity_date": 20250711,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            416942724,
+            417886702
+          ],
+          "bytes": 943979,
+          "sha256": "c7c0f8f1f187dffc77c19867bfd9986878440e0225b0a3d9a53bca146580ff25",
+          "index_line": "589:416942724:d=2025070712:VGRD:10 m above ground:84 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 84,
+            "validity_date": 20250711,
+            "validity_time": 0,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-11T03:00:00+00:00",
+      "lead_h": 87,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f087",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f087.idx",
+      "index_sha256": "8578e2bd208f4ba890f6ca5a1c18c3606907a9f304ad7aa1d39d0fc99c135653",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            515969695,
+            517421294
+          ],
+          "bytes": 1451600,
+          "sha256": "98105cfad44a07e567a000ed21bb6d9599cae0fa4558db1b09f2066dcf8be7fe",
+          "index_line": "712:515969695:d=2025070712:HPBL:surface:87 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 87,
+            "validity_date": 20250711,
+            "validity_time": 300,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            416828713,
+            417339317
+          ],
+          "bytes": 510605,
+          "sha256": "22729cc6dc5d71684e2b98aebb47ddd4c5452278c91ffbc4b58693a2fe768738",
+          "index_line": "581:416828713:d=2025070712:TMP:2 m above ground:87 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 87,
+            "validity_date": 20250711,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            418558422,
+            419080661
+          ],
+          "bytes": 522240,
+          "sha256": "d2fd67635bfe41e9a8f6b708ea93cee6469a61e0d40c87ef8d8fa98020a056d7",
+          "index_line": "583:418558422:d=2025070712:DPT:2 m above ground:87 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 87,
+            "validity_date": 20250711,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            421417611,
+            422382340
+          ],
+          "bytes": 964730,
+          "sha256": "4f4eb64a48cd7c12b991ba436e1067dd21168fe637c981871fa399cecb9befa0",
+          "index_line": "588:421417611:d=2025070712:UGRD:10 m above ground:87 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 87,
+            "validity_date": 20250711,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            422382341,
+            423324732
+          ],
+          "bytes": 942392,
+          "sha256": "94558977e67906a8cc38d2db60fb4c77112753c73d3e9182e538e6d291877fec",
+          "index_line": "589:422382341:d=2025070712:VGRD:10 m above ground:87 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 87,
+            "validity_date": 20250711,
+            "validity_time": 300,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-11T06:00:00+00:00",
+      "lead_h": 90,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f090",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f090.idx",
+      "index_sha256": "dc7720663f567a6be5ee76fbecd0263648d7a73b49c3022a3d728d3dfa0dd6b4",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            515500744,
+            516962329
+          ],
+          "bytes": 1461586,
+          "sha256": "4e7980799db88de3a561ab41ab0fcee253b1fc956550d0b6d01c7817cfe7555c",
+          "index_line": "712:515500744:d=2025070712:HPBL:surface:90 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 90,
+            "validity_date": 20250711,
+            "validity_time": 600,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            414984287,
+            415495497
+          ],
+          "bytes": 511211,
+          "sha256": "6d505269aac0160d4f1d1e4013f0522b8562eb30125f94bd355e9d8eff973618",
+          "index_line": "581:414984287:d=2025070712:TMP:2 m above ground:90 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 90,
+            "validity_date": 20250711,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            416716276,
+            417239228
+          ],
+          "bytes": 522953,
+          "sha256": "82e94dcbce97a7bcb160b019fffc0a7b6f49a761053c9db15453ecea1e4c8a65",
+          "index_line": "583:416716276:d=2025070712:DPT:2 m above ground:90 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 90,
+            "validity_date": 20250711,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            419573685,
+            420540103
+          ],
+          "bytes": 966419,
+          "sha256": "04de78de3d57bf9fa690b8e16fc833a9a9e9b8d7b8a20352bfbf7af2933d5f68",
+          "index_line": "588:419573685:d=2025070712:UGRD:10 m above ground:90 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 90,
+            "validity_date": 20250711,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            420540104,
+            421483974
+          ],
+          "bytes": 943871,
+          "sha256": "c1e784b6ced66a98d33524b79062222bb3d0e3a80ba0eca72cd2e5fc7516fe57",
+          "index_line": "589:420540104:d=2025070712:VGRD:10 m above ground:90 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 90,
+            "validity_date": 20250711,
+            "validity_time": 600,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-11T09:00:00+00:00",
+      "lead_h": 93,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f093",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f093.idx",
+      "index_sha256": "e4b5d99a01edf8a6cc87fea071f3fb9f7ac33ccb16bb5ae9b5e2752cfef8ae78",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            513085726,
+            514556395
+          ],
+          "bytes": 1470670,
+          "sha256": "b1dbb379fa0155bd65dc8d182890d6c4613dfa3e1f14e89f37e9e720f04a266c",
+          "index_line": "712:513085726:d=2025070712:HPBL:surface:93 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 93,
+            "validity_date": 20250711,
+            "validity_time": 900,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            413420121,
+            413936061
+          ],
+          "bytes": 515941,
+          "sha256": "6b78ed369f6e44ddc1c6e0e5490b47bf5b3b6eaaa83bdec18fb1dfd2bf65fea8",
+          "index_line": "581:413420121:d=2025070712:TMP:2 m above ground:93 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 93,
+            "validity_date": 20250711,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            415158032,
+            415686012
+          ],
+          "bytes": 527981,
+          "sha256": "d7296fe27696e7f4167162c60cae1a3f2ae59c41cde41323a8e08a815580f95d",
+          "index_line": "583:415158032:d=2025070712:DPT:2 m above ground:93 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 93,
+            "validity_date": 20250711,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            418033192,
+            419004306
+          ],
+          "bytes": 971115,
+          "sha256": "bd1bfcfc5dd7eea02ae67278ace7a8e75a4dcd32bf64b1eef438c5b6ac93d4e6",
+          "index_line": "588:418033192:d=2025070712:UGRD:10 m above ground:93 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 93,
+            "validity_date": 20250711,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            419004307,
+            419950665
+          ],
+          "bytes": 946359,
+          "sha256": "08c8e0ac8191b07ac00bcdb9055544c06216336791a918a3b419d5901f7131f8",
+          "index_line": "589:419004307:d=2025070712:VGRD:10 m above ground:93 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 93,
+            "validity_date": 20250711,
+            "validity_time": 900,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    },
+    {
+      "init_date": "2025-07-07",
+      "init_time": "2025-07-07T12:00:00+00:00",
+      "valid_time": "2025-07-11T12:00:00+00:00",
+      "lead_h": 96,
+      "data_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f096",
+      "index_url": "https://noaa-gfs-bdp-pds.s3.amazonaws.com/gfs.20250707/12/atmos/gfs.t12z.pgrb2.0p25.f096.idx",
+      "index_sha256": "ed23b58167ca674212e02f84f6b4cf2e35107bb8046ab96395f9f8b88f307dea",
+      "fields": {
+        "gfs_blh": {
+          "parameter": "HPBL",
+          "level": "surface",
+          "units": "m",
+          "range": [
+            514389478,
+            515731412
+          ],
+          "bytes": 1341935,
+          "sha256": "9857b1e1cd47f9aacc37abce275e987eb97daac4301c78056368bc12a3b5fc25",
+          "index_line": "712:514389478:d=2025070712:HPBL:surface:96 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 96,
+            "validity_date": 20250711,
+            "validity_time": 1200,
+            "type_of_level": "surface",
+            "decoder_short_name": "unknown"
+          }
+        },
+        "gfs_t2m": {
+          "parameter": "TMP",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            413135941,
+            413651520
+          ],
+          "bytes": 515580,
+          "sha256": "ed7063cf7a78de2a851e3ada20c48c988997761a178570e4960191791ba868b8",
+          "index_line": "581:413135941:d=2025070712:TMP:2 m above ground:96 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 96,
+            "validity_date": 20250711,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2t"
+          }
+        },
+        "gfs_d2m": {
+          "parameter": "DPT",
+          "level": "2 m above ground",
+          "units": "K",
+          "range": [
+            414872983,
+            415400637
+          ],
+          "bytes": 527655,
+          "sha256": "d29fe1c8a48c44ee3c178db284ede401920e0de5a29d6e4ae9b29aceff7a208d",
+          "index_line": "583:414872983:d=2025070712:DPT:2 m above ground:96 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 96,
+            "validity_date": 20250711,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "2d"
+          }
+        },
+        "gfs_u10": {
+          "parameter": "UGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            417743603,
+            418716363
+          ],
+          "bytes": 972761,
+          "sha256": "a9cd5a309faf16bea9562e0a36382400d22bcc2ea31355182b787090ff9158ef",
+          "index_line": "588:417743603:d=2025070712:UGRD:10 m above ground:96 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 96,
+            "validity_date": 20250711,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10u"
+          }
+        },
+        "gfs_v10": {
+          "parameter": "VGRD",
+          "level": "10 m above ground",
+          "units": "m s-1",
+          "range": [
+            418716364,
+            419664655
+          ],
+          "bytes": 948292,
+          "sha256": "3beba2dcdef7219cfcebc21bada12d2d50f1787543080b47ba5acd413ac6b30b",
+          "index_line": "589:418716364:d=2025070712:VGRD:10 m above ground:96 hour fcst:",
+          "decoded": {
+            "data_date": 20250707,
+            "data_time": 1200,
+            "forecast_time": 96,
+            "validity_date": 20250711,
+            "validity_time": 1200,
+            "type_of_level": "heightAboveGround",
+            "decoder_short_name": "10v"
+          }
+        }
+      }
+    }
+  ]
+}

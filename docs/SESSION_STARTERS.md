@@ -7,15 +7,20 @@ additional-data, public-documentation, GPU-rollout, manifest-integration, and
 first-scorecard and 24-hour-headline sessions are complete. Do not restart
 them. A later diagnosis and target re-evaluation retired the “unserved
 Patna/Varanasi” framing. The pre-declared Option B ERA5 perfect-prognosis
-kill-test has now passed. The next bounded task is to quantify how much BLH
-skill degrades in an actual forecast and whether a free NWP source makes an
-Aurora 1.5 rollout unnecessary.
+kill-test and the follow-on free GFS forecast-BLH gate have both passed. GFS is
+sufficient for forecast BLH; do not run Aurora 1.5 for this purpose. The next
+bounded task is versioned retrospective reporting.
 
 Every new agent must first read `docs/AGENT_BRIEF.md`, `docs/HANDOFF.md`, and
 the relevant section of `docs/WORKSTREAMS.md`. The owner requested work on
 `master` for this phase; do not create or switch branches.
 
-## Forecast-BLH degradation gate — next scientific session
+## Forecast-BLH degradation gate — completed
+
+Completed on 2026-08-12 under `docs/FORECAST_BLH_CONTRACT.md`. Results are in
+`docs/FORECAST_BLH_RESULT.md`: GFS ΔAUC +0.0336, ΔCSI +0.1620; free NWP
+sufficient. Do not restart this assignment. The original prompt is retained
+below only as an audit trail.
 
 ```text
 Read docs/AGENT_BRIEF.md, docs/BLH_CEILING_RESULT.md,
@@ -45,7 +50,7 @@ docs/HANDOFF.md, append JOURNAL.md, and commit only reviewed files. Do not push
 or publish without approval.
 ```
 
-## Versioned reporting artifacts — queued after the forecast-BLH gate
+## Versioned reporting artifacts — next session
 
 The GPU phase and separate 24-hour/hourly scorecards are complete. Do not
 provision another Pod, rerun a slice, re-merge manifests, tune Component A on

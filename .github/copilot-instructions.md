@@ -24,9 +24,9 @@ and this file cannot drift apart.
 4. **Run `python -m src.eval.audit` before trusting any results table.**
 5. **Stay inside your workstream's file ownership** (`docs/WORKSTREAMS.md`) and
    work on its branch.
-6. **Option B passed only a perfect-prognosis ceiling test.** Do not present
-   ERA5 analysis skill as forecast skill or start Aurora 1.5 GPU work before
-   forecast BLH degradation is quantified.
+6. **Keep analysis and forecast skill distinct.** ERA5 passed only a
+   perfect-prognosis ceiling test; free GFS then passed the train-only
+   forecast-BLH gate. Use GFS and do not start Aurora 1.5 GPU work for BLH.
 
 ## Code conventions
 

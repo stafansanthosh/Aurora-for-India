@@ -30,8 +30,8 @@ cannot drift apart.
 - OpenAQ serves no data before ~Feb 2025; backfill is impossible.
 - Temporal cutoff is 2025-12-01 (revised once, disclosed — see the brief).
 - The Option B ERA5 ceiling test passed, but it used perfect-prognosis analysis.
-  Next quantify forecast BLH degradation and check free NWP sources; no Aurora
-  1.5 GPU rollout is authorized yet.
+  The follow-on free GFS forecast-BLH gate also passed (ΔAUC +0.0336, ΔCSI
+  +0.1620). Use GFS for forecast BLH; do not run Aurora 1.5 for this purpose.
 
 Environment: Windows, `.venv/Scripts/python.exe`. Credentials in `.env` and
 `~/.cdsapirc`.

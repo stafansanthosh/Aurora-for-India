@@ -1,9 +1,10 @@
 # Codex brief — Option B: PM2.5 exceedance with boundary-layer meteorology
 
 **Written:** 2026-08-11 by the Claude Code session that produced the diagnosis.
-**Completed:** the §3 perfect-prognosis kill-test passed on 2026-08-12. Results
-are in `docs/BLH_CEILING_RESULT.md`; do not rerun or retune it. The next gate is
-forecast-vs-analysis BLH degradation and free-NWP/Aurora-1.5 verification.
+**Completed:** the §3 perfect-prognosis kill-test and the follow-on
+forecast-vs-analysis GFS gate passed on 2026-08-12. Results are in
+`docs/BLH_CEILING_RESULT.md` and `docs/FORECAST_BLH_RESULT.md`; do not rerun or
+retune them. Free GFS is sufficient; do not run Aurora 1.5 for BLH.
 **Read first:** `docs/AGENT_BRIEF.md`, then this file, then `docs/HANDOFF.md`.
 **Branch:** `master`. Do not create branches.
 **You are cold-starting.** Everything needed is in this file or cited from it.
@@ -346,8 +347,9 @@ rollout complete at 80,136 rows.
 
 ## 8. Original definition of done for this stint
 
-Items 1, 2, and 5 below are complete. SILAM capture remains active, and the
-Aurora 1.5 variable/input verification in item 4 remains part of the next gate.
+Items 1, 2, 4, and 5 below are complete. SILAM capture remains active. Primary
+documentation confirmed Aurora 1.5 outputs BLH, but the GFS gate passed, so no
+Aurora 1.5 rollout is warranted for this purpose.
 
 1. The §3 kill-test is run, with the §3.3 decision rule written down first.
 2. Result reported **per city**, labelled `perfect-prognosis`, with an explicit
