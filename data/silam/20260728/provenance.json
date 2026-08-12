@@ -1,0 +1,63 @@
+{
+  "provenance_schema_version": 1,
+  "method": "silam_global",
+  "model": "silam_glob_v6_1",
+  "species": "PM25",
+  "cycle": "20260728",
+  "init_time_utc": "2026-07-28T00:00:00+00:00",
+  "attribution": "SILAM air quality forecast, Finnish Meteorological Institute, CC BY 4.0 (https://silam.fmi.fi/)",
+  "licence": "CC-BY-4.0",
+  "grid_note": "global 0.2 deg; nearest-cell sampling, distance recorded",
+  "registry_stations": 159,
+  "status": "complete",
+  "files": [
+    {
+      "lead": "d0",
+      "url": "https://fmi-opendata-silam-surface-netcdf.s3.eu-west-1.amazonaws.com/global/20260728/silam_glob_v6_1_20260728_PM25_d0.nc",
+      "sha256": "219a3247d348456fa4cdd945adb2c68ccd8c6fd2d7148cd9ce0037eb9d10a6cb",
+      "bytes": 36142440,
+      "retrieved_at_utc": "2026-08-12T15:10:07.664927+00:00",
+      "hours": 24
+    },
+    {
+      "lead": "d1",
+      "url": "https://fmi-opendata-silam-surface-netcdf.s3.eu-west-1.amazonaws.com/global/20260728/silam_glob_v6_1_20260728_PM25_d1.nc",
+      "sha256": "f1b6a396783c17259e111deac74b96834f989b0668f4f4ae49cb42a661ab5b6c",
+      "bytes": 36155956,
+      "retrieved_at_utc": "2026-08-12T15:16:24.130565+00:00",
+      "hours": 24
+    },
+    {
+      "lead": "d2",
+      "url": "https://fmi-opendata-silam-surface-netcdf.s3.eu-west-1.amazonaws.com/global/20260728/silam_glob_v6_1_20260728_PM25_d2.nc",
+      "sha256": "483f08f44dd7a5862afe262fd77e6ed225c781057cb0833e0758428db4de8ec5",
+      "bytes": 36286368,
+      "retrieved_at_utc": "2026-08-12T15:21:55.078527+00:00",
+      "hours": 24
+    },
+    {
+      "lead": "d3",
+      "url": "https://fmi-opendata-silam-surface-netcdf.s3.eu-west-1.amazonaws.com/global/20260728/silam_glob_v6_1_20260728_PM25_d3.nc",
+      "sha256": "144f5bb5e3806506c4617df62d257f0b35e6560f5ede81fbf2f0cec34dad7fcf",
+      "bytes": 36345303,
+      "retrieved_at_utc": "2026-08-12T15:27:18.965712+00:00",
+      "hours": 24
+    },
+    {
+      "lead": "d4",
+      "url": "https://fmi-opendata-silam-surface-netcdf.s3.eu-west-1.amazonaws.com/global/20260728/silam_glob_v6_1_20260728_PM25_d4.nc",
+      "sha256": "ff2e2a5456da1573380edf0bda6a1490d2dd0fc5269287433658b54ddfe5aacf",
+      "bytes": 36053839,
+      "retrieved_at_utc": "2026-08-12T15:33:37.798109+00:00",
+      "hours": 24
+    }
+  ],
+  "max_cell_distance_km": 14.55,
+  "rows": 19080,
+  "stations": 159,
+  "lead_h_range": [
+    1,
+    120
+  ],
+  "samples_sha256": "101e3649bab46d80e838582b355481ab071b89635dc84555e015279007e3d2f8"
+}
