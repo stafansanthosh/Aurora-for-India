@@ -40,7 +40,7 @@ headline and not evidence of year-round operational utility.
 | ERA5 Option B acquisition | 7/7 planned months, 84 train-only days, 320,544 station-hours, 159 stations; hashes/coverage/duplicates/missing values validated 2026-08-12 |
 | Option B kill-test | **PROCEED**: pooled ΔAUC +0.046, ΔCSI +0.206; Patna +0.183/+0.296; train-only perfect prognosis |
 | GFS forecast-BLH gate | **FREE NWP SUFFICIENT**: pooled ΔAUC +0.0336, ΔCSI +0.1620; Patna +0.108/+0.101; 32/32 train cycles, no GPU |
-| SILAM prospective capture | Active; untracked 20260713/14/15 directories await separate provenance review and are excluded here |
+| SILAM prospective capture | **26 cycles complete** (20260712–20260806, 20260811), 19,080 rows / 159 stations each, provenance tracked. 6 empty dirs from a transient DNS drop being retried; 20260712 has since left the rolling window and is only held because it was captured in time |
 
 The local `.venv` is healthy: Python 3.11.9. The earlier broken-environment
 claim was caused by a restricted Codex sandbox, not the repository runtime.
