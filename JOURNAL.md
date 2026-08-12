@@ -1097,3 +1097,42 @@ Next: the decisive experiment needs no GPU and no Aurora — pull OpenAQ plus th
 already-implemented actual CAMS forecast archive for one Tier-1 region and test
 whether anchoring lifts CAMS event skill as it did in India. Only then ask
 whether Aurora beats anchored CAMS.
+
+## 2026-08-11 — Option B selected; kill-test set up before any GPU spend
+
+The owner chose Option B from `docs/OPTIONS_REVIEW.md`: keep PM2.5 as the
+target and add the boundary-layer meteorology the 0.4-degree pollution
+checkpoint lacks.
+
+The first move is deliberately a kill-test rather than a build. ERA5 reanalysis
+assimilates observations and is valid AT the target window, so ERA5
+boundary-layer height upper-bounds anything a forecast of that field could
+supply. If perfect-prognosis BLH does not materially improve Very Poor+
+discrimination, then Aurora 1.5's forecast BLH will improve it less and Option B
+has no headroom. That question costs downloads and CPU instead of GPU hours, so
+it goes first.
+
+Added `src/data/era5_boundary_layer.py`: pulls boundary_layer_height,
+2m_dewpoint_temperature, 2m_temperature and 10m u/v over India for
+train-period days only (7 monthly requests, 84 days), samples at the 159
+registry stations, and derives wind, ventilation coefficient (BLH x wind) and
+dew-point depression. Train-only by default so the test split stays unconsumed.
+
+The decision rule is pre-declared in `docs/CODEX_BRIEF_OPTION_B.md` section 3.3
+and must be committed before results are viewed: proceed only if ERA5 features
+lift out-of-fold AUC by >=0.02 and best CSI by >=0.03 over the current feature
+set, and the gain holds in at least one non-Delhi city with >=50 train events
+(only Patna qualifies, at 114). Below 0.01 AUC means no headroom and stop.
+Anything between is reported as ambiguous, not rounded up.
+
+Also wrote `docs/CODEX_BRIEF_OPTION_B.md` as a cold-start brief carrying every
+diagnostic result, the repo map, the hard rules, and the list of beliefs that
+turned out false. It exists so a fresh agent can continue without re-deriving
+the analysis.
+
+Started in background: SILAM `--backfill` across the rolling 32-day window, and
+the ERA5 train-period download.
+
+Known issue recorded for the eventual head-to-head: SILAM initialises at 00Z
+and the Aurora rollout at 12Z, so a naive comparison hands one side a 12-hour
+information advantage. Match init times or account for the offset explicitly.

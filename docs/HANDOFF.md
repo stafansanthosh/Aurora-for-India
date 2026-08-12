@@ -129,6 +129,26 @@ construction. This moderates the earlier "Aurora adds nothing" reading.
 **The next decisive experiment needs no GPU and no Aurora:** score CAMS and
 anchored-CAMS event skill in one Tier-1 region using existing code.
 
+## Direction chosen (2026-08-11): Option B
+
+The owner selected **Option B** from `docs/OPTIONS_REVIEW.md`: keep PM2.5 as the
+target, add the boundary-layer meteorology the 0.4° pollution checkpoint lacks.
+
+**`docs/CODEX_BRIEF_OPTION_B.md` is the self-contained working brief.** It holds
+every diagnostic result, the kill-test design, the pre-declared decision rule,
+and the hard rules. Any agent picking this up should read that file.
+
+The immediate task is a **kill-test, not a build**: use ERA5 boundary-layer
+height as *perfect-prognosis* meteorology and measure how much exceedance skill
+it buys. ERA5 is valid at the target window, so it upper-bounds any forecast of
+the same field. If perfect BLH adds little, Option B has no headroom and no GPU
+should be spent. `src/data/era5_boundary_layer.py` implements the acquisition;
+the decision rule is in the brief §3.3 and must be written down before results
+are viewed.
+
+In flight as of 2026-08-11: SILAM `--backfill` (rolling 32-day window, cycles
+lost permanently if uncaptured) and the ERA5 train-period download.
+
 ## Exact next scientific action
 
 1. Freeze/version the generated per-city, per-window, pooled train-city, L1,
