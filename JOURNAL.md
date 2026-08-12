@@ -1042,3 +1042,58 @@ Gangetic winter, settle the Varanasi level, and make per-target-city event
 skill the headline. Fine-tuning remains the wrong next step; the limiting
 factor is missing emissions/source information and station-scale
 representativeness, which fine-tuning on 32 dates does not supply.
+
+## 2026-08-11 — Target re-evaluation: the founding premise is falsified
+
+Added `docs/TARGET_REEVALUATION.md`. No scientific result changed; this is a
+strategic review triggered by the event-skill diagnosis.
+
+**Patna and Varanasi are not unserved.** India runs AQEWS (IITM/IMD/NCAR
+WRF-Chem) as a nationwide 10 km chemistry-transport forecast with 10-day lead,
+explicitly naming Varanasi, Lucknow, Patna and Kolkata among covered
+non-attainment cities, plus IMD-SILAM at 5 km/3 days and a public bulletin for
+roughly 140 cities. The brief recorded "Delhi has AQEWS (WRF-Chem 400 m)" and
+inferred the rest of India was unserved. The 400 m figure is the Delhi nest;
+the national domain is 10 km. That misreading is the origin of the target
+choice. Aurora at 0.4 degrees (~44 km) with no chemistry and no emissions is
+four times coarser than the incumbent in the incumbent's own cities.
+
+Verification caveat: ews.tropmet.res.in refused connections from this machine,
+so the city list comes from IMD/IITM secondary documentation and consistent
+independent sources, not the portal. Confirm directly before acting.
+
+**The real gap is different and the repo already measured it.** Nearly
+everywhere has *some* forecast because the global tier (CAMS/SILAM) is global.
+But actual CAMS at the 24-hour headline scores POD 0.154, FAR 0.911, CSI 0.060 —
+close to useless for episode warning — while trivial local anchoring
+(Component A) reaches POD 0.582, CSI 0.399. The defensible thesis is therefore:
+most of the world is served only by a global forecast that fails at episodes,
+and cheap local anchoring against a few public monitors makes it useful. That
+thesis does not require Aurora to win.
+
+**Probed OpenAQ v3 live for verification capacity** (active = reporting since
+2026-06-01): Thailand 381, Pakistan 332, Kazakhstan 164, South Africa 117,
+Nepal 77, Ghana 74, Philippines 74, Nigeria 66, Uganda 45, Senegal 34. The
+structural tension is that where forecasts are most absent, monitors are also
+most absent (sub-Saharan Africa averages one monitor per 15.9M people).
+
+**Ranked candidates.** Tier 1: West African Harmattan dust (Ghana/Senegal/
+Nigeria) — synoptic, continental-scale, purely meteorological, the one regime a
+0.4-degree model is not under-resolved for; and mainland SE Asia biomass haze
+(northern Thailand, 381 monitors) where FIRMS supplies the source term and
+Aurora does the transport. Tier 2: Pakistan (high need, 332 monitors, no
+national multi-day model found, but emission-dominated inversion regime where
+Aurora is weakest) and Nepal.
+
+**Also recorded a result that partly reverses the previous entry.** Aurora does
+carry usable information about CHANGE even though it is weak on level: the
+Aurora-minus-persistence signal predicts a >25% deterioration with AUC 0.764
+versus 0.656 for Aurora's level alone, and Aurora overtakes persistence at
++48-72 h (winter +72 h: 0.923 vs 0.808). The benchmark was scoring level, which
+persistence wins by construction. That is a measurement-design fault, not an
+Aurora fault, and it moderates the earlier "Aurora adds nothing" reading.
+
+Next: the decisive experiment needs no GPU and no Aurora — pull OpenAQ plus the
+already-implemented actual CAMS forecast archive for one Tier-1 region and test
+whether anchoring lifts CAMS event skill as it did in India. Only then ask
+whether Aurora beats anchored CAMS.

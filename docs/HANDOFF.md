@@ -97,6 +97,38 @@ operating point**, not predicting µg/m³ and thresholding. The ceiling estimate
 (AUC 0.927, best CSI 0.476) is train-only, Delhi-dominated, and **not a
 validated result**.
 
+## Target re-evaluation (2026-08-11) — the founding premise is falsified
+
+`docs/TARGET_REEVALUATION.md`. **Patna and Varanasi are not unserved.** India
+runs AQEWS (WRF-Chem) nationwide at **10 km with 10-day lead**, naming Varanasi,
+Lucknow and Patna among covered cities, plus IMD-SILAM 5 km/3-day and a ~140-city
+bulletin. The brief's "AQEWS 400 m" is the **Delhi nest**, not the national
+domain — that misreading produced the target choice. Aurora at 0.4° (~44 km) is
+four times coarser than the incumbent in the incumbent's own cities.
+
+Confirm the city list at `ews.tropmet.res.in` directly; it refused connections
+from this machine, so the finding rests on consistent secondary sources.
+
+**The defensible gap is different, and this repo already measured it:** actual
+CAMS — the forecast most of the world actually receives — scores POD 0.154,
+FAR 0.911, CSI 0.060 at the 24-hour headline, while trivial local anchoring
+reaches POD 0.582, CSI 0.399. The thesis "the global tier fails at episodes and
+cheap local anchoring fixes it" does **not require Aurora to win**.
+
+Ranked candidates: **Tier 1** West African Harmattan dust (Ghana/Senegal/Nigeria,
+~174 active monitors, synoptic dust transport — the one regime 0.4° is not
+under-resolved for) and **mainland SE Asia biomass haze** (Thailand, 381 active
+monitors, FIRMS supplies the source term). **Tier 2** Pakistan (332 monitors, no
+national multi-day model found, but emission-dominated regime) and Nepal.
+
+Also: Aurora **does** carry change information — the Aurora-minus-persistence
+signal predicts >25% deterioration at AUC 0.764, and Aurora overtakes persistence
+at +48–72 h. The benchmark was scoring level, which persistence wins by
+construction. This moderates the earlier "Aurora adds nothing" reading.
+
+**The next decisive experiment needs no GPU and no Aurora:** score CAMS and
+anchored-CAMS event skill in one Tier-1 region using existing code.
+
 ## Exact next scientific action
 
 1. Freeze/version the generated per-city, per-window, pooled train-city, L1,
