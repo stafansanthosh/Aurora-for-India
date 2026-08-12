@@ -158,12 +158,24 @@ def _sha256(path: Path) -> str:
 
 
 def _download(url: str, destination: Path) -> tuple[str, int]:
+    """Download, verifying completeness against Content-Length.
+
+    A truncated stream yields a readable-but-short NetCDF, which is worse than a
+    failure: cycle 20260730 was captured as a 20-hour lead when the published
+    file has 24. Hashing whatever arrived cannot detect that -- the hash is of
+    the truncated bytes and is perfectly self-consistent.
+    """
     with requests.get(url, stream=True, timeout=900) as response:
         response.raise_for_status()
+        expected = response.headers.get("Content-Length")
         with destination.open("wb") as handle:
             for chunk in response.iter_content(1 << 20):
                 handle.write(chunk)
-    return _sha256(destination), destination.stat().st_size
+    written = destination.stat().st_size
+    if expected is not None and written != int(expected):
+        raise IOError(
+            f"truncated download: {url} gave {written} bytes, expected {expected}")
+    return _sha256(destination), written
 
 
 def _sample_file(path: Path, cells: pd.DataFrame, init: pd.Timestamp) -> pd.DataFrame:
@@ -263,12 +275,30 @@ def capture_cycle(cycle: str, output_dir: Path = OUTPUT_DIR,
     samples.insert(1, "init_time", init.isoformat())
     samples = samples.sort_values(["station_id", "valid_time"]).reset_index(drop=True)
 
-    if samples[["station_id", "valid_time"]].duplicated().any():
-        raise ValueError(f"{cycle}: duplicate (station, valid_time) rows")
+    # SILAM lead files can legitimately share one boundary timestamp: for cycle
+    # 20260730, d2 ends at the same hour d3 begins. An identical duplicate is
+    # safe to collapse; a CONFLICTING one means two different values for the same
+    # station-time and must never be silently resolved.
+    key = ["station_id", "valid_time"]
+    duplicated = samples.duplicated(key, keep=False)
+    n_duplicate_rows = 0
+    if duplicated.any():
+        conflicting = (samples[duplicated].groupby(key)["silam_pm25"]
+                       .nunique(dropna=False) > 1)
+        if conflicting.any():
+            raise ValueError(
+                f"{cycle}: {int(conflicting.sum())} station-times carry "
+                f"CONFLICTING values across lead files; refusing to guess")
+        before = len(samples)
+        samples = samples.drop_duplicates(key, keep="first")
+        n_duplicate_rows = before - len(samples)
+        print(f"[silam] {cycle}: collapsed {n_duplicate_rows} identical "
+              f"boundary-overlap rows")
 
     samples.to_csv(samples_path, index=False)
     provenance["status"] = "complete_with_gaps" if short_leads else "complete"
     provenance["short_leads"] = short_leads
+    provenance["collapsed_duplicate_rows"] = int(n_duplicate_rows)
     provenance["rows"] = int(len(samples))
     provenance["stations"] = int(samples["station_id"].nunique())
     provenance["lead_h_range"] = [int(samples["lead_h"].min()), int(samples["lead_h"].max())]

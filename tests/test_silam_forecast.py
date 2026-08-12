@@ -15,7 +15,8 @@ import xarray as xr
 from src.data import silam_forecast as silam
 
 
-def _grid(hours: int, path, units: str = "ug/m3", day_offset: int = 0) -> None:
+def _grid(hours: int, path, units: str = "ug/m3", day_offset: int = 0,
+          fill: float | None = None) -> None:
     """Write a small SILAM-shaped PM25 file with ``hours`` timesteps.
 
     ``day_offset`` mirrors the real layout: each lead day covers its own
@@ -25,7 +26,12 @@ def _grid(hours: int, path, units: str = "ug/m3", day_offset: int = 0) -> None:
     times = pd.date_range(start, periods=hours, freq="h", tz="UTC")
     lats = np.array([25.0, 25.2, 25.4])
     lons = np.array([82.8, 83.0, 83.2])
-    values = np.arange(hours * 3 * 3, dtype="float32").reshape(hours, 3, 3)
+    if fill is None:
+        values = np.arange(hours * 3 * 3, dtype="float32").reshape(hours, 3, 3)
+    else:
+        # Constant field: an overlapping boundary hour carries the same value in
+        # both lead files, which is the identical-duplicate case.
+        values = np.full((hours, 3, 3), fill, dtype="float32")
     ds = xr.Dataset(
         {"PM25": (("time", "lat", "lon"), values, {"units": units})},
         coords={"time": times.tz_localize(None), "lat": lats, "lon": lons},
@@ -131,3 +137,62 @@ def test_station_cells_pick_the_nearest_grid_point():
     assert cells.loc[0, "lat_idx"] == 1        # 25.2 is nearest 25.19
     assert cells.loc[0, "lon_idx"] == 1        # 83.0 is nearest 83.01
     assert cells.loc[0, "cell_dist_km"] < 5.0
+
+
+def test_download_rejects_a_truncated_stream(tmp_path, monkeypatch):
+    """A short read yields a readable-but-wrong NetCDF; hashing cannot catch it."""
+    class FakeResponse:
+        headers = {"Content-Length": "1000"}
+
+        def raise_for_status(self):
+            return None
+
+        def iter_content(self, _size):
+            yield b"x" * 400          # truncated
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+    monkeypatch.setattr(silam.requests, "get", lambda *a, **k: FakeResponse())
+    with pytest.raises(IOError, match="truncated download"):
+        silam._download("http://example/f.nc", tmp_path / "f.nc")
+
+
+def test_identical_boundary_overlap_is_collapsed_not_fatal(tmp_path, monkeypatch):
+    """SILAM 20260730 d2 ends on the same hour d3 begins, with the same value."""
+    monkeypatch.setattr(silam, "load_registry", lambda *a, **k: pd.DataFrame(
+        {"station_id": ["s1"], "city": ["varanasi"], "lat": [25.2], "lon": [83.0]}))
+
+    def fake_download(url, destination):
+        lead = int(url.rsplit("_d", 1)[1].split(".")[0])
+        # d2 runs one hour long, overlapping d3's first hour with equal values.
+        _grid(25 if lead == 2 else 24, destination, day_offset=lead, fill=42.0)
+        return "deadbeef", destination.stat().st_size
+
+    monkeypatch.setattr(silam, "_download", fake_download)
+    monkeypatch.setattr(silam, "EXPECTED_HOURS_PER_LEAD", 24)
+
+    silam.capture_cycle("20260730", output_dir=tmp_path, allow_short_lead=True)
+    provenance = json.loads((tmp_path / "20260730" / "provenance.json").read_text())
+    assert provenance["collapsed_duplicate_rows"] >= 1
+
+
+def test_conflicting_duplicate_values_are_fatal(tmp_path, monkeypatch):
+    """Two different values for one station-time must never be silently resolved."""
+    monkeypatch.setattr(silam, "load_registry", lambda *a, **k: pd.DataFrame(
+        {"station_id": ["s1"], "city": ["varanasi"], "lat": [25.2], "lon": [83.0]}))
+
+    def fake_download(url, destination):
+        lead = int(url.rsplit("_d", 1)[1].split(".")[0])
+        # d2 overlaps d3 but with a different value field.
+        offset = 3 if lead == 2 else lead
+        hours = 25 if lead == 2 else 24
+        _grid(hours, destination, day_offset=offset)
+        return "deadbeef", destination.stat().st_size
+
+    monkeypatch.setattr(silam, "_download", fake_download)
+    with pytest.raises(ValueError, match="CONFLICTING"):
+        silam.capture_cycle("20260730", output_dir=tmp_path, allow_short_lead=True)
