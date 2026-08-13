@@ -1281,3 +1281,38 @@ The prospective SILAM process continued independently and produced additional
 untracked cycles while this work ran. They remain outside this commit and need
 their separate provenance review; no SILAM file was staged, deleted, or
 overwritten here.
+
+## 2026-08-13 — SILAM archive complete at 32/32; a misdiagnosis corrected
+
+The rolling SILAM window is fully captured: 31 cycles `complete` and one
+`complete_with_gaps`. Cycle 20260712 was captured before it aged out and is no
+longer obtainable by anyone who did not already hold it.
+
+**Correction to commit 7bd6168.** That commit claims cycle 20260730 failed
+because `_download` accepted a truncated stream. That is wrong. The download was
+complete: 36,092,486 bytes, exactly matching Content-Length.
+
+The real defect is upstream. SILAM's 20260730 d2 file carries 24 timesteps but
+only 20 distinct hours. Hour 19:00 appears four times and 2026-08-02T01:00
+twice; hours 20:00-23:00 are absent, padded with byte-identical copies of hour
+19 all stamped 19:00. Verified the four copies are identical rather than
+distinct fields with wrong labels — that distinction mattered, because had they
+differed, keeping the first would have silently discarded four real hours while
+mislabelling one. The conflicting-duplicate guard would have failed closed in
+that case, which is the correct behaviour.
+
+The truncation check added in 7bd6168 is still worth keeping — `_download`
+genuinely did accept short streams unnoticed — but it did not cause this and
+should not be described as having done so.
+
+Two lessons worth carrying. A step count is not an hour count: this file would
+pass any check that counts timesteps, and only `nunique()` on valid_time
+catches it. And an empty directory is not a capture: the earlier backfill left
+six directory shells after a DNS drop, and only the provenance `status` field
+distinguishes them.
+
+Final state: 20260730 holds 18,285 rows against 19,080 for a clean cycle, which
+is exactly 5 duplicate timestamps x 159 stations = 795 collapsed rows. Its
+provenance records `short_leads: [{d2, 20h}]` and
+`collapsed_duplicate_rows: 795`, and its status is `complete_with_gaps`, so any
+consumer filtering on `status == "complete"` excludes it.
