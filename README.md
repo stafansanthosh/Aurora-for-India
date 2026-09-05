@@ -48,6 +48,29 @@ This is the part worth reading if you care about method rather than results.
 
 ---
 
+## Where this is going
+
+The retrospective benchmark is complete; the forward work is about turning it
+into evidence that would survive contact with reality.
+
+1. **Freeze and version the scorecards**, and resolve the Varanasi observation
+   anomaly before any city-specific claim.
+2. **Score against an operational incumbent.** A rolling SILAM forecast archive
+   is being captured prospectively, because the benchmark currently compares
+   against baselines rather than against the systems these cities already have.
+3. **Build the exceedance-probability model** on boundary-layer + local-observation
+   features, under a validation design pre-declared before it touches the
+   untouched test split.
+4. **Run privately in shadow mode** and publish only once an operating point,
+   data freshness and a rolling hit/miss record are backed by prospective
+   evidence.
+
+The honest summary: this is a benchmark and a set of findings, not a forecast
+service, and the gap between those two is the remaining work.
+Full detail in [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
+
+---
+
 ## Where to start
 
 | If you want | Read |
