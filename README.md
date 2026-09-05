@@ -1,35 +1,69 @@
-# IndiaAQBench — low-compute air-quality forecasting for Indian cities
+# IndiaAQBench
 
-IndiaAQBench asks a practical question:
+**An open benchmark for a hard question: can a cheap, global air-quality forecast
+be made good enough to warn people about dangerous pollution episodes?**
 
-> Can a global atmospheric forecast plus public observations and modest
-> compute detect dangerous PM2.5 episodes better than the global forecast
-> alone—and when does that low-cost approach stop working?
+Not "is the average error small" — average error is easy to improve and nearly
+useless here. The question is whether a system catches the days when PM2.5 goes
+past 121 µg/m³ (India's "Very Poor" threshold), because that is when emergency
+measures actually trigger.
 
-The project combines [Microsoft Aurora](https://github.com/microsoft/aurora),
-CAMS atmospheric data, and OpenAQ station observations. It evaluates forecasts
-from **+12 to +96 hours** and tests inexpensive local and meteorological
-adaptation before considering any costly model change.
+Built on [Microsoft Aurora](https://github.com/microsoft/aurora), Copernicus
+CAMS, NOAA GFS, and 1.49 million OpenAQ station observations across nine Indian
+cities. Everything below is reproducible from this repository.
 
-**Current status:** the frozen 56-date Aurora rollout is complete and all
-**80,136 expected forecast-pair rows** are back on the local machine, and the
-canonical manifest is clean at 56 dates. The retrospective scorecards and an
-event-skill diagnosis now exist. That diagnosis showed that 89.1% of Very Poor+
-windows come from Delhi and that the original “unserved Patna/Varanasi” framing
-was wrong. The train-only Option B ceiling test found that perfect-prognosis
-ERA5 boundary-layer features cleared the pre-declared bar: pooled AUC rose by
-0.046 and best CSI by 0.206, with an even larger Patna gain. This is analysis
-skill, not forecast skill. The follow-on operational-source gate also passed:
-free NOAA GFS forecast boundary-layer features added 0.0336 AUC and 0.1620 CSI,
-including +0.108/+0.101 in Patna. GFS is sufficient for this purpose, so an
-Aurora 1.5 GPU rollout is not warranted. One audit check remains failed for inconsistent auxiliary PM1/PM10
-size ordering, so this repository does **not** claim fully clean model output,
-transferable target-city skill, or operational readiness. See the
-[live project scoreboard](docs/PROJECT_STATUS.md).
+---
 
-> **Research-use disclaimer:** this is an experimental research system, not an
-> official air-quality warning service. Do not use it as the sole basis for
-> health or emergency decisions.
+## What the project found
+
+| Finding | Evidence |
+|---|---|
+| **Optimising average error actively destroys episode detection.** They are not a trade-off — they are the same act. A regressor minimising MAE predicts near the conditional mean, which for a heavy-tailed variable sits *below* the alarm threshold. | A calibrator improved MAE 33.9 → 24.5 µg/m³ while probability of detection collapsed 0.474 → 0.125. Kept in the repo as a documented negative result. |
+| **The pollution model was the wrong instrument; the boundary layer carries the signal.** | Adding boundary-layer height lifted discrimination (AUC) 0.927 → 0.973 and skill (CSI) 0.476 → 0.682. Boundary-layer meteorology *alone*, with no pollution model at all, beat the full pollution setup. |
+| **A free forecast was sufficient — no GPU spend needed.** | NOAA GFS retained ~76–81% of the idealised gain and cleared the pre-declared bar, so a planned Aurora 1.5 GPU rollout was cancelled on evidence. |
+| **The project's own founding premise was wrong, and is documented as wrong.** | It assumed Patna and Varanasi had no public forecast. They do. The "400 m" figure that motivated the target choice describes a Delhi-only model nest, not the national system. |
+| **Most of the benchmark's evidence is one city, and the README says so.** | 89.1% of all Very Poor+ events are Delhi — the city explicitly *not* being targeted. Patna has 5 test events, Varanasi has 0. |
+
+---
+
+## How the work was kept honest
+
+This is the part worth reading if you care about method rather than results.
+
+- **Decision rules were committed to git before the results existed.** The
+  boundary-layer experiment's pass/fail thresholds are in commit `2ab1c50`; the
+  result came later. The commit order is checkable by anyone.
+- **Cheap kill-tests before expensive builds.** Rather than run a GPU rollout to
+  see if boundary-layer data helps, reanalysis was used as a *perfect-knowledge
+  upper bound*. If perfect information hadn't helped, a forecast never would —
+  and the spend would have been avoided for a few hundred MB of downloads.
+- **The held-out test set has never been scored.** Every number above is
+  train-split, out-of-fold. That is deliberate: it is the only honest evidence
+  left, and it is spent once.
+- **Negative results are kept, not deleted.** The failed calibrator, the
+  falsified premise, and an unresolved data anomaly in Varanasi are all in the
+  repository with their reasoning.
+- **One integrity check still fails and has not been waived.** Aurora violates
+  `PM1 ≤ PM2.5 ≤ PM10` on 463 of 80,730 rows. It stays visible in the audit.
+
+---
+
+## Where to start
+
+| If you want | Read |
+|---|---|
+| The 60-second version | this page |
+| Why episode detection failed, and the fix | [`docs/EPISODE_SKILL_DIAGNOSIS.md`](docs/EPISODE_SKILL_DIAGNOSIS.md) |
+| The boundary-layer result | [`docs/BLH_CEILING_RESULT.md`](docs/BLH_CEILING_RESULT.md) |
+| How the premise was falsified | [`docs/TARGET_REEVALUATION.md`](docs/TARGET_REEVALUATION.md) |
+| Current state, warts included | [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) |
+| Decisions session by session | [`JOURNAL.md`](JOURNAL.md) |
+
+> **Research-use disclaimer:** this is an experimental research benchmark, not an
+> official air-quality warning service. It is not validated for operational use.
+> Do not use it as the sole basis for health or emergency decisions.
+
+---
 
 ## Why this exists
 
