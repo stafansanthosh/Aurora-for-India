@@ -26,6 +26,66 @@ cities. Everything below is reproducible from this repository.
 
 ---
 
+## The two experiments
+
+The interesting part of this project is not a model. It is two experiments run
+in sequence, each with its pass/fail rule written into git **before** the result
+existed, and the second of which cancelled a planned GPU spend.
+
+### Run 1 — is boundary-layer information worth anything at all?
+
+The diagnosis said Indo-Gangetic winter episodes are local emissions meeting a
+collapsed boundary layer, and that the pollution model carried no
+boundary-layer information at all. Testing that with a GPU rollout would have
+been expensive and possibly pointless.
+
+So instead: use **reanalysis** — data valid *at* the target window, i.e. perfect
+hindsight. If perfect knowledge doesn't help, no forecast ever will, and the
+spend is avoided for the price of a few hundred MB.
+
+*Rule, committed as `2ab1c50` before the result:* ΔAUC ≥ +0.020, ΔCSI ≥ +0.030,
+and the gain must hold in a non-Delhi city with ≥50 events.
+
+| Feature set | AUC | CSI |
+|---|---:|---:|
+| persistence + season + lead | 0.908 | 0.480 |
+| + pollution model + CAMS | 0.927 | 0.476 |
+| **+ boundary layer** | **0.973** | **0.682** |
+
+Patna — an actual target city, not the Delhi diagnostic — moved furthest:
+AUC 0.745 → 0.928, CSI 0.159 → 0.455. **Passed.**
+
+The uncomfortable side-finding: boundary-layer meteorology *alone*, with no
+pollution model at all, scored 0.960 / 0.637 — beating the full pollution setup.
+
+### Run 2 — does a real forecast retain that, or was it hindsight?
+
+Run 1's number is a ceiling, not skill. A forecast issued four days early is
+worse than reanalysis. The open question was *how much* worse — and whether it
+justified an Aurora 1.5 GPU rollout.
+
+*Rule, committed as `b78479b` before the data was acquired.* Substituted free
+NOAA GFS at matching 12Z cycles, +0 to +96 h. 32/32 train dates, 159 stations,
+167,904 station-lead rows, zero duplicates and zero missing.
+
+| | ΔAUC | ΔCSI |
+|---|---:|---:|
+| Reanalysis ceiling, like-for-like | +0.044 | +0.200 |
+| **Free GFS forecast** | **+0.0336** | **+0.1620** |
+| Retained | ~76% | ~81% |
+
+**Verdict: free GFS is sufficient. The Aurora 1.5 rollout was cancelled.**
+
+Stated honestly: GFS boundary-layer height is strongly high-biased against
+reanalysis (+460 to +515 m), so it is *not* interchangeable as an absolute
+value. It survives because correlation holds at 0.71–0.75 through +96 h, and
+the classifier needs ordering rather than absolute height.
+
+Both runs are train-split only, out-of-fold by date. The held-out test split has
+still never been scored.
+
+---
+
 ## How the work was kept honest
 
 This is the part worth reading if you care about method rather than results.
@@ -77,7 +137,8 @@ Full detail in [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
 |---|---|
 | The 60-second version | this page |
 | Why episode detection failed, and the fix | [`docs/EPISODE_SKILL_DIAGNOSIS.md`](docs/EPISODE_SKILL_DIAGNOSIS.md) |
-| The boundary-layer result | [`docs/BLH_CEILING_RESULT.md`](docs/BLH_CEILING_RESULT.md) |
+| Run 1 — the boundary-layer ceiling test | [`docs/BLH_CEILING_RESULT.md`](docs/BLH_CEILING_RESULT.md) |
+| Run 2 — the free-forecast gate that cancelled the GPU spend | [`docs/FORECAST_BLH_RESULT.md`](docs/FORECAST_BLH_RESULT.md) |
 | How the premise was falsified | [`docs/TARGET_REEVALUATION.md`](docs/TARGET_REEVALUATION.md) |
 | Current state, warts included | [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) |
 | Decisions session by session | [`JOURNAL.md`](JOURNAL.md) |
