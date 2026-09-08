@@ -1,123 +1,123 @@
-# Publication readiness
+# Publication readiness and read-only audit
 
-**Snapshot:** 2026-08-12
-**Decision:** keep the repository private until every blocking item below is
-resolved.
+**Verified 2026-09-08 against `d879a67e970e6814403f2f4d21aeba2cbe0a4578`.**
+The repository is already **PUBLIC**. Earlier private-repository statements in
+historical documents are obsolete. No visibility or history change was made.
+Software licensing is resolved; historical data redistribution is not.
 
-This checklist covers repository publication, not scientific validation. The
-current scientific state is tracked in
-[`PROJECT_STATUS.md`](PROJECT_STATUS.md).
+## Repository and access
 
-## Verified now
+- GitHub API: `stafansanthosh/Aurora-for-India`, public, default branch `master`,
+  MIT licence detected, size 338,272 KB; homepage unset.
+- Anonymous raw README request returned HTTP 200 (22,042 bytes before this edit).
+- Description: “Open benchmark testing whether a cheap global forecast can warn
+  of dangerous PM2.5 episodes in Indian cities — scored on event detection, not
+  average error”. Topics: air-quality, cams, environmental-data, forecasting,
+  india, machine-learning, openaq, pm25, research, benchmark,
+  reproducible-research, microsoft-aurora. No metadata changes were needed.
+- Starting tree: 276 tracked files, no tracked edits, 72 reachable commits and
+  698 unique reachable blobs. Local master and origin/master pointed to d879a67.
+- Six untracked SILAM directories were left untouched and must never be staged
+  with this work: `20260730`, `20260807`, `20260808`, `20260809`, `20260810`,
+  `20260812` under `data/silam/`.
+- Current tree still includes the 35.71 MiB GFS station CSV, pilot NetCDF fields,
+  and a rejected calibrator binary. Removing OpenAQ/ERA5 bulk files from HEAD
+  did not remove their historical copies.
 
-- The GitHub repository exists at
-  `https://github.com/stafansanthosh/Aurora-for-India`.
-- GitHub reports the repository as **private**; an unauthenticated request
-  returns 404.
-- `master` is the default branch.
-- `.env` is ignored and is not present in reachable Git history.
-- No private-key, certificate, or Copernicus credential file was found in
-  reachable Git history by the local filename audit.
-- The only source-tree credential-pattern hit is placeholder documentation in
-  `COPILOT_CONTEXT.md`, not a real token.
-- Local Claude permissions are excluded through
-  `.claude/settings.local.json` in `.gitignore`.
-- Public-facing documentation and the interactive UI preview completed
-  independent integration review.
-- GitHub Actions run `30473358275` passed all then-current Python tests and the
-  web install/build/render checks on commit `b10d348`.
-- The exact RunPod environment passed the expanded 84-test collection.
-- The four-slice Aurora rollout is complete at 56 dates, 80,136 rows, and 159
-  stations; every returned pair and worker manifest matched its remote SHA-256.
-- An owner-only Sites deployment of the illustrative UI succeeded.
-- Local browser interaction checks passed, and `npm audit --omit=dev` reports
-  zero known production vulnerabilities on the patched lockfile.
-- Re-verified locally on 2026-08-12: `python -m pytest -q` reports 91 passed,
-  and `python -m src.eval.audit` reports 39 checks with 36 passed, 2 expected
-  legacy warnings, and the 1 unresolved PM-bin ordering failure below.
+## Secret scan
 
-## Publication blockers
+Gitleaks **8.30.1**, official Windows x64 release verified against its published
+SHA-256 checksum, scanned all reachable history using:
 
-### 1. Raw observation files remain in Git history
+```text
+gitleaks git . --log-opts="--all --full-history" --redact=100 --report-format json
+```
 
-Although the large OpenAQ CSVs are no longer tracked at `HEAD`, earlier commits
-contain hundreds of megabytes of raw archive and backup files. Examples include
-historical blobs for Delhi, Mumbai, Bangalore, and per-month archive parts.
+Result: **72 commits, 469,871,767 bytes scanned, no leaks found**. The scan used
+the default rules without custom exclusions or size limits. A supplementary
+tracked-filename check found no `.env`, `.pem`, `id_rsa`, `.cdsapirc`, or
+credential-named file. Local acquisition credentials and ignored dependency
+folders are not public release inputs. A clean scanner result is evidence from
+these rules, not proof that no conceivable secret exists. Re-scan the final
+release commit after any later changes or history operation.
 
-Making the repository public in its current form would make those historical
-files downloadable. Publication therefore requires one of:
+## Reachable large artifacts and rights
 
-1. written confirmation that historical redistribution is permitted, plus an
-   explicit data licence and attribution; or
-2. a reviewed history rewrite that removes the raw archive paths before the
-   visibility change; or
-3. a new clean public repository containing only the approved current source
-   snapshot, while retaining this repository privately.
+`git rev-list --objects --all` with `git cat-file --batch-check` found **16 blobs
+over 10 MiB**. Representative objects:
 
-History rewriting and force-pushing are destructive operations and require an
-explicit owner decision.
+| Historical path | MiB | Blob |
+|---|---:|---|
+| `data/era5_blh/era5_blh_202503.nc` | 84.22 | `fe2b2476140750db9cda3aaffe6fb6d48bf40054` |
+| `data/era5_blh/era5_blh_202511.nc` | 45.45 | `1fdee1e681662e4a5ecabd9e0f8793e735f3efbd` |
+| `data/era5_blh/era5_blh_202506.nc` | 45.08 | `a92210d37fc0a1bdca3d3073e97eb4e38b0f61e7` |
+| `data/openaq/_backup_pre_sensorfix/delhi_pm25.csv` | 41.60 | `30b4b6c6a10beadd569b259815b0724cebc8c914` |
+| `data/openaq/archive/mumbai_2024-10-01_2026-07-22.csv` | 39.77 | `a76e586df1e9421897474266a4c1fcebb639fd6f` |
+| `data/era5_blh/era5_blh_stations.csv` | 37.88 | `e9237c870e2466847a6149a589520cc62bbb8864` |
 
-### 2. No repository licence
+These artifacts are reachable in an already-public repository. [NOTICE](../NOTICE.md)
+distinguishes authored MIT software from upstream terms, but does not establish
+bulk redistribution rights. Provider-specific OpenAQ permissions and applicable
+Copernicus redistribution/attribution requirements remain unresolved here.
+This audit makes no legal determination.
 
-The repository currently has no `LICENSE`. Public visibility alone does not
-grant reuse rights.
+## Owner decision required before any publication restructuring
 
-The owner must select the software licence. Data and third-party model
-artefacts must retain their own terms and attribution rather than being
-implicitly covered by the software licence.
+| Option | Concrete work required | History and scientific evidence | Remaining cost/risk |
+|---|---|---|---|
+| Rights confirmation | Inventory each source/version/provider; obtain or locate permission for the actual historical files; document attribution and terms, including derived tables | Keeps existing hashes, links, and both pre-declaration sequences intact | Public files remain accessible during review; permission may be unavailable; repository stays large |
+| Reviewed history rewrite | Approve exact paths/blobs; preserve a private backup; dry-run filtering in an isolated copy; compare scientific source/provenance; approve ref changes before any force-push | Retain contracts and results in chronological ancestry, publish old-to-new commit mapping and content hashes; original commit IDs change | Disrupts clones and links; needs coordinated ref/cache/fork handling; cannot retract copies already downloaded |
+| Clean public mirror | Approve an allowlisted snapshot and destination; retain original research history privately only if separately authorized; review every included artifact | Publish contracts, result hashes, and an independently verifiable chronology package; a new snapshot alone does not prove pre-registration | New URL and split issue history; creating a mirror alone leaves the currently public historical data exposed |
 
-### 3. One integrity check remains failed
+No option has been selected or executed. Do not rewrite, force-push, change
+visibility, delete data, or create a mirror without explicit owner approval.
 
-The rollout and canonical 56-record manifest are complete. The audit runs
-locally but reports 463 rows with inconsistent PM1/PM2.5/PM10 size ordering.
-The PM2.5-only scoring carve-out is documented, but the repository must disclose
-the failed auxiliary-channel check rather than claim a fully clean audit.
+Preserve these verified ancestry sequences, not merely editable timestamps:
 
-### 4. Scientific outputs are not final
+- ERA5 contract **2ab1c50** → result **e0a3487**.
+- GFS contract **b78479b** → acquisition/result **bcef006**.
 
-Preliminary hourly-threshold and 24-hour PM2.5 scorecards now exist. They are
-not yet frozen as release artifacts, Component A is not certified, and the two
-out-of-schedule pilot files must remain excluded.
+The commits are ordered on the current history on 2026-08-12. Some result
+headings say 2026-08-11; those labels are not the evidence for commit order.
+Before restructuring, retain full commit objects privately plus independently
+verifiable public attestations or archived contract snapshots where appropriate.
+Do not publish a backup bundle containing the very data being removed.
 
-The public narrative also requires repair before release. The completed
-diagnosis found that 89.1% of event support is Delhi, Varanasi has zero events,
-and the original claim that Patna/Varanasi lack forecast products was false.
-The current Option B ERA5 experiment is a perfect-prognosis ceiling test, not a
-live forecast. README/product copy, screenshots, metadata, and social posts
-must preserve those distinctions.
+## Verification and remaining scientific boundaries
 
-The repository may be shared as an active research project after the software
-publication gates pass. It must not be presented as a validated forecast
-service until the scientific and operational gates in
-[`PRODUCT_SPEC.md`](PRODUCT_SPEC.md) pass.
+The latest remote Actions run, [34198698268](https://github.com/stafansanthosh/Aurora-for-India/actions/runs/34198698268),
+failed on d879a67 solely at the production audit: `nanoid <3.3.18`,
+[GHSA-2v37-7h3g-55p8](https://github.com/advisories/GHSA-2v37-7h3g-55p8).
+The build and two rendered-HTML tests passed in that run. The local fix changes
+only nanoid's lockfile version, tarball URL and integrity, from 3.3.16 to 3.3.18;
+existing dependency ranges already permit it. No manifest override or weakened
+audit gate is needed. Remote CI on the new commit remains pending an explicitly
+authorized push; local checks cannot establish green GitHub Actions.
 
-## Safe publication sequence
+Local Python verification: **108 passed**, one existing NumPy binary-size
+warning. Integrity audit: **39 checks, 36 pass, two expected legacy warnings,
+one retained PM-bin failure**. Its process exits zero despite the printed
+failure; this is not a clean scientific audit. The README discloses the 463 of
+80,730 inconsistent stored rows and the PM2.5-only scoring boundary.
 
-1. Finish independent review of the current uncommitted work.
-2. Reconcile `HANDOFF.md`, `WORKSTREAMS.md`, and the public status page.
-3. Commit only reviewed source and documentation; exclude local configuration.
-4. Push while the repository remains private.
-5. Require the Python and web CI jobs to pass. **Passed on `48135cc`.**
-6. Complete or clearly label the Option B kill-test state; never present ERA5
-   perfect-prognosis skill as operational.
-7. Freeze and version the already-generated 24-hour headline table, connect it
-   to the reporting package, and disclose the remaining audit failure and
-   Delhi-dominated event support.
-8. Resolve the software licence.
-9. Resolve the historical raw-data choice: rights confirmation, history
-   rewrite, or clean public mirror.
-10. Re-run the secret and large-history audits on the exact publication commit.
-11. Set the GitHub description and topics without an “unserved cities” claim.
-12. Change visibility only after the owner approves the final gate.
-13. Verify the repository and every README link in an unauthenticated browser.
+The README headline was checked against local event counts: each of CAMS,
+raw Aurora and Component A has 1,704 temporal-test event windows. The GFS JSON
+confirms gains +0.033606 AUC/+0.161971 CSI and 75.8%/80.9% retention. These are
+different populations: the new boundary-layer experiments remain train-only.
 
-## Recommended posting sequence
+Unresolved scientific release items: freeze/version retrospective tables and
+wire the 24-hour report; preserve the cutoff revision and absent post-monsoon
+test; retain Delhi dominance, sparse city counts and the Varanasi data question;
+keep Component A uncertified; pre-declare future classifier validation and
+incumbent comparison. An illustrative interface is not a live forecast service.
 
-- **Private applications now:** a PDF or selected code sample may be shared
-  privately with accurate status language.
-- **Public building-in-progress post:** after the repository publication gates
-  above pass.
-- **Main technical post:** after a versioned 24-hour 159-station scorecard
-  exists with the audit limitation, Delhi event concentration, and target
-  re-evaluation disclosed.
-- **Product launch post:** after the live feed completes shadow-mode gates.
+Local web verification after the minimal lockfile fix: `npm ci`, `npm test`
+(production build plus 2/2 rendered-HTML tests), and `npm audit --omit=dev`
+all passed; production audit reports **zero vulnerabilities**. Used official
+Node 22.14.0 x64 (archive SHA-256 verified) because the bundled Windows ARM64
+Node cannot install workerd. The install still reports 19 issues when development
+dependencies are included; those are outside this production-only nanoid fix
+and no audit gate was weakened. The temporary runtime is not a repo change.
+The regenerated 24-hour anchored CSV exactly equals the existing local table,
+including every numeric value. All local README links resolve; diff whitespace
+checks pass. The proposed README diff was shown through the app review panel.

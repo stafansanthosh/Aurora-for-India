@@ -1,6 +1,6 @@
 # Handoff: IndiaAQBench current state
 
-**Updated:** 2026-08-12
+**Updated:** 2026-09-08
 **Branch:** `master`
 **Scientific state:** free GFS passed the forecast-BLH gate; do not run Aurora 1.5; one audit failure remains
 **Product status:** illustrative preview only; no live feed
@@ -8,6 +8,46 @@
 documents reconciled on 2026-08-12 with the event-skill diagnosis, target
 re-evaluation, and chosen Option B direction. Historical plans carry explicit
 supersession notes. No scientific result changed by that reconciliation.
+
+## Public README and CI work (2026-09-08)
+
+The README now leads with the negative raw-Aurora outcome and the verified
+forward-24-hour temporal-test table: CAMS 0.154/0.911/0.060, raw Aurora
+0.471/0.672/0.239, Component A 0.582/0.441/0.399, each across 1,704 observed
+station-window events. Regenerating the existing anchored 24-hour artifact to
+a temporary file reproduced every table value exactly. The hourly path remains
+separate. This corrects the old README's implication that the entire temporal
+test had never been scored: only the new boundary-layer classifier remains
+train-only. Original Aurora primary sources describe global pollution work,
+not a China-only paper. Personal motivation is grounded in the supplied
+application excerpts without repeating the falsified unserved-city premise.
+
+Local Python suite: 108 pass, one existing NumPy binary-size warning. Audit:
+36 pass, two legacy warnings, one retained failure; independent count confirms
+463 inconsistent PM-bin rows of 80,730. No accepted calibrator exists.
+
+GitHub metadata and anonymous README access confirm PUBLIC, MIT, master, HTTP
+200. `docs/PUBLICATION_READINESS.md` replaces the obsolete private/no-licence
+checklist with the current audit and a concrete owner decision table. Gitleaks
+8.30.1 scanned all 72 starting commits and 469.87 MB with no leaks. History has
+16 blobs above 10 MiB; the largest ERA5 file is 84.22 MiB. OpenAQ/ERA5 historical
+redistribution remains unresolved. Preserve 2ab1c50 → e0a3487 and b78479b →
+bcef006 as pre-declaration/result evidence in any owner-approved restructuring.
+No visibility change, history rewrite, deletion, mirror, or push was authorized
+or performed. Six untracked SILAM cycles remain outside this commit.
+
+The remote failure on d879a67 was solely nanoid <3.3.18. The fix changes only
+three lockfile fields to 3.3.18; no dependency-range or workflow change is needed.
+Local npm ci, production build, 2/2 web tests, and production audit passed (zero production vulnerabilities) under Node 22.14.0 x64. Development dependencies still report 19 audit issues outside this narrow fix. Remote CI on the new commit cannot be green until the owner authorizes a push.
+
+## Immediate next action
+
+Review `git show --stat HEAD` and the publication decision table. Do not push
+without the owner's explicit request. Resolve rights confirmation versus a
+reviewed rewrite versus a clean mirror before any publication restructuring.
+After an authorized push, require green GitHub Actions on that exact commit.
+The next scientific action remains freezing/versioning retrospective scorecards;
+do not acquire or score temporal-test data for the boundary-layer classifier.
 
 ## Objective and claim boundary
 
@@ -18,7 +58,7 @@ development and diagnostic environment supplying most benchmark events, not
 transferable target-city evidence. Success means Very Poor+ event skill
 (POD/FAR/CSI and event counts), not MAE alone.
 
-The current results use hourly observation matching and hourly application of
+The historical hourly sensitivity results use hourly observation matching and hourly application of
 CPCB thresholds. They are a sensitivity analysis, not the official 24-hour
 headline and not evidence of year-round operational utility.
 
@@ -32,7 +72,7 @@ headline and not evidence of year-round operational utility.
 | Aurora rollout | 56 dates, 80,136 rows, registry `159:4c0b55ad238f` |
 | Canonical manifest | 56 records, 56 unique dates, zero errors, zero duplicates |
 | Legacy pairs | 2025-11-15 and 2025-11-20 remain on disk and are strictly excluded |
-| Tests | 99/99 pass locally (re-verified 2026-08-12) |
+| Tests | 108/108 pass locally (re-verified 2026-09-08) |
 | Audit | 39 checks: 36 pass, 2 expected legacy warnings, 1 size-bin failure (re-verified 2026-08-12) |
 | Raw/Component A scorecards | 24-hour headline and hourly sensitivity generated separately |
 | Accepted calibrator | Absent; full-registry fit failed the POD no-harm gate |
@@ -209,10 +249,11 @@ GFS and it passed. Fine-tuning remains deferred.
 
 ## Publication boundary
 
-The repository remains private. Before publication it still needs a software
-licence, a clean-mirror or reviewed-history decision for historical OpenAQ
-blobs, current CI on the eventual publication commit, and anonymous link and
-secret checks. Scientific posts must disclose the cutoff revision, missing
+The repository is already public and MIT-licensed. Historical OpenAQ/ERA5
+redistribution remains unresolved. Read `docs/PUBLICATION_READINESS.md` for the
+verified audit and rights/rewrite/mirror comparison before proposing any action.
+No visibility change, history rewrite, mirror, data deletion, or push is
+authorized. Scientific posts must disclose the cutoff revision, missing
 post-monsoon test, hourly-versus-24-hour distinction, audit failure, rejected
-calibrator, Delhi-dominated event support, target re-evaluation, and the
-perfect-prognosis/operational distinction for Option B.
+calibrator, Delhi-dominated support, target re-evaluation, and train-only
+perfect-prognosis/forecast-input distinction for the boundary-layer experiments.

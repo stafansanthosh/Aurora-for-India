@@ -1,425 +1,130 @@
 # IndiaAQBench
 
-**An open benchmark for a hard question: can a cheap, global air-quality forecast
-be made good enough to warn people about dangerous pollution episodes?**
+**IndiaAQBench built a rigorous station-level evaluation of Aurora in India; raw Aurora was not good enough to certify as a public city episode-warning system.**
 
-Not "is the average error small" — average error is easy to improve and nearly
-useless here. The question is whether a system catches the days when PM2.5 goes
-past 121 µg/m³ (India's "Very Poor" threshold), because that is when emergency
-measures actually trigger.
+The main completed contribution is the evaluation system and its honest negative findings: checking global forecasts against surface observations, exposing missed pollution episodes, and rejecting corrections that improve average error while weakening warnings.
 
-Built on [Microsoft Aurora](https://github.com/microsoft/aurora), Copernicus
-CAMS, NOAA GFS, and 1.49 million OpenAQ station observations across nine Indian
-cities. Everything below is reproducible from this repository.
+## Outcome at a glance
 
----
+The retrospective headline measures **Very Poor+ PM2.5 events: a forward-24-hour mean of at least 121 µg/m³**. These pooled temporal-test scores cover seven overlapping window starts from +0 to +72 hours, ending at +24 to +96 hours:
 
-## What the project found
+| Method | POD ↑ | FAR ↓ | CSI ↑ | Observed event windows |
+|---|---:|---:|---:|---:|
+| Actual CAMS forecast | 0.154 | 0.911 | 0.060 | 1,704 |
+| Raw Aurora | 0.471 | 0.672 | 0.239 | 1,704 |
+| Component A: locally anchored Aurora | 0.582 | 0.441 | 0.399 | 1,704 |
 
-| Finding | Evidence |
-|---|---|
-| **Optimising average error actively destroys episode detection.** They are not a trade-off — they are the same act. A regressor minimising MAE predicts near the conditional mean, which for a heavy-tailed variable sits *below* the alarm threshold. | A calibrator improved MAE 33.9 → 24.5 µg/m³ while probability of detection collapsed 0.474 → 0.125. Kept in the repo as a documented negative result. |
-| **The pollution model was the wrong instrument; the boundary layer carries the signal.** | Adding boundary-layer height lifted discrimination (AUC) 0.927 → 0.973 and skill (CSI) 0.476 → 0.682. Boundary-layer meteorology *alone*, with no pollution model at all, beat the full pollution setup. |
-| **A free forecast was sufficient — no GPU spend needed.** | NOAA GFS retained ~76–81% of the idealised gain and cleared the pre-declared bar, so a planned Aurora 1.5 GPU rollout was cancelled on evidence. |
-| **The project's own founding premise was wrong, and is documented as wrong.** | It assumed Patna and Varanasi had no public forecast. They do. The "400 m" figure that motivated the target choice describes a Delhi-only model nest, not the national system. |
-| **Most of the benchmark's evidence is one city, and the README says so.** | 89.1% of all Very Poor+ events are Delhi — the city explicitly *not* being targeted. Patna has 5 test events, Varanasi has 0. |
-
----
-
-## The two experiments
-
-The interesting part of this project is not a model. It is two experiments run
-in sequence, each with its pass/fail rule written into git **before** the result
-existed, and the second of which cancelled a planned GPU spend.
+- **POD, probability of detection:** the fraction of observed events caught. Aurora caught about 47%.
+- **FAR, false-alarm ratio:** the fraction of predicted events that did not occur. About 67% of Aurora's event predictions were false alarms.
+- **CSI, critical success index:** hits divided by hits + misses + false alarms. It penalizes both kinds of error.
 
-### Run 1 — is boundary-layer information worth anything at all?
+Counts represent station–forecast windows, not independent citywide episodes. Scores pool event counts rather than averaging lead-specific ratios. **Delhi supplies 89.1% of events across the full benchmark**; this pooled result cannot establish reliable transfer across India.
 
-The diagnosis said Indo-Gangetic winter episodes are local emissions meeting a
-collapsed boundary layer, and that the pollution model carried no
-boundary-layer information at all. Testing that with a GPU rollout would have
-been expensive and possibly pointless.
-
-So instead: use **reanalysis** — data valid *at* the target window, i.e. perfect
-hindsight. If perfect knowledge doesn't help, no forecast ever will, and the
-spend is avoided for the price of a few hundred MB.
-
-*Rule, committed as `2ab1c50` before the result:* ΔAUC ≥ +0.020, ΔCSI ≥ +0.030,
-and the gain must hold in a non-Delhi city with ≥50 events.
-
-| Feature set | AUC | CSI |
-|---|---:|---:|
-| persistence + season + lead | 0.908 | 0.480 |
-| + pollution model + CAMS | 0.927 | 0.476 |
-| **+ boundary layer** | **0.973** | **0.682** |
-
-Patna — an actual target city, not the Delhi diagnostic — moved furthest:
-AUC 0.745 → 0.928, CSI 0.159 → 0.455. **Passed.**
-
-The uncomfortable side-finding: boundary-layer meteorology *alone*, with no
-pollution model at all, scored 0.960 / 0.637 — beating the full pollution setup.
-
-### Run 2 — does a real forecast retain that, or was it hindsight?
-
-Run 1's number is a ceiling, not skill. A forecast issued four days early is
-worse than reanalysis. The open question was *how much* worse — and whether it
-justified an Aurora 1.5 GPU rollout.
-
-*Rule, committed as `b78479b` before the data was acquired.* Substituted free
-NOAA GFS at matching 12Z cycles, +0 to +96 h. 32/32 train dates, 159 stations,
-167,904 station-lead rows, zero duplicates and zero missing.
-
-| | ΔAUC | ΔCSI |
-|---|---:|---:|
-| Reanalysis ceiling, like-for-like | +0.044 | +0.200 |
-| **Free GFS forecast** | **+0.0336** | **+0.1620** |
-| Retained | ~76% | ~81% |
-
-**Verdict: free GFS is sufficient. The Aurora 1.5 rollout was cancelled.**
-
-Stated honestly: GFS boundary-layer height is strongly high-biased against
-reanalysis (+460 to +515 m), so it is *not* interchangeable as an absolute
-value. It survives because correlation holds at 0.71–0.75 through +96 h, and
-the classifier needs ordering rather than absolute height.
-
-Both runs are train-split only, out-of-fold by date. The held-out test split has
-still never been scored.
-
----
-
-## How the work was kept honest
-
-This is the part worth reading if you care about method rather than results.
-
-- **Decision rules were committed to git before the results existed.** The
-  boundary-layer experiment's pass/fail thresholds are in commit `2ab1c50`; the
-  result came later. The commit order is checkable by anyone.
-- **Cheap kill-tests before expensive builds.** Rather than run a GPU rollout to
-  see if boundary-layer data helps, reanalysis was used as a *perfect-knowledge
-  upper bound*. If perfect information hadn't helped, a forecast never would —
-  and the spend would have been avoided for a few hundred MB of downloads.
-- **The held-out test set has never been scored.** Every number above is
-  train-split, out-of-fold. That is deliberate: it is the only honest evidence
-  left, and it is spent once.
-- **Negative results are kept, not deleted.** The failed calibrator, the
-  falsified premise, and an unresolved data anomaly in Varanasi are all in the
-  repository with their reasoning.
-- **One integrity check still fails and has not been waived.** Aurora violates
-  `PM1 ≤ PM2.5 ≤ PM10` on 463 of 80,730 rows. It stays visible in the audit.
-
----
-
-## Where this is going
-
-The retrospective benchmark is complete; the forward work is about turning it
-into evidence that would survive contact with reality.
-
-1. **Freeze and version the scorecards**, and resolve the Varanasi observation
-   anomaly before any city-specific claim.
-2. **Score against an operational incumbent.** A rolling SILAM forecast archive
-   is being captured prospectively, because the benchmark currently compares
-   against baselines rather than against the systems these cities already have.
-3. **Build the exceedance-probability model** on boundary-layer + local-observation
-   features, under a validation design pre-declared before it touches the
-   untouched test split.
-4. **Run privately in shadow mode** and publish only once an operating point,
-   data freshness and a rolling hit/miss record are backed by prospective
-   evidence.
-
-The honest summary: this is a benchmark and a set of findings, not a forecast
-service, and the gap between those two is the remaining work.
-Full detail in [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
-
----
-
-## Where to start
-
-| If you want | Read |
-|---|---|
-| The 60-second version | this page |
-| Why episode detection failed, and the fix | [`docs/EPISODE_SKILL_DIAGNOSIS.md`](docs/EPISODE_SKILL_DIAGNOSIS.md) |
-| Run 1 — the boundary-layer ceiling test | [`docs/BLH_CEILING_RESULT.md`](docs/BLH_CEILING_RESULT.md) |
-| Run 2 — the free-forecast gate that cancelled the GPU spend | [`docs/FORECAST_BLH_RESULT.md`](docs/FORECAST_BLH_RESULT.md) |
-| How the premise was falsified | [`docs/TARGET_REEVALUATION.md`](docs/TARGET_REEVALUATION.md) |
-| Current state, warts included | [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) |
-| Decisions session by session | [`JOURNAL.md`](JOURNAL.md) |
-| Data and model terms | [`NOTICE.md`](NOTICE.md) |
-
-> **Research-use disclaimer:** this is an experimental research benchmark, not an
-> official air-quality warning service. It is not validated for operational use.
-> Do not use it as the sole basis for health or emergency decisions.
-
----
-
-## Why this exists
-
-The project originally assumed Patna, Varanasi, Kanpur, and Lucknow lacked a
-public multi-day forecast. That premise was falsified: the 400 m AQEWS figure
-describes the Delhi nest, while national/regional AQEWS, SILAM, and bulletin
-products cover a much broader Indian domain. Direct portal coverage must still
-be confirmed before making precise city-level incumbent claims.
-
-The useful question that survives is narrower and more defensible. Global-tier
-CAMS performed poorly on episode detection in this benchmark, while a trivial
-local anchor substantially improved it. IndiaAQBench now tests when cheap local
-and boundary-layer adaptation can turn that global tier into a useful warning
-input. Delhi remains a data-rich development environment, not evidence of
-transfer to other cities.
-
-The research thesis is deliberately constrained:
-
-- start with a global model that is inexpensive to run;
-- correct its local surface bias using public station observations;
-- test whether the correction transfers to stations and cities excluded from
-  fitting;
-- publish failures, uncertainty, and compute cost alongside successes;
-- publish an operating point and every miss before considering a transparent
-  experimental forecast feed.
-
-The goal is not to claim that a low-cost system replaces high-resolution
-regional chemistry models. The goal is to measure how far a reproducible,
-low-compute approach can go—and where it fails.
-
-## What “useful” means
-
-Average error is not the primary success criterion. A forecast can have a good
-mean absolute error (MAE) while smoothing away the pollution episodes that
-matter most.
-
-IndiaAQBench therefore treats **Very Poor or worse PM2.5 conditions
-(≥121 μg/m³)** as the headline event and reports:
-
-- **POD (probability of detection):** what fraction of observed events were
-  forecast;
-- **FAR (false-alarm ratio):** what fraction of event forecasts did not occur;
-- **CSI (critical success index):** a combined score that penalizes both misses
-  and false alarms;
-- the number of observed events, so small samples cannot look authoritative.
-
-Concentration metrics such as MAE, RMSE, bias, and correlation remain useful,
-but they are secondary. This choice already exposed a failed early calibrator:
-it improved MAE while eliminating severe-event detection in a pilot. That
-pilot used superseded station registries and is not a final benchmark result,
-but it established the safety requirement now enforced in the calibrator.
-
-## The pipeline
-
-```mermaid
-flowchart LR
-    A["OpenAQ station observations"] --> E["Station-time matching"]
-    B["CAMS atmospheric analysis"] --> C["Aurora 0.4° rollout<br/>+12 to +96 hours"]
-    C --> E
-    E --> F["Raw forecast pairs"]
-    F --> G["Cheap local adaptation"]
-    G --> H["Event and concentration metrics"]
-    H --> I["Per-city scorecards"]
-    I --> J["Experimental forecast feed<br/>(planned)"]
-```
-
-CAMS supplies the current global atmospheric state; Aurora predicts how that
-state evolves; OpenAQ provides surface observations for evaluation and local
-correction. The benchmark compares raw Aurora with persistence, historical
-climatology, and the CAMS initialization field held constant through the same
-evaluation path.
-
-## Verified repository state
-
-As of the 12 August 2026 status snapshot:
-
-| Item | Verified state |
-|---|---|
-| OpenAQ ground-truth archive | 1,489,534 hourly observations across 9 cities |
-| Station registry | 159 stations |
-| Frozen forecast initializations | 56 dates: 32 train, 24 test |
-| Actual CAMS forecast archive | Complete: 56 dates, 71,232 station-lead rows |
-| CAMS atmospheric inputs for Aurora | Complete: 56 dates, 12.397 GiB, deep validated |
-| Forecast horizon | +12 to +96 hours in 12-hour steps |
-| Spatial transfer design | 20% hashed station holdout plus 3 fully held-out cities |
-| Aurora rollout artifacts | 56/56 dates, 80,136 rows, 159 stations; worker and transfer checks passed |
-| Canonical rollout manifest | 56 records, 56 unique dates, zero errors |
-| Integrity audit | 39 checks: 36 pass, 2 expected legacy warnings, 1 auxiliary size-bin failure |
-| Test suite | 99/99 passing locally |
-| Current-registry forecast pairs | **56 of 56 dates; 80,136 rows** |
-| Forward-24-hour headline metrics | Generated (`src/eval/rolling24.py`); not yet frozen, versioned, or wired into `src/report/` |
-| Hourly-threshold sensitivity metrics | Generated; reported separately and never pooled with the 24-hour headline |
-| Event-skill diagnosis | Complete on train-only/out-of-fold data; pooled evidence is Delhi-dominated |
-| Option B ceiling result | **Proceed**: pooled ΔAUC +0.046, ΔCSI +0.206; Patna +0.183/+0.296; train-only perfect prognosis |
-| Forecast-BLH result | **Free GFS sufficient**: pooled ΔAUC +0.0336, ΔCSI +0.1620; Patna +0.108/+0.101; do not run Aurora 1.5 for BLH |
-| Current experiment | Forecast-BLH gate complete; freeze/version retrospective scorecards next |
-
-Two additional files under `results/pairs/` are legacy pilot-only artifacts
-for dates outside the frozen schedule. The current 56 scheduled files replaced
-the three overlapping pilot dates. The strict evaluator rejects the two
-out-of-schedule files rather than silently mixing them into the benchmark.
-
-The temporal cutoff was revised once, from **2025-07-01 to 2025-12-01**, under a
-pre-registered contingency and before adaptation was trained on the revised
-split. The reason was a verified lack of usable OpenAQ history before roughly
-February 2025, which left the original training period without adequate severe
-season coverage. This revision must be disclosed wherever results appear.
-
-For the complete, dated breakdown, see [Project status](docs/PROJECT_STATUS.md).
-
-## Evaluation design
-
-The benchmark covers nine cities:
-
-- **fit/validation pool:** Bangalore, Chennai, Delhi, Lucknow, Mumbai, Patna;
-- **fully held-out cities:** Kanpur, Kolkata, Varanasi.
-
-It has two spatial tests:
-
-1. **L1 — held-out stations:** a fixed subset of stations inside fit-pool
-   cities cannot contribute to learned calibration. This tests transfer to a
-   new monitoring location in a city the method has seen.
-2. **L2 — held-out cities:** all stations in Kanpur, Kolkata, and Varanasi are
-   excluded from ordinary model fitting. This tests transfer to an entirely
-   unseen city.
-
-The benchmark also uses a chronological split at 2025-12-01: fitting uses only
-earlier data and testing uses later data. Split constants live only in
-[`src/splits.py`](src/splits.py).
-
-Delhi is never transferable headline evidence. It supplies 89.1% of Very Poor+
-windows; the current L2 event result is overwhelmingly Kolkata, and Varanasi
-has zero benchmark events. Every credible result table must therefore show
-per-city performance and exact event counts rather than relying on pooled L1/L2
-labels.
-
-## What has been built
-
-- OpenAQ collection, quality control, resumable archive assembly, and a
-  versioned station registry;
-- CAMS acquisition and Aurora air-pollution inference;
-- station-grid matching and forecast-pair generation;
-- persistence, climatology, CAMS-start-held-constant, and raw Aurora baselines;
-- concentration, category, and Very Poor+ event metrics;
-- a separate forward-24-hour headline evaluator
-  ([`src/eval/rolling24.py`](src/eval/rolling24.py)) whose windows are never
-  pooled with the hourly-threshold sensitivity path;
-- chronological and spatial holdouts;
-- a 39-check integrity audit;
-- calibrator no-harm guardrails and regime-shift tests;
-- Component A, a chronological trailing local-observation anchor, with
-  leakage and fallback tests;
-- per-city/per-lead reporting and plotting code;
-- a train-only diagnosis showing the dynamic-range, between-city, event-scarcity,
-  and concentration-loss limits of the current approach;
-- a pre-declared Option B kill-test using perfect-prognosis ERA5 boundary-layer
-  fields, with a documented proceed verdict and explicit ceiling caveat;
-- a pre-declared train-only GFS forecast-BLH gate, with exact cycle/lead
-  provenance, per-city results, and a free-NWP-sufficient verdict;
-- an interactive public-interface preview using explicitly illustrative data.
-- the complete lead-dependent CAMS operational baseline for all 56 dates,
-  retained with raw files, checksums, requests, and extraction provenance.
-
-The repository deliberately keeps the rejected calibrator as a documented
-negative baseline. Its failure is part of the research record, not a result to
-hide.
-
-## What has not been built or validated
-
-- a fully clean audit across auxiliary PM1/PM10 outputs;
-- a certified public correction (Component A has one lead-specific POD regression);
-- a frozen, versioned 24-hour headline table connected to the reporting
-  package (the table is generated, but `src/report/` still reads the hourly
-  metrics file);
-- the latest-cycle live runner and immutable forecast ledger;
-- a deployed public experimental feed;
-- year-round prospective evidence, including an untouched post-monsoon test;
-- an Aurora fine-tune justified against the cheap-adaptation baseline.
-- a verified city-level incumbent comparison and transferable non-Delhi event
-  evidence.
-
-Until those milestones exist, this repository should be presented as a
-benchmark and system under active development—not as a validated public
-forecast service.
-
-## Roadmap to a public experimental feed
-
-1. Freeze and version the retrospective scorecards and connect the 24-hour
-   table to the reporting package.
-2. Resolve the Varanasi observation anomaly and verify incumbent coverage
-   before making city-specific product claims.
-3. Review the prospective SILAM archive and design an initialization-aligned
-   incumbent comparison.
-4. Do not run Aurora 1.5 for BLH unless a future pre-declared experiment has a
-   credible incremental-value case over GFS.
-5. Build an immutable latest-cycle runner and run it privately in shadow mode.
-6. Publish only after the target, operating point, data freshness, and rolling
-   verification are supported by prospective evidence.
-
-The intended product is transparent: visitors should be able to see what was
-predicted, which model version produced it, which observations later occurred,
-and where the system failed.
-
-## Explore the repository
-
-| Start here | Purpose |
-|---|---|
-| [Project status](docs/PROJECT_STATUS.md) | Plain-language scoreboard and immediate next steps |
-| [Option B working brief](docs/CODEX_BRIEF_OPTION_B.md) | Pre-declared boundary-layer kill-test and decision rule |
-| [Forecast-BLH result](docs/FORECAST_BLH_RESULT.md) | Why free GFS passed and Aurora 1.5 inference is not warranted |
-| [Episode-skill diagnosis](docs/EPISODE_SKILL_DIAGNOSIS.md) | Why the first calibrator and pooled benchmark are insufficient |
-| [Target re-evaluation](docs/TARGET_REEVALUATION.md) | Why the original “unserved cities” framing was retired |
-| [Benchmark specification](docs/BENCHMARK_SPEC.md) | Task, metrics, baselines, cities, and split design |
-| [Canonical agent brief](docs/AGENT_BRIEF.md) | Research decisions and non-negotiable constraints |
-| [Execution plan](docs/EXECUTION_PLAN.md) | Dependencies, risks, and research gates |
-| [Workstreams](docs/WORKSTREAMS.md) | Current parallel ownership model |
-| [Public product specification](docs/PRODUCT_SPEC.md) | User experience, claim boundaries, and launch gates |
-| [Live-feed specification](docs/LIVE_FEED_SPEC.md) | Versioned forecast contract and shadow-mode design |
-| [Additional-data plan](docs/DATA_EXPANSION_PLAN.md) | Ranked expansion experiments and leakage rules |
-| [Data-source audit](docs/DATA_SOURCE_AUDIT.md) | Verified access, licensing risks, and minimal pilots |
-| [Publication readiness](docs/PUBLICATION_READINESS.md) | Repository security, licensing, and release blockers |
-| [`web/`](web/) | Interactive product preview using illustrative data |
-| [GPU runbook](scripts/setup_gpu.md) | Reproducing the 56-date rollout |
-| [Development journal](JOURNAL.md) | Chronological decisions, bugs, and negative results |
-| [`src/data/`](src/data/) | OpenAQ, CAMS, registry, and alignment code |
-| [`src/pipeline/orchestrate.py`](src/pipeline/orchestrate.py) | Aurora rollout orchestration |
-| [`src/eval/`](src/eval/) | Audit, baselines, benchmark, and metrics |
-| [`src/model/calibrator.py`](src/model/calibrator.py) | Rejected baseline plus event-skill guardrails |
-| [`src/model/anchor.py`](src/model/anchor.py) | Component A chronological local anchor |
-| [`src/report/`](src/report/) | Scorecard and plot generation |
-
-The full OpenAQ archive is intentionally not tracked at `HEAD` because of its
-size. The repository contains the registry, pull provenance, code, and frozen
-date manifest. No archive release is promised until redistribution terms,
-attribution, and historical Git cleanup are resolved.
-
-## Reproduce the code checks
-
-Python 3.11 is the reference environment.
+Component A uses recent local observations to adjust Aurora's level. It improves pooled results but **remains uncertified**: held-out-city (L2) POD falls from 0.798 to 0.755 across 94 events, and the separate hourly sensitivity has an L1 +84-hour POD regression. Raw Aurora is also not a certified warning product.
+
+**Split disclosure:** the temporal cutoff was revised once, from 2025-07-01 to 2025-12-01, under a pre-registered contingency before adaptation was trained on the revised split. The original fit period lacked adequate severe-season coverage. These generated retrospective tables still need a frozen, versioned release. See the [benchmark specification](docs/BENCHMARK_SPEC.md).
+
+## What was built
+
+The pipeline brings together **1,489,534 OpenAQ observations, 159 stations, nine cities, and 56 forecast initializations**: 32 training dates and 24 temporal-test dates. It includes:
+
+- Resumable collection, observation quality checks, a station registry, and station-to-grid matching.
+- CAMS atmospheric initialization inputs, Aurora 0.4° inference at +12 through +96 hours, and an **actual lead-dependent CAMS forecast baseline**, alongside persistence and climatology.
+- 80,136 current-registry rollout rows, including lead zero, and 71,232 positive-lead CAMS forecast rows.
+- Time, station, and city splits; separate 24-hour and hourly evaluators; per-city/per-lead reporting and event counts.
+- A 39-check integrity audit, leakage and fallback tests, and guardrails that refuse to save a concentration calibrator when event detection deteriorates.
+- Reproducible provenance: frozen dates, registry stamps, acquisition requests, checksums, strict artifact loading, and worker manifests.
+
+The fit/validation cities are Bangalore, Chennai, Delhi, Lucknow, Mumbai, and Patna. L1 holds out stations inside those cities; L2 holds out Kanpur, Kolkata, and Varanasi from ordinary fitting. Definitions live in [src/splits.py](src/splits.py). Component A can use earlier observations at a held-out station, so its results describe online local adaptation, not zero-shot transfer.
+
+### How this relates to Aurora
+
+Microsoft's original work, Bodnar et al., [*A foundation model for the Earth system* (Nature, 2025)](https://www.nature.com/articles/s41586-025-09005-y), demonstrates **global** air-pollution forecasting, including East Asia examples. Its pollution model is fine-tuned on CAMS analysis, supplemented by CAMS reanalysis, and largely evaluated against CAMS analysis. The [official Aurora repository](https://github.com/microsoft/aurora) supplies the implementation and model documentation.
+
+IndiaAQBench asks a complementary question: **what happens when those forecasts are checked against actual Indian surface stations and scored on dangerous episodes rather than global RMSE?** This is a different evaluation target, not a replication of the paper's global score or a claim to overturn it.
+
+## What failed and what changed
+
+A direct concentration calibrator reduced mean absolute error (MAE) while sharply weakening event detection. In the full-registry hourly evaluation, L1 MAE improved from 33.9 to 24.5 µg/m³ while POD fell from 0.474 to 0.125. L2 MAE improved from 34.2 to 20.2 while POD fell from 0.748 to 0.299. The save guard rejected the model; no accepted calibrator is available.
+
+This was an observed failure in this benchmark, not a universal claim that improving MAE always destroys episode detection. The [diagnosis](docs/EPISODE_SKILL_DIAGNOSIS.md) investigated limited forecast dynamic range, within-station discrimination, persistence baselines, and sparse event support. It motivated predicting **the probability of a 24-hour exceedance directly**, with an explicit alert threshold, and testing boundary-layer features before spending more on inference.
+
+The founding target premise changed too. The project initially treated Patna, Varanasi, Kanpur, and Lucknow as lacking forecasts. Evidence of national/regional AQEWS, SILAM, and bulletin products contradicted that premise. It was [retired explicitly](docs/TARGET_REEVALUATION.md); precise city-level coverage and an aligned incumbent comparison still need verification.
+
+I started this because air pollution was changing places I knew, and I wanted to contribute something practical. I began with limited compute and learned the acquisition, calibration, and evaluation work as it became necessary. Publishing the failures lets others challenge the assumptions and improve the work.
+
+## Two pre-declared boundary-layer experiments
+
+Boundary-layer height describes the depth of air available for near-surface mixing. The experiments added height, wind-based ventilation, and dew-point-depression features to an exceedance classifier.
+
+**Both experiments are train-only and out-of-fold by initialization date:** each scored group was excluded from that fold's fitting. They use 18,934 training windows and 2,167 events. The new boundary-layer classifier has not touched the temporal test split. The retrospective methods above have already been scored there.
+
+### 1. ERA5: does the information contain useful signal?
+
+The rule was committed in [`2ab1c50`](https://github.com/stafansanthosh/Aurora-for-India/commit/2ab1c50), before the result in [`e0a3487`](https://github.com/stafansanthosh/Aurora-for-India/commit/e0a3487): require AUC gain ≥0.020, CSI gain ≥0.030, and improvement in a non-Delhi city with at least 50 events.
+
+Adding ERA5 raised pooled AUC from **0.927 to 0.973** and best CSI from **0.476 to 0.682**. AUC measures how well probabilities rank event windows above non-events; “best CSI” selects a threshold on development predictions, not an approved operating point. The gate passed.
+
+ERA5 is reanalysis valid at the target time: **perfect-prognosis hindsight, not forecast skill**. This ceiling experiment tested whether the feature direction deserved further work. [Result and caveats](docs/BLH_CEILING_RESULT.md).
+
+### 2. GFS: does an actual forecast retain enough gain?
+
+The follow-on contract was committed in [`b78479b`](https://github.com/stafansanthosh/Aurora-for-India/commit/b78479b), before acquisition and the result in [`bcef006`](https://github.com/stafansanthosh/Aurora-for-India/commit/bcef006). Free NOAA GFS supplied matching 12Z forecast cycles for all 32 training dates.
+
+GFS added **+0.0336 AUC and +0.1620 CSI**, retaining about **76% and 81%** of the like-for-like ERA5 gain on the same three-hour sampling grid. It passed the pre-declared gate, so the planned **Aurora 1.5 GPU rollout for boundary-layer height was cancelled**.
+
+This establishes useful train-only classifier signal. GFS height remains strongly biased against ERA5, Lucknow regresses on a small sample, and no operational result is established. [Forecast gate and per-city evidence](docs/FORECAST_BLH_RESULT.md).
+
+## Limitations and current status
+
+**The benchmark and evaluation pipeline are the completed work; a validated public forecast is absent.** The web interface uses illustrative data. There is no live forecast feed, immutable live ledger, or prospective operating-point validation.
+
+Delhi dominates event support. L2's 94 test events comprise 92 in Kolkata, two in Kanpur, and zero in Varanasi; Patna has five temporal-test events. Varanasi has **zero events in 1,516 benchmark windows**. Its low observation levels and exact-zero frequency remain an unresolved data question requiring an independent CPCB/UPPCB cross-check. None of this supports transferable Patna/Varanasi episode skill.
+
+There is no independent post-monsoon test. Overlapping windows and repeated stations limit independence. The 24-hour headline integrates forecast snapshots and requires at least 12 observed hours per window; hourly threshold scores are a separate sensitivity analysis and must never be pooled with it. Reporting still needs wiring to the 24-hour artifact.
+
+The integrity audit retains **one failure: PM1 ≤ PM2.5 ≤ PM10 is violated on 463 of 80,730 stored rows**, including legacy artifacts. PM2.5 scoring paths do not consume PM1/PM10, but the full output is not physically clean. Two out-of-schedule pilot files remain excluded by the strict loader.
+
+## Reproduction entry points
+
+Use Python 3.11 and install [requirements.txt](requirements.txt) in a virtual environment. On Windows, use `.venv/Scripts/python.exe` in place of `python`:
 
 ```bash
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-# macOS/Linux: source .venv/bin/activate
-python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
-python -m src.eval.audit
 python -m pytest -q
+python -m src.eval.audit
 ```
 
-Local data acquisition requires:
+Run the audit before interpreting results; inspect its printed checks, not just its exit status. The retained PM-bin failure must remain disclosed. With the required local observations and forecast artifacts available:
 
-- an `OPENAQ_API_KEY` in `.env`;
-- a Copernicus credential in `~/.cdsapirc`;
-- acceptance of the relevant CAMS dataset licence;
+```bash
+python -m src.eval.rolling24 --anchor --out results/metrics/indiaaqbench_24h_anchor.csv
+python -m src.eval.benchmark --anchor --out results/metrics/indiaaqbench_anchor.csv
+```
 
-The GPU rollout uses prevalidated offline bundles and receives none of those
-credentials. It requires enough memory for Aurora inference: the project uses
-a 48 GB GPU for the batch rollout, although a single step has been demonstrated
-on a 32 GB CPU.
+These produce separate headline and sensitivity files. Full scientific reproduction requires upstream data access, appropriate credentials and terms, and the [controlled rollout runbook](scripts/setup_gpu.md). Bulk observations are absent from the current tracked tree; a fresh clone alone cannot regenerate every result. GPU workers use validated offline inputs without provider credentials.
 
-Do not trust a generated results table unless `python -m src.eval.audit` passes.
-See the [GPU runbook](scripts/setup_gpu.md) for the controlled rollout.
+For the illustrative web preview, use Node 22.13+ and run `npm ci`, `npm test`, and `npm audit --omit=dev` inside [web/](web/). The test command includes the production build.
 
-## Data and model credits
+## Ways to contribute
 
-- Ground observations: [OpenAQ](https://openaq.org/) and its underlying Indian
-  providers.
-- Atmospheric inputs: [Copernicus Atmosphere Monitoring Service
-  (CAMS)](https://ads.atmosphere.copernicus.eu/).
-- Foundation model: [Microsoft Aurora](https://github.com/microsoft/aurora).
+- Freeze scorecards with input hashes, exact populations, and per-city/per-window counts; connect the 24-hour headline to reporting.
+- Independently cross-check Varanasi observations and document station identity, units, missingness, and source terms.
+- Review prospective SILAM provenance and pre-declare a comparison aligned by forecast initialization and observation availability.
+- Design probability calibration, alert thresholds, uncertainty estimates, and city/lead guardrails before temporal-test evaluation of the new classifier.
+- Test whether Aurora adds value beyond local observations and GFS through pre-declared ablations; GPU spending needs an incremental-value case.
 
-For an honest portfolio description and milestone-based publishing guidance,
-see [Portfolio guide](docs/PORTFOLIO_GUIDE.md).
+## Documentation and reuse
+
+| Read | Purpose |
+|---|---|
+| [Benchmark specification](docs/BENCHMARK_SPEC.md) | Metrics, windows, splits, and exclusions |
+| [Current handoff](docs/HANDOFF.md) | Verified state and next actions |
+| [Diagnosis](docs/EPISODE_SKILL_DIAGNOSIS.md) / [target review](docs/TARGET_REEVALUATION.md) | Negative findings and corrected assumptions |
+| [ERA5 result](docs/BLH_CEILING_RESULT.md) / [GFS result](docs/FORECAST_BLH_RESULT.md) | Experiments and limitations |
+| [Publication audit](docs/PUBLICATION_READINESS.md) | Public-history risks and unresolved decisions |
+| [Journal](JOURNAL.md) / [NOTICE](NOTICE.md) | Decision history and third-party terms |
+
+Source code and authored documentation use the [MIT licence](LICENSE). OpenAQ and its underlying providers, Copernicus CAMS/ERA5, NOAA GFS, and Microsoft Aurora retain their respective terms. Large OpenAQ and ERA5 artifacts remain reachable in public Git history; redistribution review is unresolved. MIT does not authorize reuse of those datasets.
+
+**Research use only.** This is not an official air-quality warning service or a validated operational forecast. Do not use it as the sole basis for health or emergency decisions.

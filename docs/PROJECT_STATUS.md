@@ -1,6 +1,6 @@
 # IndiaAQBench project status
 
-**Snapshot date:** 2026-08-12
+**Snapshot date:** 2026-08-12 (scientific snapshot; publication update 2026-09-08)
 **Status:** active research; free GFS passed the forecast-BLH gate; no Aurora 1.5 run
 **Public-use level:** code and benchmark design only—not a validated forecast
 service
@@ -8,6 +8,11 @@ service
 This page is the short, human-readable scoreboard. The
 [benchmark specification](BENCHMARK_SPEC.md) defines the scientific task, and
 the [development journal](../JOURNAL.md) preserves the full history.
+
+> **2026-09-08 update:** the repository is already public and MIT-licensed. The
+> README and [publication audit](PUBLICATION_READINESS.md) supersede older
+> private/no-licence claims. Historical redistribution is unresolved; no push,
+> visibility change, or history rewrite is authorized by this update.
 
 ## At a glance
 
@@ -26,8 +31,8 @@ the [development journal](../JOURNAL.md) preserves the full history.
 | Pilot-only pair files rejected by the loader | 2 |
 | Canonical manifest | 56 unique done records; zero errors |
 | Integrity audit | 36 pass, 2 expected legacy warnings, 1 PM-bin ordering failure |
-| Unit tests | 99/99 passing locally |
-| Web preview | CI build/render and owner-only deployment passing |
+| Unit tests | 108/108 passing locally (2026-09-08) |
+| Web preview | Local build, 2 tests and production audit pass after nanoid patch; remote CI awaits authorized push |
 | Event-skill diagnosis | Complete on train-only/out-of-fold data; 89.1% of events are Delhi |
 | Current direction | Option B kill-test **PASSED** (perfect-prognosis); see `BLH_CEILING_RESULT.md` |
 | ERA5 Option B inputs | 7 months, 84 train-only days, 320,544 station-hours; validated and committed |
@@ -56,8 +61,7 @@ The completed local OpenAQ archive covers the scoped nine-city benchmark:
 The bulk archive is not tracked at `HEAD`. It exists in the working data
 archive; code, pull provenance, the station registry, and the frozen date
 manifest are in the repository. No data release is authorized until
-redistribution terms and attribution are reviewed. Historical raw blobs also
-remain reachable in this private repository's Git history.
+redistribution terms and attribution are reviewed. Historical raw blobs also remain reachable in the already-public repository's Git history; see the current publication audit.
 
 ## Frozen evaluation schedule
 
@@ -113,7 +117,7 @@ The temporal cutoff was revised once on 2026-07-24:
 - Added calibrator guardrails that report event skill beside MAE and refuse to
   save a calibration model that harms Very Poor+ detection.
 - Added regime-shift, seasonal-transfer, anchoring, leakage, event-count,
-  acquisition, offline-input, and packaging tests; all 91 tests pass locally.
+  acquisition, offline-input, and packaging tests; all 108 tests pass locally (2026-09-08).
 - Implemented the reporting package under [`src/report/`](../src/report/).
 - Preserved the first failed calibrator as a documented negative baseline.
 - Implemented a public-interface preview with illustrative data and explicit
@@ -147,7 +151,7 @@ The temporal cutoff was revised once on 2026-07-24:
 - Capturing the rolling SILAM operational archive while cycles remain online.
 - Freezing the generated 24-hour and hourly tables and connecting them to the
   reporting package.
-- Resolving repository licensing and historical raw-data publication before a
+- Resolving historical raw-data redistribution in the already-public repository before a
   public launch.
 
 ## Blocked or absent

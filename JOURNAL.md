@@ -1316,3 +1316,48 @@ is exactly 5 duplicate timestamps x 159 stations = 795 collapsed rows. Its
 provenance records `short_leads: [{d2, 20h}]` and
 `collapsed_duplicate_rows: 795`, and its status is `complete_with_gaps`, so any
 consumer filtering on `status == "complete"` excludes it.
+
+## 2026-09-08 — Outcome-led public README, narrow CI fix, read-only publication audit
+
+Worked on master at owner request. Replaced the 425-line README with an
+approximately 1,700-word explanation beginning with the negative raw-Aurora
+warning-system outcome and the forward-24-hour temporal-test table. Explained
+POD/FAR/CSI, local anchoring, the rejected calibrator, both train-only
+boundary-layer experiments, corrected target premise, and reproduction limits.
+Used the supplied application excerpts only for concise personal motivation.
+Verified the original Aurora Nature paper and official repository: global
+pollution forecasting, CAMS analysis training/evaluation, East Asia examples.
+Removed the universal MAE claim and the misleading blanket test-sealed claim.
+
+Evidence: full Python suite 108 passed (one existing NumPy binary-size warning).
+Audit 39 checks: 36 pass, two expected legacy warnings, one retained failure;
+independent count 463/80,730 PM-bin violations. Regenerated the anchored 24-hour
+table in a temporary location; it exactly matches the existing local CSV.
+Pooled event-count aggregation confirms the README's three rows across 1,704
+events. Inspected GFS gate JSON and verified both contract-before-result commit
+ancestries. All local README links resolve and git diff --check passes.
+
+GitHub metadata confirms PUBLIC, MIT, master; anonymous README HTTP 200. Latest
+remote run 34198698268 on d879a67 failed solely for nanoid <3.3.18. Updated only
+the lockfile's nanoid version, URL and integrity to 3.3.18; no package.json or CI
+gate change. Discarded npm-generated unrelated lockfile metadata churn before
+verification. npm ci, production build, 2/2 rendered-HTML tests and production
+audit passed (zero production vulnerabilities). The full dependency set still
+reports 19 development-inclusive findings, outside this narrow authorized fix.
+Bundled ARM64 Node could not install workerd; a temporary checksum-verified
+Node 22.14.0 x64 runtime completed the same workflow without source changes.
+
+Read-only publication audit: 276 starting tracked files, 72 commits, 698 unique
+reachable blobs, 16 blobs above 10 MiB. ERA5 March is 84.22 MiB; OpenAQ Delhi
+backup is 41.60 MiB. Gitleaks 8.30.1 official checksum-verified release scanned
+all reachable history (~469.87 MB) with no leaks. Historical OpenAQ/ERA5
+redistribution remains unresolved. Replaced stale private/no-licence readiness
+claims with an explicit rights-confirmation / reviewed-rewrite / clean-mirror
+comparison, including preservation of 2ab1c50→e0a3487 and b78479b→bcef006.
+Showed the README diff and findings before any restructuring. None was done.
+
+Updated HANDOFF and PROJECT_STATUS publication state. Commit only these docs,
+README, JOURNAL and web/package-lock.json. The six untracked SILAM directories
+remain untouched. No push, history rewrite, visibility change, mirror or data
+deletion. Remote CI on this local commit awaits a separately authorized push;
+publication safety is not claimed while historical rights remain unresolved.
