@@ -1361,3 +1361,24 @@ README, JOURNAL and web/package-lock.json. The six untracked SILAM directories
 remain untouched. No push, history rewrite, visibility change, mirror or data
 deletion. Remote CI on this local commit awaits a separately authorized push;
 publication safety is not claimed while historical rights remain unresolved.
+
+## 2026-09-08 — Readability pass and explicit future-work narrative
+
+The owner asked for a head-to-toe readability review, specifically noting that
+unexplained labels such as Component A are hard to follow. Read the entire
+README and current research/live-system plans. Rewrote the explanation to
+introduce PM2.5, the three forecast approaches and their purpose before showing
+results; use descriptive method names, explain held-out data without L1/L2,
+and translate the research sequence into ordinary language. Added a concrete
+roadmap from fixed reports and the local-observation/GFS probability model to
+incumbent comparison, conditional private testing and a possible public feed.
+Future capabilities remain labelled as plans. Preserved the result values,
+cutoff revision, sparse city counts, audit failure and train-only boundaries.
+
+Documentation-only change: checked all local README links, whitespace, the
+method-name introduction, and the full reading order. Existing scientific
+results were already independently regenerated in the prior session; no new
+model run or data acquisition was needed. No code/tests/dependencies changed.
+Update only README, HANDOFF and JOURNAL; leave untracked SILAM directories alone.
+Continue the owner's authorized publication of this README; no history or
+visibility operation is included.

@@ -9,6 +9,21 @@ documents reconciled on 2026-08-12 with the event-skill diagnosis, target
 re-evaluation, and chosen Option B direction. Historical plans carry explicit
 supersession notes. No scientific result changed by that reconciliation.
 
+## README readability follow-up (2026-09-08)
+
+Read the full README again at the owner's request and rewrote it for first-time
+readers. CAMS, Aurora, and the observation-based correction are explained before
+the result table; Component A appears only as the code's name for that correction.
+Replaced L1/L2 and unexplained modelling labels with descriptive language.
+Added a planned-work section: version the retrospective reports, validate a
+probability model using local readings/GFS, compare against existing SILAM
+forecasts, then conditional private shadow testing and a possible public feed.
+No model, metric, data, or experimental decision changed. The two boundary-layer
+experiments remain explicitly train-only and the live interface illustrative.
+The earlier README/lockfile commit 6af9a74 was pushed at the owner's request;
+GitHub run 34216642114 passed Python and web jobs. This follow-up continues the
+authorized public README work. Historical data-rights restrictions still apply.
+
 ## Public README and CI work (2026-09-08)
 
 The README now leads with the negative raw-Aurora outcome and the verified
