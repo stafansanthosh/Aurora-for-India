@@ -4,7 +4,28 @@
 
 The completed work is a nine-city evaluation system and a set of findings about where forecasts succeed and fail. The most useful signal turned out to come not from a bigger pollution model but from cheap, widely available inputs — recent station readings plus a free weather forecast — which is what the next stage tests before any live service.
 
-**On city focus.** Delhi is the diagnostic environment, not the target: it has the most stations and supplies 89.1% of the benchmark's events, which makes it the place to debug a method. The intended beneficiaries are smaller Indo-Gangetic cities such as Patna, Lucknow, Kanpur and Varanasi. The project began by assuming those cities had no multi-day forecast; [that assumption was wrong and was retired](docs/TARGET_REEVALUATION.md). What survives is narrower and about cost, not absence: the method that works here needs a few monitors and a free weather feed, not a GPU or a national chemistry model.
+### Why these cities, and what this is *not* claiming
+
+Delhi is the diagnostic environment, not the target. It holds 64 of the benchmark's 159 stations and supplies 89.1% of its events — the right place to debug a method, and the wrong place to claim success. The intended beneficiaries are the smaller Indo-Gangetic cities:
+
+| Delhi | Mumbai | Patna | Lucknow | Varanasi | Kanpur |
+|---:|---:|---:|---:|---:|---:|
+| 64 stations | 36 | **7** | **6** | **4** | **3** |
+
+The project began by assuming those cities had no multi-day forecast. That was wrong and [has been retired](docs/TARGET_REEVALUATION.md): India runs a national 10 km chemistry-transport forecast that covers them.
+
+So the gap is not absence of a forecast. It is **monitoring density and modelling cost**. Delhi can support a dense, observation-assimilating chemistry model with a 400 m nested domain because that infrastructure exists there. Patna, with seven monitors, cannot.
+
+**This project is therefore not offering finer resolution — it is coarser than the incumbent, and says so:**
+
+| System | Resolution |
+|---|---|
+| AQEWS national (incumbent) | 10 km |
+| AQEWS Delhi nest | 400 m |
+| GFS (used here) | ~28 km |
+| Aurora (used here) | ~44 km |
+
+What it offers instead is a different shape of output: an **exceedance probability with a selectable operating point** — a forecaster can choose to catch more episodes at the cost of more false alarms, or the reverse — built from a handful of monitors and a free weather feed rather than a GPU or a national modelling stack. Whether that is genuinely useful is what the next stage tests; see [what the evidence cannot yet establish](#what-the-evidence-cannot-yet-establish).
 
 ## What the project found
 
