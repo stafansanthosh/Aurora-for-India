@@ -1,8 +1,10 @@
 # IndiaAQBench
 
-**IndiaAQBench tests air-pollution forecasts against actual monitoring stations in India. The main finding: Microsoft's Aurora model, without local correction, was not reliable enough for a public warning service.**
+**IndiaAQBench is an attempt to build advance warning of dangerous air-pollution episodes in Indian cities, and a benchmark strict enough to tell whether it works. The main finding so far: Microsoft's Aurora model, without local correction, was not reliable enough for a public warning service.**
 
-The completed work is a nine-city evaluation system and a set of findings about where forecasts succeed and fail. The next step is to test whether local pollution readings and weather information can improve warnings, before considering a live service.
+The completed work is a nine-city evaluation system and a set of findings about where forecasts succeed and fail. The most useful signal turned out to come not from a bigger pollution model but from cheap, widely available inputs — recent station readings plus a free weather forecast — which is what the next stage tests before any live service.
+
+**On city focus.** Delhi is the diagnostic environment, not the target: it has the most stations and supplies 89.1% of the benchmark's events, which makes it the place to debug a method. The intended beneficiaries are smaller Indo-Gangetic cities such as Patna, Lucknow, Kanpur and Varanasi. The project began by assuming those cities had no multi-day forecast; [that assumption was wrong and was retired](docs/TARGET_REEVALUATION.md). What survives is narrower and about cost, not absence: the method that works here needs a few monitors and a free weather feed, not a GPU or a national chemistry model.
 
 ## What the project found
 
@@ -84,7 +86,21 @@ I replaced the hindsight information with forecasts from **GFS**, the U.S. Natio
 
 GFS retained about **76% of the ranking improvement and 81% of the event-score improvement** in a comparison using the same sampling times. The gains, **+0.0336 AUC and +0.1620 CSI**, passed the second pre-declared test.
 
-As a result, the planned **Aurora 1.5 GPU run to obtain boundary-layer forecasts was cancelled**. GFS supplied enough useful information for this next research stage. This does not mean its boundary-layer heights are physically interchangeable with ERA5, or that every city improved: Lucknow regressed on a small sample. [GFS experiment and pre-declared rule](docs/FORECAST_BLH_RESULT.md).
+Per city, the picture is uneven, and the unevenness is the point:
+
+| City | events | CSI before → after | Note |
+|---|---:|---|---|
+| Delhi | 1,974 | 0.612 → **0.705** | best absolute skill; the diagnostic city |
+| Patna | 111 | 0.159 → **0.260** | **largest gain**, and a target city |
+| Mumbai | 61 | 0.025 → **0.100** | improved, but still weak in absolute terms |
+| Lucknow | 16 | 0.065 → **0.057** | **regressed**, on 16 events |
+| Bangalore / Chennai | 0 / 5 | — | too few events to score |
+
+Kanpur, Kolkata and Varanasi are absent from this table by design: they are the fully held-out cities, excluded from the fitting tier these scores come from. Varanasi additionally has **zero events anywhere in the benchmark**, so no method can be scored there at all.
+
+Patna gaining most matters, because every earlier method improved Delhi and left the target cities behind. But the system still performs *best* in Delhi, Lucknow got worse, and the held-out target cities have too little event evidence to judge. Nothing here supports a claim that this works especially well in smaller cities — only that the largest single improvement landed in one of them.
+
+As a result, the planned **Aurora 1.5 GPU run to obtain boundary-layer forecasts was cancelled**. GFS supplied enough useful information for this next research stage. This does not mean its boundary-layer heights are physically interchangeable with ERA5. [GFS experiment and pre-declared rule](docs/FORECAST_BLH_RESULT.md).
 
 ## What I’m working toward
 
