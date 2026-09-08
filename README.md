@@ -1,8 +1,12 @@
 # IndiaAQBench
 
-**IndiaAQBench is an attempt to build advance warning of dangerous air-pollution episodes in Indian cities, and a benchmark strict enough to tell whether it works. The main finding so far: Microsoft's Aurora model, without local correction, was not reliable enough for a public warning service.**
+**IndiaAQBench is an attempt to build advance warning of dangerous air-pollution episodes in Indian cities, and a benchmark strict enough to tell whether it works.**
 
-The completed work is a nine-city evaluation system and a set of findings about where forecasts succeed and fail. The most useful signal turned out to come not from a bigger pollution model but from cheap, widely available inputs — recent station readings plus a free weather forecast — which is what the next stage tests before any live service.
+**What I learned.** Raw global forecasts were not reliable enough for public warnings. A correction that improved average error made severe-event detection dramatically worse — an automatic event-safety check rejected it, and that failure reset the approach. Subsequent experiments suggest recent local readings plus free weather forecasts may be a cheaper path to useful warning probabilities. That is the next hypothesis being tested, not a delivered result.
+
+The completed work is a nine-city evaluation system and a set of findings about where forecasts succeed and fail. Everything below is the evidence for those three sentences, including where it runs out.
+
+---
 
 ### Why these cities, and what this is *not* claiming
 
