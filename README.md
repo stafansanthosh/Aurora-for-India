@@ -6,6 +6,8 @@
 
 The completed work is a nine-city evaluation system and a set of findings about where forecasts succeed and fail. Everything below is the evidence for those three sentences, including where it runs out.
 
+**Where it goes next:** freeze the current results, build and test the probability model, compare it against a forecast people already have, then run privately in shadow mode — a public feed only if that evidence holds. Detail in [what I'm working toward](#what-im-working-toward).
+
 ---
 
 ### Why these cities, and what this is *not* claiming
