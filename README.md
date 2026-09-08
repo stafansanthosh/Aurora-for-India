@@ -142,6 +142,7 @@ Full detail in [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md).
 | How the premise was falsified | [`docs/TARGET_REEVALUATION.md`](docs/TARGET_REEVALUATION.md) |
 | Current state, warts included | [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) |
 | Decisions session by session | [`JOURNAL.md`](JOURNAL.md) |
+| Data and model terms | [`NOTICE.md`](NOTICE.md) |
 
 > **Research-use disclaimer:** this is an experimental research benchmark, not an
 > official air-quality warning service. It is not validated for operational use.

@@ -19,20 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-SCOPE OF THIS LICENCE
-
-This MIT licence covers the source code and documentation authored in this
-repository. It does NOT relicense third-party data or models, which retain
-their own terms:
-
-  * OpenAQ station observations and their underlying Indian providers
-    (CPCB, state pollution control boards) — see the provider's terms.
-  * Copernicus CAMS and ERA5 — Copernicus licence; attribution required.
-  * NOAA GFS — U.S. Government work, public domain.
-  * SILAM (Finnish Meteorological Institute) — CC BY 4.0.
-  * Microsoft Aurora model weights — see the Aurora repository's licence.
-
-Derived tables in this repository inherit the terms of their upstream sources.
