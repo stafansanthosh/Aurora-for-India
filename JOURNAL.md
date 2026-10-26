@@ -1382,3 +1382,24 @@ model run or data acquisition was needed. No code/tests/dependencies changed.
 Update only README, HANDOFF and JOURNAL; leave untracked SILAM directories alone.
 Continue the owner's authorized publication of this README; no history or
 visibility operation is included.
+
+## 2026-10-26 — Field review: what an expert would do
+
+The owner asked what an expert would do, with the problem and impact restated
+and the options laid out. Researched incumbent documentation and literature
+and wrote `docs/FIELD_REVIEW.md`. Three findings change direction. (1) CEEW
+reports the Delhi AQEWS caught 83/92 and 54/58 Very Poor+ (AQI>300) days in
+winters 2023-24 and 2024-25, so competing in Delhi is pointless. (2) National
+services already post-process CTMs against monitors (Met Office SPPO, NOAA
+KF-AN), and the documented weakness — damped extremes — is the one this repo
+hit with the rejected calibrator. The expert move is to post-process the
+best incumbent (SILAM/AQEWS), not 0.4° CAMS/Aurora. (3) FIRMS fire counts
+undercount: iFOREST reports >90% of large Punjab fires after 15:00, so the
+FIRMS feature suggested earlier in chat is weaker than claimed.
+
+No published POD/FAR/CSI exists for any non-Delhi incumbent, so independent
+city-day verification of AQEWS/SILAM/CAMS/UrbanEmissions this winter is the
+recommended first deliverable. It needs the SILAM capture (lapsed since
+2026-08-11) restarted and AQEWS archived now. ews.tropmet.res.in and ceew.in
+did not resolve from this cloud session; the CEEW numbers come from search
+summaries and should be checked against the PDF. Documentation only.

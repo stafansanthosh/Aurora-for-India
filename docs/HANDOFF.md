@@ -9,6 +9,19 @@ documents reconciled on 2026-08-12 with the event-skill diagnosis, target
 re-evaluation, and chosen Option B direction. Historical plans carry explicit
 supersession notes. No scientific result changed by that reconciliation.
 
+## Field review (2026-10-26)
+
+`docs/FIELD_REVIEW.md` compares the project with the external literature and
+incumbent documentation. Main updates: the Delhi AQEWS reportedly caught
+83/92 and 54/58 Very Poor+ days in the last two winters (CEEW), so Delhi is not
+a target. No published episode verification exists for non-Delhi incumbents.
+Expert practice is post-processing the *best available* CTM against monitors,
+which points at SILAM/AQEWS rather than 0.4° CAMS/Aurora. FIRMS fire counts are
+a biased proxy (most large Punjab fires start after the polar overpasses).
+Recommended next step: restart SILAM capture and archive AQEWS/UrbanEmissions
+daily now, then pre-register a city-day verification contract before
+1 December. No scientific result changed; nothing was run.
+
 ## README readability follow-up (2026-09-08)
 
 Read the full README again at the owner's request and rewrote it for first-time
